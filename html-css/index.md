@@ -26,3 +26,23 @@
 在这个例子中，div元素的总外边距是30px，而不是50px。
 
 注意，外边距折叠只发生在块级元素的垂直外边距之间，不会发生在行内元素、浮动元素或绝对定位元素的外边距之间。
+
+
+### BFC
+
+BFC(Block Format Context)是一个特异功能
+1. 元素开启BFC后,其子元素不再产生边距折叠问题
+2. 元素开启BFC后,自己不会被其他浮动元素覆盖
+3. 元素开启BFC后,就算其字元素浮动，元素的高度也不会坍塌
+
+开启BFC的方式
+1. 根元素
+2. 绝对定位或固定定位
+3. 浮动
+4. table,td tr, th, tbody, caption, tfooter.....等
+5. 行内块
+6. overflow不为visible
+7. display: flow-root;
+8. column-span: all;
+9. 伸缩项目
+10. 多列容器   column-count: 1
