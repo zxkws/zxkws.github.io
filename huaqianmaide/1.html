@@ -76,7 +76,7 @@
             </li>
             <li>
                 bind的作用：修改this指向，给方法传参，并返回一个新的方法，注意考虑new 的优先级比bind高
-                    <code>
+                    <pre>
                         function myBind(context, ...args) {
                             if (typeof this !== 'function') {
                               throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
@@ -93,7 +93,7 @@
                             return bound;
                           }
                     </code>
-                    <code>
+                    <pre>
                         Function.prototype.myCall = function(context, ...args) {
                             if (typeof this !== 'function') {
                               throw new TypeError('Function.prototype.call - what is trying to be called is not callable');
@@ -110,7 +110,7 @@
                             return result;
                           };
                     </code>
-                    <code>
+                    <pre>
                         Function.prototype.myApply = function(context, args) {
                             if (typeof this !== 'function') {
                               throw new TypeError('Function.prototype.apply - what is trying to be called is not callable');
