@@ -17,6 +17,9 @@ importers:
       '@loadable/component':
         specifier: ^5.16.4
         version: 5.16.4(react@17.0.2)
+      build-plugin-app-core:
+        specifier: ^2.1.4
+        version: 2.1.4(@babel/core@7.24.7)
       classnames:
         specifier: ^2.5.1
         version: 2.5.1
