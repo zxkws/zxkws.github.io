@@ -5,7 +5,8 @@
   "homepage": "https://icestark-vite-vue.vercel.app/",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vue-tsc --noEmit && vite build --base=/sub-app/v3",
+    "postbuild":"mv ./dist/* ../sub-app/v3",
     "serve": "vite preview"
   },
   "dependencies": {
