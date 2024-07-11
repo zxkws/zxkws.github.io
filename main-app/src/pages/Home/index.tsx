@@ -6,7 +6,7 @@ const Home = () => {
     <React.Fragment>
       <h1>home page</h1>
       <div><Link to="/about">About</Link></div>
-      <div><Link to="/v3">进入 vue 微应用</Link></div>
+      <div><Link to="/v3">进入vue微应用</Link></div>
       <a href="./person-collect/index.html" target="_blank">mine</a>
     <a href="https://gist.github.com/imba-tjd/d73258f0817255dbe77d64d40d985e76" target="_blank">free</a>
     <div>1</div>
