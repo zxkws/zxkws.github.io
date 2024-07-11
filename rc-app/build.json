@@ -1,5 +1,5 @@
 {
-  "publicPath": "./",
+  "publicPath": "/sub-app/rc",
   "vite": true,
   "plugins": [
     ["build-plugin-icestark", {
