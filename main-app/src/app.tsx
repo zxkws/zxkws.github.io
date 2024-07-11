@@ -17,6 +17,12 @@ const appConfig: IAppConfig = {
     Layout: FrameworkLayout,
     getApps: async () => {
       const apps = [{
+        path: '/v3',
+        title: 'vue子应用',
+        loadScriptMode: 'import',
+        entry: 'https://abc.look.cloudns.biz/sub-app/v3/index.html',
+      },
+        {
         path: '/seller',
         title: '商家平台',
         loadScriptMode: 'import',
