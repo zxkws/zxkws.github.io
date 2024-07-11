@@ -21,18 +21,18 @@ export default function BasicLayout(props: {
         minHeight: '100vh',
       }}
     >
-      <Shell.Branding>
+      {/* <Shell.Branding>
         Framework
-      </Shell.Branding>
+      </Shell.Branding> */}
 
-      <Shell.Navigation>
+      {/* <Shell.Navigation>
         <PageNav pathname={pathname} />
-      </Shell.Navigation>
+      </Shell.Navigation> */}
 
       <Shell.Content>{children}</Shell.Content>
-      <Shell.Footer>
+      {/* <Shell.Footer>
         <Footer />
-      </Shell.Footer>
+      </Shell.Footer> */}
     </Shell>
   );
 }

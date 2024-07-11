@@ -32,7 +32,7 @@
     "stylelint": "^13.13.1"
   },
   "scripts": {
-    "start": "icejs start",
+    "start": "BROWSER=none icejs start",
     "build": "icejs build",
     "prepublishOnly": "npm run build",
     "lint": "npm run eslint && npm run stylelint",
