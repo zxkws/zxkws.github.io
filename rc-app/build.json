@@ -1,4 +1,10 @@
 {
+  "hash": true,
+  "outputAssetsPath": {
+    "js": "js",
+    "css": "css"
+  },
+  "publicPath": "./",
   "vite": {
     "base": "/sub-app/rc"
   },
