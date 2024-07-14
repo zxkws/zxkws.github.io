@@ -34,7 +34,7 @@
   "scripts": {
     "start": "BROWSER=none icejs start",
     "build": "icejs build",
-    "postbuild": "cp -rf build/* ../",
+    "postbuild": "cp -rf build/* ../ && cp build/index.html ../404.html",
     "prepublishOnly": "npm run build",
     "lint": "npm run eslint && npm run stylelint",
     "eslint": "eslint --cache --ext .js,.jsx,.ts,.tsx ./",
