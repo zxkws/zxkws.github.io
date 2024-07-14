@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Page Not Found</title>
-    <meta http-equiv="refresh" content="0; url=./index.html">
     <script>
-        // Redirect to index.html if not already there
-        if (location.pathname !== '/index.html') {
-            location.replace('/index.html');
-        }
+        // 获取当前路径、查询参数和哈希值
+        var currentPath = window.location.pathname + window.location.search + window.location.hash;
+
+        // 重定向到 index.html 并附加当前路径
+        window.location.replace('/index.html/' + currentPath);
     </script>
 </head>
 <body>
