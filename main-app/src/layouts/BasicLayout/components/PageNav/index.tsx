@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { AppLink } from '@ice/stark';
+import { AppLink } from '@ice/stark-app';
 import { Nav } from '@alifd/next';
 import { asideMenuConfig } from '../../menuConfig';
 

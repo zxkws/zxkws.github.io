@@ -23,7 +23,7 @@
   },
   "scripts": {
     "start": "BROWSER=none icejs start",
-    "build": "icejs build --config ./ice.config.mts",
+    "build": "icejs build",
     "postbuild":"cp -fr ./build/ ../sub-app/rc/",
     "prepublishOnly": "npm run build",
     "lint": "npm run eslint && npm run stylelint",

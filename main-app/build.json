@@ -1,5 +1,10 @@
 {
   "vite": true,
+  "hash": true,
+  "outputAssetsPath": {
+    "js": "js",
+    "css": "css"
+  },
   "publicPath": "./",
   "plugins": [
     ["build-plugin-icestark", {
