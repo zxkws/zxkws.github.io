@@ -4,7 +4,7 @@
     "js": "js",
     "css": "css"
   },
-  "publicPath": "./",
+  "publicPath": "/rc",
   "vite": {
     "base": "/sub-app/rc"
   },
