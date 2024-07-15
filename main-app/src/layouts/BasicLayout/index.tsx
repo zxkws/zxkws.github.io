@@ -1,6 +1,7 @@
 import { Shell } from '@alifd/next';
 import PageNav from './components/PageNav';
 import Footer from './components/Footer';
+import PrivateRoute from '@/components/PrivateRoute';
 
 declare global {
   interface Window {
@@ -29,7 +30,9 @@ export default function BasicLayout(props: {
         <PageNav pathname={pathname} />
       </Shell.Navigation> */}
 
-      <Shell.Content>{children}</Shell.Content>
+      <Shell.Content><PrivateRoute>{children}</PrivateRoute></Shell.Content>
+
+      
       {/* <Shell.Footer>
         <Footer />
       </Shell.Footer> */}

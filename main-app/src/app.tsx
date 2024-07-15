@@ -2,12 +2,13 @@ import { runApp, IAppConfig } from 'ice';
 import { ConfigProvider } from '@alifd/next';
 import PageLoading from '@/components/PageLoading';
 import FrameworkLayout from '@/layouts/FrameworkLayout';
+import { AuthProvider } from './context/AuthContext';
 
 const appConfig: IAppConfig = {
   app: {
     rootId: 'icestark-container',
     addProvider: ({ children }) => (
-      <ConfigProvider prefix="next-icestark-">{children}</ConfigProvider>
+      <ConfigProvider prefix="next-icestark-"><AuthProvider>{children}</AuthProvider></ConfigProvider>
     ),
   },
   router: {
