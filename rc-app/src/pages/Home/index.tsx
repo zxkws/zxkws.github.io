@@ -40,6 +40,7 @@ export default function Home() {
       </header>
       <br />
       <Link to="/detail">微应用跳转内部路由</Link>
+      <Link to="/nav">菜单</Link>
       <br />
       <br />
       <Button

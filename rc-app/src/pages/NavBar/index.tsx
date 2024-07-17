@@ -24,6 +24,7 @@ const Sidebar = ({ navItems }) => {
           {filteredNavItems.map(item => (
             <li key={item.name}>
               <a
+                target='_blank'
                 href={item.url}
                 className="block py-2 px-4 rounded hover:bg-gray-700"
               >
@@ -44,10 +45,15 @@ const Sidebar = ({ navItems }) => {
 
 
 const navItems = [
-    { name: 'Home', url: '#' },
-    { name: 'About', url: '#about' },
-    { name: 'Services', url: '#services' },
-    { name: 'Contact', url: '#contact' },
+    { name: 'chrome代理1', url: 'https://github.jbcj.top/https/www.google.com' },
+    { name: 'chrome代理2', url: '#about' },
+    { name: 'fofa siteproxy代理', url: 'https://en.fofa.info/result?qbase64=dGl0bGU9InNpdGVwcm94eeS7o%2BeQhiI%3D' },
+    { name: 'fofa siteproxy', url: 'https://en.fofa.info/result?qbase64=dGl0bGU9InNpdGVwcm94eSI%3D' },
+    { name: '360 siteproxy', url: 'https://quake.360.net/quake/#/index'},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
   ];
 
 export default () => {
