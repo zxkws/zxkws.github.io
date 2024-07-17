@@ -6,7 +6,10 @@
   },
   "publicPath": "/rc",
   "vite": {
-    "base": "/sub-app/rc"
+    "base": "/",
+    "css": {
+      "postcss": "./postcss.config.js"
+    }
   },
   "plugins": [
     ["build-plugin-icestark", {

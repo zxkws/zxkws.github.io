@@ -20,6 +20,7 @@ const jumpToLayout = () => {
     <br />
     <button @click="jumpToLayout">微应用间跳转</button>
 
+    <router-link to="/siteProxy"> siteProxy </router-link>
     <router-view />
   </div>
 

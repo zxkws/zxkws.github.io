@@ -5,6 +5,7 @@ import Home from '@/pages/Home';
 import Detail from '@/pages/Detail';
 import List from '@/pages/List';
 import NotFound from '@/components/NotFound';
+import NavBar from '@/pages/NavBar';
 
 const routerConfig: IRouterConfig[] = [
   {
@@ -23,6 +24,10 @@ const routerConfig: IRouterConfig[] = [
       {
         path: '/list',
         component: List,
+      },
+      {
+        path: '/nav',
+        component: NavBar,
       },
       {
         // 微应用独立运行 404 路由渲染 NotFound 组件

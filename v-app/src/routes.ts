@@ -24,6 +24,10 @@ const routes = [
     component: Detail,
   },
   {
+    path: '/siteProxy',
+    component: () => import('./views/SiteProxy/index.vue')
+  },
+  {
     path: '/:pathMatch(.*)',
     component: isInIcestark() ? () => renderNotFoundPromise() : NotFound,
   },
