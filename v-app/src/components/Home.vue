@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Loading from './Loading.vue';
 import Background from './Background.vue';
-import { helloInit, checkDays } from "../utils/getTime.ts";
+import { helloInit, checkDays } from "../utils/getTime";
 import { mainStore } from "../store";
 
 const store = mainStore();
@@ -25,7 +25,7 @@ const loadComplete = () => {
 // 监听宽度变化
 watch(
   () => store.innerWidth,
-  (value) => {
+  (value: any) => {
     if (value < 721) {
       store.boxOpenState = false;
       store.setOpenState = false;
