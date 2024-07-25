@@ -11,16 +11,6 @@ const jumpToLayout = () => {
 
 <template>
   <div class="wrapper">
-    <img alt="Vue logo" src="https://gw.alicdn.com/imgextra/i2/O1CN01y9FKOg1f0OnH6Hew8_!!6000000003944-2-tps-200-200.png" />
-
-    <br />
-    <router-link to="/"> Home </router-link>
-    <br />
-    <router-link to="/list"> List </router-link>
-    <br />
-    <button @click="jumpToLayout">微应用间跳转</button>
-
-    <router-link to="/siteProxy"> siteProxy </router-link>
     <router-view />
   </div>
 

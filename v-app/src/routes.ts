@@ -1,4 +1,4 @@
-import HelloWorld from './components/HelloWorld.vue';
+import Home from './components/Home.vue';
 import List from './components/List.vue';
 import Detail from './components/Detail.vue';
 import NotFound from './components/404.vue';
@@ -13,7 +13,7 @@ const renderNotFoundPromise = () => new Promise((resolve) => {
 const routes = [
   {
     path: '/',
-    component: HelloWorld,
+    component: Home,
   },
   {
     path: '/list',
