@@ -56,7 +56,7 @@ const navItems = [
     { name: 'better-cf-ip', url: 'https://github.com/badafans/better-cloudflare-ip'},
     { name: '博客', url: 'https://jdssl.top/'},
     { name: 'cf反代', url: 'https://www.smallstep.one/article/cf-cdn-ip-youxuan'},
-    { name: '', url: ''},
+    { name: '电子书', url: 'https://annas-archive.li/'},
     { name: '', url: ''},
     { name: '', url: ''},
     { name: '', url: ''},
