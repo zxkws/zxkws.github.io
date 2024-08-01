@@ -57,6 +57,7 @@ const navItems = [
     { name: '博客', url: 'https://jdssl.top/'},
     { name: 'cf反代', url: 'https://www.smallstep.one/article/cf-cdn-ip-youxuan'},
     { name: '电子书', url: 'https://annas-archive.li/'},
+    { name: 'http代理', url: 'http://testt.leov.asia/linuxdo/ip.php'},
     { name: '', url: ''},
     { name: '', url: ''},
     { name: '', url: ''},
