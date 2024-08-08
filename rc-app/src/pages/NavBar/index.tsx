@@ -58,8 +58,8 @@ const navItems = [
     { name: 'cf反代', url: 'https://www.smallstep.one/article/cf-cdn-ip-youxuan'},
     { name: '电子书', url: 'https://annas-archive.li/'},
     { name: 'http代理', url: 'http://testt.leov.asia/linuxdo/ip.php'},
-    { name: '', url: ''},
-    { name: '', url: ''},
+    { name: '高德交通指数', url: 'https://report.amap.com/m/dist/#/ct'},
+    { name: '埋堆堆TVB', url: '#'},
     { name: '', url: ''},
   ];
 
