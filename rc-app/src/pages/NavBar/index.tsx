@@ -60,6 +60,17 @@ const navItems = [
     { name: 'http代理', url: 'http://testt.leov.asia/linuxdo/ip.php'},
     { name: '高德交通指数', url: 'https://report.amap.com/m/dist/#/ct'},
     { name: '埋堆堆TVB', url: '#'},
+    { name: 'my sub', url: 'https://proxy.look.cloudns.biz/proxy/https://gist.githubusercontent.com/zxkws/6bb690997dc4af34b5938ecc91249f91/raw/clash.yaml'},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
     { name: '', url: ''},
   ];
 
