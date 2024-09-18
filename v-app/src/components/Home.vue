@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Loading from './Loading.vue';
-import Background from './Background.vue';
+import Loading from "./Loading.vue";
+import Background from "./Background.vue";
 import { helloInit, checkDays } from "../utils/getTime";
 import { mainStore } from "../store";
 
@@ -9,7 +9,6 @@ const store = mainStore();
 const getWidth = () => {
   store.setInnerWidth(window.innerWidth);
 };
-
 
 // 加载完成事件
 const loadComplete = () => {
@@ -21,7 +20,6 @@ const loadComplete = () => {
   });
 };
 
-
 // 监听宽度变化
 watch(
   () => store.innerWidth,
@@ -32,8 +30,6 @@ watch(
     }
   },
 );
-
-
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", getWidth);

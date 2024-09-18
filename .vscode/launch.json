@@ -5,6 +5,57 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "调试npm",
+            // "program": "${workspaceFolder}/rc-app/node_modules/.bin/icejs",
+            "request": "launch",
+            "runtimeExecutable": "node",
+            "runtimeArgs": ["--inspect-brk"],
+            // "stopOnEntry": true,
+            "args": [
+                "${workspaceFolder}/rc-app/node_modules/.bin/icejs",
+                "start"
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
+            "env": {
+                "BROWSER": "none",
+            },
+            "cwd": "${workspaceFolder}/rc-app"
+        },
+        {
+            "name": "调试rc-npm",
+            "request": "launch",
+            "runtimeArgs": [
+                "run-script",
+                "start",
+                "--inspect-brk"
+            ],
+            "runtimeExecutable": "npm",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
+            "console": "integratedTerminal",
+            "stopOnEntry": true,
+            "env": {
+                "BROWSER": "none",
+            },
+            "cwd": "${workspaceFolder}/rc-app"
+        },
+        {
+            "name": "Launch Program",
+            "program": "${workspaceFolder}/packages/class-study/dist/index.js", //${workspaceFolder}/class-study/dist/index.js
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
+            "console": "integratedTerminal",
+            "stopOnEntry": true
+        },
+        {
             "name": "可以直接指定某个文件，然后启动调试",
             "request": "launch",
             "type": "chrome",
