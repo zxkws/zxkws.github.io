@@ -1,8 +1,7 @@
 {
   "name": "@icedesign/stark-layout-scaffold",
   "version": "3.3.2",
-  "description": "微前端方案 icestark 的主应用模板，用于快速初始化主应用",
-  "homepage": "https://icestark-react.surge.sh",
+  "description": "主应用",
   "dependencies": {
     "@alifd/next": "^1.27.13",
     "@alifd/theme-design-pro": "^0.8.1",
@@ -40,20 +39,5 @@
     "eslint": "eslint --cache --ext .js,.jsx,.ts,.tsx ./",
     "eslint:fix": "npm run eslint -- --fix",
     "stylelint": "stylelint \"**/*.{css,scss,less}\""
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "scaffoldConfig": {
-    "name": "ice-stark-layout",
-    "title": "icestark 主应用",
-    "categories": [
-      "icestark"
-    ],
-    "screenshot": "https://img.alicdn.com/tfs/TB1WMB9YAL0gK0jSZFAXXcA9pXa-1625-883.png"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ice-lab/react-materials/tree/master/scaffolds/icestark-layout"
   }
 }
