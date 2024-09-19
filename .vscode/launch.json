@@ -5,6 +5,79 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "调试npm",
+            // "program": "${workspaceFolder}/rc-app/node_modules/.bin/icejs",
+            "request": "launch",
+            "runtimeExecutable": "node",
+            "runtimeArgs": ["--inspect-brk"],
+            // "stopOnEntry": true,
+            "args": [
+                "${workspaceFolder}/rc-app/node_modules/.bin/icejs",
+                "start"
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
+            "env": {
+                "BROWSER": "none",
+            },
+            "cwd": "${workspaceFolder}/rc-app"
+        },
+        {
+            "name": "调试rc-npm",
+            "request": "launch",
+            "runtimeArgs": [
+                "run-script",
+                "start",
+                "--inspect-brk"
+            ],
+            "runtimeExecutable": "npm",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
+            "console": "integratedTerminal",
+            "stopOnEntry": true,
+            "env": {
+                "BROWSER": "none",
+            },
+            "cwd": "${workspaceFolder}/rc-app"
+        },
+        {
+            "name": "Launch Program",
+            "program": "${workspaceFolder}/packages/class-study/dist/index.js", //${workspaceFolder}/class-study/dist/index.js
+            "request": "launch",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
+            "console": "integratedTerminal",
+            "stopOnEntry": true
+        },
+        {
+            "name": "可以直接指定某个文件，然后启动调试",
+            "request": "launch",
+            "type": "chrome",
+            "file": "${workspaceFolder}/old_index.html",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
+            "name": "调试模式启动浏览器，访问某个 url，然后连上进行调试",
+            "request": "launch",
+            "type": "chrome",
+            "url": "http://localhost:3333/sub-app/rc/",
+            "webRoot": "${workspaceFolder}/rc-app",
+        },
+        {
+            "name": "连接某个已经在调试模式启动的 url 进行调试",
+            "request": "attach",
+            "type": "chrome",
+            "webRoot": "${workspaceFolder}/rc-app",
+            "port": 9222,  // 确保调试端口未被其他程序占用
+            "trace": true  // 启用调试跟踪以帮助诊断问题
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
@@ -19,3 +92,11 @@
         }
     ]
 }
+// userDataDir： user data dir 是保存用户数据的地方，比如浏览历史、cookie 等，一个数据目录只能跑一个 chrome，所以默认会创建临时用户数据目录，想用默认的目录可以把这个配置设为 false
+// runtimeExecutable：切换调试用的浏览器，可以是 stable、canary 或者自定义的
+// runtimeArgs：启动浏览器的时候传递的启动参数
+// sourceMapPathOverrides：对 sourcemap 到的文件路径做一次映射，映射到 VSCode workspace 下的文件，这样调试的文件就可以修改了
+// pathMapping    修改调试的内容需把 url 映射到本地文件
+//    "pathMapping": { "/static/js": "${workspaceFolder}/src/" }
+//
+//

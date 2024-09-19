@@ -12,6 +12,7 @@
   "dependencies": {
     "@ice/stark-app": "^1.4.1",
     "@icon-park/vue-next": "^1.4.2",
+    "@vue-materials/icestark-child-app": "^3.0.2",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
     "sass": "^1.77.8",
