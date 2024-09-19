@@ -6,7 +6,11 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.5.5
+        version: 22.5.5
 
   packages/class-study:
     dependencies:
@@ -19,12 +23,18 @@ importers:
 
   packages/main-app:
     dependencies:
+      '@ahooksjs/use-request':
+        specifier: ^2.8.15
+        version: 2.8.15(react@17.0.2)
       '@alifd/next':
         specifier: ^1.27.13
         version: 1.27.25(@alifd/meet-react@2.9.9(rax@1.2.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(moment@2.30.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@alifd/theme-design-pro':
         specifier: ^0.8.1
         version: 0.8.1(@alifd/next@1.27.25(@alifd/meet-react@2.9.9(rax@1.2.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(moment@2.30.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2))(moment@2.30.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@ice/runtime':
+        specifier: ^1.4.11
+        version: 1.4.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@loadable/component':
         specifier: ^5.16.4
         version: 5.16.4(react@17.0.2)
@@ -58,6 +68,12 @@ importers:
       react-dom:
         specifier: ^17.0.2
         version: 17.0.2(react@17.0.2)
+      react-helmet:
+        specifier: ^6.1.0
+        version: 6.1.0(react@17.0.2)
+      react-router:
+        specifier: ^6.26.2
+        version: 6.26.2(react@17.0.2)
       react-router-dom:
         specifier: ^6.23.1
         version: 6.26.2(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -185,7 +201,7 @@ importers:
         version: 4.9.5
       unplugin-auto-import:
         specifier: ^0.18.0
-        version: 0.18.3(rollup@2.77.3)
+        version: 0.18.3(rollup@2.77.3)(webpack-sources@3.2.3)
       vite:
         specifier: ^2.6.0
         version: 2.9.18(less@4.2.0)(sass@1.79.1)
@@ -517,11 +533,25 @@ packages:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
     deprecated: Use @eslint/object-schema instead
 
+  '@ice/jsx-runtime@0.3.0':
+    resolution: {integrity: sha512-DnfQJGNPng6NusAPanRDqdRpueqFljX+wE+Q0FVtGsLmmnhg5vt/FODB5QMliheAVeCgKE1AJlLO/mEY4cutPg==}
+    peerDependencies:
+      react: ^16 || ^17 || ^18
+
   '@ice/runtime@0.1.2':
     resolution: {integrity: sha512-KtqAkIfWZwAQpkjU027ZGAw83Ez7skVVo+9Qe97x2MtCZn7DlVbfPYTh1UW3B98EBCTcWe6ylcpODdiVYtcouA==}
 
+  '@ice/runtime@1.4.11':
+    resolution: {integrity: sha512-U25kM/LdXjiapzzLlukEGJuESPk3uRBnqimqDJq7N3Z/ogoYDMh7oSgr79igAhmsIgL9dFj/rBT1U/qcoo7Q1A==}
+    peerDependencies:
+      react: ^18.1.0
+      react-dom: ^18.1.0
+
   '@ice/sandbox@1.1.4':
     resolution: {integrity: sha512-MEVF0Ze3McKDutnFiUAhUoc+WwOFxITVBgSSHmbGpKtWbXJX9kUVlx3VsEVJvdqU3O1kiBNx6zE1sFMjKPRTIQ==}
+
+  '@ice/shared@1.0.2':
+    resolution: {integrity: sha512-fSSTUzQEqodKsnvIFShJujp8qljCd88QjfEDJ9JIGgeHQfanMjZeL8s+jwI4o6L0oYl6Xg0hh/3UTIJ1Xar7KQ==}
 
   '@ice/stark-app@1.5.0':
     resolution: {integrity: sha512-9fuCri48eZj6TnfPkCju4vVLhGurz+mt6lFx4JQFHhnRBQ5MuiBqRZg5F/3vdnJ7dAYQJlCXmHlQtBHok82z+g==}
@@ -628,6 +658,10 @@ packages:
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
+
+  '@remix-run/router@1.14.2':
+    resolution: {integrity: sha512-ACXpdMM9hmKZww21yEqWwiLws/UPLhNKvimN8RrYSqPSvB3ov7sLvAcfvaxePeLvccTQKGdkDIhLYApZVDFuKg==}
+    engines: {node: '>=14.0.0'}
 
   '@remix-run/router@1.19.2':
     resolution: {integrity: sha512-baiMx18+IMuD1yyvOGaHM9QrVUPGGG0jC+z+IPHnRJWUAUvaKuWKyE8gjDj2rzv3sz9zOGoRSPgeBVHRhZnBlA==}
@@ -915,6 +949,9 @@ packages:
 
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
+
+  abortcontroller-polyfill@1.7.5:
+    resolution: {integrity: sha512-JMJ5soJWP18htbbxJjG7bG6yuI6pRhgJ0scHHTfkUjf6wjP912xZWvM+A4sJK3gqd9E8fcPbDnOefbA9Th/FIQ==}
 
   acorn-import-attributes@1.9.5:
     resolution: {integrity: sha512-n02Vykv5uA3eHGM/Z2dQrcD56kL8TyDb2p1+0P83PClMnC/nc+anbQRhIOWnSq4Ke/KvDPrY3C9hDtC/A3eHnQ==}
@@ -3590,6 +3627,13 @@ packages:
     peerDependencies:
       react: '>=15'
 
+  react-router-dom@6.21.3:
+    resolution: {integrity: sha512-kNzubk7n4YHSrErzjLK72j0B5i969GsuCGazRl3G6j1zqZBLjuSlYBdVdkDOgzGdPIffUOc9nmgiadTEVoq91g==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
+
   react-router-dom@6.26.2:
     resolution: {integrity: sha512-z7YkaEW0Dy35T3/QKPYB1LjMK2R1fxnHO8kWpUMTBdfVzZrWOiY9a7CtN8HqdWtDUWd5FY6Dl8HFsqVwH4uOtQ==}
     engines: {node: '>=14.0.0'}
@@ -3601,6 +3645,12 @@ packages:
     resolution: {integrity: sha512-Ys9K+ppnJah3QuaRiLxk+jDWOR1MekYQrlytiXxC1RyfbdsZkS5pvKAzCCr031xHixZwpnsYNT5xysdFHQaYsA==}
     peerDependencies:
       react: '>=15'
+
+  react-router@6.21.3:
+    resolution: {integrity: sha512-a0H638ZXULv1OdkmiK6s6itNhoy33ywxmUFT/xtSoVyf9VnC7n7+VT4LjVzdIHSaF5TIh9ylUgxMXksHTgGrKg==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: '>=16.8'
 
   react-router@6.26.2:
     resolution: {integrity: sha512-tvN1iuT03kHgOFnLPfLJ8V95eijteveqdOSk+srqfePtQvqCExB8eHOYnlilbOcyJyKnYkr1vJvf7YqotAJu1A==}
@@ -5217,6 +5267,11 @@ snapshots:
 
   '@humanwhocodes/object-schema@1.2.1': {}
 
+  '@ice/jsx-runtime@0.3.0(react@17.0.2)':
+    dependencies:
+      react: 17.0.2
+      style-unit: 3.0.5
+
   '@ice/runtime@0.1.2':
     dependencies:
       axios: 0.21.4
@@ -5224,7 +5279,21 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
+  '@ice/runtime@1.4.11(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
+    dependencies:
+      '@ice/jsx-runtime': 0.3.0(react@17.0.2)
+      '@ice/shared': 1.0.2
+      '@remix-run/router': 1.14.2
+      abortcontroller-polyfill: 1.7.5
+      history: 5.3.0
+      react: 17.0.2
+      react-dom: 17.0.2(react@17.0.2)
+      react-router-dom: 6.21.3(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      semver: 7.6.3
+
   '@ice/sandbox@1.1.4': {}
+
+  '@ice/shared@1.0.2': {}
 
   '@ice/stark-app@1.5.0': {}
 
@@ -5378,6 +5447,8 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
+
+  '@remix-run/router@1.14.2': {}
 
   '@remix-run/router@1.19.2': {}
 
@@ -5774,6 +5845,8 @@ snapshots:
   '@xtuc/ieee754@1.2.0': {}
 
   '@xtuc/long@4.2.2': {}
+
+  abortcontroller-polyfill@1.7.5: {}
 
   acorn-import-attributes@1.9.5(acorn@8.12.1):
     dependencies:
@@ -8856,6 +8929,13 @@ snapshots:
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
 
+  react-router-dom@6.21.3(react-dom@17.0.2(react@17.0.2))(react@17.0.2):
+    dependencies:
+      '@remix-run/router': 1.14.2
+      react: 17.0.2
+      react-dom: 17.0.2(react@17.0.2)
+      react-router: 6.21.3(react@17.0.2)
+
   react-router-dom@6.26.2(react-dom@17.0.2(react@17.0.2))(react@17.0.2):
     dependencies:
       '@remix-run/router': 1.19.2
@@ -8888,6 +8968,11 @@ snapshots:
       react-is: 16.13.1
       tiny-invariant: 1.3.3
       tiny-warning: 1.0.3
+
+  react-router@6.21.3(react@17.0.2):
+    dependencies:
+      '@remix-run/router': 1.14.2
+      react: 17.0.2
 
   react-router@6.26.2(react@17.0.2):
     dependencies:
@@ -9714,7 +9799,7 @@ snapshots:
       trough: 1.0.5
       vfile: 4.2.1
 
-  unimport@3.12.0(rollup@2.77.3):
+  unimport@3.12.0(rollup@2.77.3)(webpack-sources@3.2.3):
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@2.77.3)
       acorn: 8.12.1
@@ -9728,7 +9813,7 @@ snapshots:
       pkg-types: 1.2.0
       scule: 1.3.0
       strip-literal: 2.1.0
-      unplugin: 1.14.1
+      unplugin: 1.14.1(webpack-sources@3.2.3)
     transitivePeerDependencies:
       - rollup
       - webpack-sources
@@ -9791,7 +9876,7 @@ snapshots:
 
   unpipe@1.0.0: {}
 
-  unplugin-auto-import@0.18.3(rollup@2.77.3):
+  unplugin-auto-import@0.18.3(rollup@2.77.3)(webpack-sources@3.2.3):
     dependencies:
       '@antfu/utils': 0.7.10
       '@rollup/pluginutils': 5.1.0(rollup@2.77.3)
@@ -9799,16 +9884,18 @@ snapshots:
       local-pkg: 0.5.0
       magic-string: 0.30.11
       minimatch: 9.0.5
-      unimport: 3.12.0(rollup@2.77.3)
-      unplugin: 1.14.1
+      unimport: 3.12.0(rollup@2.77.3)(webpack-sources@3.2.3)
+      unplugin: 1.14.1(webpack-sources@3.2.3)
     transitivePeerDependencies:
       - rollup
       - webpack-sources
 
-  unplugin@1.14.1:
+  unplugin@1.14.1(webpack-sources@3.2.3):
     dependencies:
       acorn: 8.12.1
       webpack-virtual-modules: 0.6.2
+    optionalDependencies:
+      webpack-sources: 3.2.3
 
   update-browserslist-db@1.1.0(browserslist@4.23.3):
     dependencies:

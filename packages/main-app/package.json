@@ -1,10 +1,12 @@
 {
-  "name": "@icedesign/stark-layout-scaffold",
+  "name": "@main/app",
   "version": "3.3.2",
   "description": "主应用",
   "dependencies": {
+    "@ahooksjs/use-request": "^2.8.15",
     "@alifd/next": "^1.27.13",
     "@alifd/theme-design-pro": "^0.8.1",
+    "@ice/runtime": "^1.4.11",
     "@loadable/component": "^5.16.4",
     "build-plugin-app-core": "^2.1.4",
     "classnames": "^2.5.1",
@@ -16,6 +18,8 @@
     "react": "^17.0.2",
     "react-app-renderer": "^3.1.0",
     "react-dom": "^17.0.2",
+    "react-helmet": "^6.1.0",
+    "react-router": "^6.26.2",
     "react-router-dom": "^6.23.1"
   },
   "devDependencies": {

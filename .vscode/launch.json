@@ -5,14 +5,27 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch via NPM",
+            "request": "launch",
+            "runtimeArgs": [
+                "run-script",
+                "start"
+            ],
+            "runtimeExecutable": "pnpm",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+        {
             "name": "调试npm",
             // "program": "${workspaceFolder}/rc-app/node_modules/.bin/icejs",
             "request": "launch",
             "runtimeExecutable": "node",
             "runtimeArgs": ["--inspect-brk"],
-            // "stopOnEntry": true,
+            "stopOnEntry": true,
             "args": [
-                "${workspaceFolder}/rc-app/node_modules/.bin/icejs",
+                "${workspaceFolder}/packages/main-app/node_modules/.bin/icejs",
                 "start"
             ],
             "skipFiles": [
@@ -22,7 +35,7 @@
             "env": {
                 "BROWSER": "none",
             },
-            "cwd": "${workspaceFolder}/rc-app"
+            "cwd": "${workspaceFolder}/packages/main-app"
         },
         {
             "name": "调试rc-npm",
@@ -66,8 +79,10 @@
             "name": "调试模式启动浏览器，访问某个 url，然后连上进行调试",
             "request": "launch",
             "type": "chrome",
-            "url": "http://localhost:3333/sub-app/rc/",
-            "webRoot": "${workspaceFolder}/rc-app",
+            "url": "http://localhost:3333",
+            "webRoot": "${workspaceFolder}/packages/main-app",
+            "runtimeExecutable": "canary",
+            "userDataDir": false,
         },
         {
             "name": "连接某个已经在调试模式启动的 url 进行调试",
