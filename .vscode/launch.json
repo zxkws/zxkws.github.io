@@ -8,21 +8,32 @@
             "name": "Launch via NPM",
             "request": "launch",
             "runtimeArgs": [
-                "run-script",
-                "start"
+                "start",
             ],
             "runtimeExecutable": "pnpm",
+            "console": "integratedTerminal",
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "type": "node"
+            "stopOnEntry": false,
+            "cwd": "${workspaceFolder}/packages/main-app",
+            "type": "node",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+            //     "meteor://💻app/*": "${workspaceFolder}/*",
+            //     "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
+            //     "webpack://?:*/*": "${workspaceFolder}/*"
+            // "~/workspace/*vite-service/lib/*":"${workspaceFolder}/node_modules/vite-service/src/*"
+            }
         },
         {
             "name": "调试npm",
             // "program": "${workspaceFolder}/rc-app/node_modules/.bin/icejs",
             "request": "launch",
             "runtimeExecutable": "node",
-            "runtimeArgs": ["--inspect-brk"],
+            "runtimeArgs": [
+                "--inspect-brk"
+            ],
             "stopOnEntry": true,
             "args": [
                 "${workspaceFolder}/packages/main-app/node_modules/.bin/icejs",
@@ -89,8 +100,8 @@
             "request": "attach",
             "type": "chrome",
             "webRoot": "${workspaceFolder}/rc-app",
-            "port": 9222,  // 确保调试端口未被其他程序占用
-            "trace": true  // 启用调试跟踪以帮助诊断问题
+            "port": 9222, // 确保调试端口未被其他程序占用
+            "trace": true // 启用调试跟踪以帮助诊断问题
         },
         {
             "type": "node",
@@ -100,7 +111,10 @@
                 "<node_internals>/**"
             ],
             "runtimeExecutable": "npm",
-            "runtimeArgs": ["run", "build"],
+            "runtimeArgs": [
+                "run",
+                "build"
+            ],
             "cwd": "${workspaceFolder}/main-app/",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
