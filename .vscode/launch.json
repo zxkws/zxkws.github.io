@@ -5,14 +5,38 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch via NPM",
+            "request": "launch",
+            "runtimeArgs": [
+                "start",
+            ],
+            "runtimeExecutable": "pnpm",
+            "console": "integratedTerminal",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "stopOnEntry": false,
+            "cwd": "${workspaceFolder}/packages/main-app",
+            "type": "node",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+            //     "meteor://💻app/*": "${workspaceFolder}/*",
+            //     "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
+            //     "webpack://?:*/*": "${workspaceFolder}/*"
+            // "~/workspace/*vite-service/lib/*":"${workspaceFolder}/node_modules/vite-service/src/*"
+            }
+        },
+        {
             "name": "调试npm",
             // "program": "${workspaceFolder}/rc-app/node_modules/.bin/icejs",
             "request": "launch",
             "runtimeExecutable": "node",
-            "runtimeArgs": ["--inspect-brk"],
-            // "stopOnEntry": true,
+            "runtimeArgs": [
+                "--inspect-brk"
+            ],
+            "stopOnEntry": true,
             "args": [
-                "${workspaceFolder}/rc-app/node_modules/.bin/icejs",
+                "${workspaceFolder}/packages/main-app/node_modules/.bin/icejs",
                 "start"
             ],
             "skipFiles": [
@@ -22,7 +46,7 @@
             "env": {
                 "BROWSER": "none",
             },
-            "cwd": "${workspaceFolder}/rc-app"
+            "cwd": "${workspaceFolder}/packages/main-app"
         },
         {
             "name": "调试rc-npm",
@@ -66,16 +90,18 @@
             "name": "调试模式启动浏览器，访问某个 url，然后连上进行调试",
             "request": "launch",
             "type": "chrome",
-            "url": "http://localhost:3333/sub-app/rc/",
-            "webRoot": "${workspaceFolder}/rc-app",
+            "url": "http://localhost:3333",
+            "webRoot": "${workspaceFolder}/packages/main-app",
+            "runtimeExecutable": "canary",
+            "userDataDir": false,
         },
         {
             "name": "连接某个已经在调试模式启动的 url 进行调试",
             "request": "attach",
             "type": "chrome",
             "webRoot": "${workspaceFolder}/rc-app",
-            "port": 9222,  // 确保调试端口未被其他程序占用
-            "trace": true  // 启用调试跟踪以帮助诊断问题
+            "port": 9222, // 确保调试端口未被其他程序占用
+            "trace": true // 启用调试跟踪以帮助诊断问题
         },
         {
             "type": "node",
@@ -85,7 +111,10 @@
                 "<node_internals>/**"
             ],
             "runtimeExecutable": "npm",
-            "runtimeArgs": ["run", "build"],
+            "runtimeArgs": [
+                "run",
+                "build"
+            ],
             "cwd": "${workspaceFolder}/main-app/",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
