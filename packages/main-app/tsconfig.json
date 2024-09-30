@@ -2,6 +2,7 @@
   "compileOnSave": false,
   "buildOnSave": false,
   "compilerOptions": {
+    "esModuleInterop": true,
     "baseUrl": ".",
     "outDir": "build",
     "module": "esnext",
@@ -9,7 +10,10 @@
     "jsx": "react-jsx",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "lib": ["ESNext", "dom"],
+    "lib": [
+      "ESNext",
+      "dom"
+    ],
     "sourceMap": true,
     "allowJs": true,
     "rootDir": "./",
@@ -21,12 +25,25 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "skipLibCheck": true,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "paths": {
-      "@/*": ["./src/*"],
-      "ice": [".ice"]
+      "@/*": [
+        "./src/*"
+      ],
+      "ice": [
+        ".ice"
+      ]
     }
   },
-  "include": ["src", ".ice"],
-  "exclude": ["node_modules", "build", "public"]
+  "include": [
+    "src",
+    ".ice"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "public"
+  ]
 }

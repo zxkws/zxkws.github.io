@@ -1,13 +1,12 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { appHistory } from '@ice/stark-app';
-import { Button } from '@alifd/next';
 
 import styles from './index.module.css';
 
 export default function Home(props) {
   useEffect(() => {
-    console.log('Home Page mounted');
+    console.log('Home Page mounted', props);
     return () => {
       console.log('Home Page unmounted');
     };
@@ -19,24 +18,22 @@ export default function Home(props) {
       <Link to="/nav">菜单</Link>
       <br />
       <br />
-      <Button
-        type="primary"
+      <button
         onClick={() => {
           appHistory.push('/');
         }}
       >
         微应用间跳转 1
-      </Button>
+      </button>
       <br />
       <br />
-      <Button
-        type="primary"
+      <button
         onClick={() => {
           appHistory.push('/waiter');
         }}
       >
         微应用间跳转 2
-      </Button>
+      </button>
     </div>
   );
 }
