@@ -71,6 +71,18 @@ const navItems = [
     { name: '在线影视', url: 'https://v.warhut.cn/'},
     { name: '在线影视', url: 'http://www.549.tv/'},
     { name: '会员代理', url: 'https://gdfy.ygdns.cn/index'},
+    { name: '精美UI', url: 'https://pixso.cn/community/home'},
+    { name: '精美UI', url: 'https://www.bossdesign.cn/'},
+    { name: '精美UI', url: 'https://github.com/magicuidesign/magicui'},
+    { name: '精美UI', url: 'https://blog.sina.com.cn/s/blog_66a46e6c0101a9hu.html'},
+    { name: '精美UI', url: 'https://www.xuansite.com/'},
+    { name: '精美UI', url: 'https://www.phlox.pro/'},
+    { name: 'css sudy', url: 'https://coding2go.com/'},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
+    { name: '', url: ''},
     { name: '', url: ''},
   ];
 
