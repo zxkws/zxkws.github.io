@@ -1,27 +1,64 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text Diff Tool</title>
+    
+    
+    <meta name="description" content="在线文本对比工具 - 轻松比较两个文本，实时查看差异。适合开发者和写作者使用。">
+    <meta name="keywords" content="文本差异工具, 在线文本对比, 文本比较工具, 文本差异检查, 在线diff工具, 文本差异">
+    
+    
+    <meta name="description" content="Online Text Diff Tool - Compare two texts easily and see the differences highlighted in real-time. Useful for developers and writers.">
+    <meta name="keywords" content="text diff tool, compare text online, text comparison, diff checker, online diff tool, text differences">
+    
+    <meta property="og:title" content="在线文本对比工具">
+    <meta property="og:description" content="轻松比较两个文本，实时查看差异。适合开发者和写作者使用。">
+    <meta property="og:image" content="https://zxkws.nyc.mn/og-image.png">
+    <meta property="og:url" content="https://zxkws.nyc.mn/text-diff-tool">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="在线文本对比工具">
+    <meta name="twitter:description" content="轻松比较两个文本，实时查看差异。适合开发者和写作者使用。">
+    <meta name="twitter:image" content="https://zxkws.nyc.mn/twitter-image.png">
+    
+    <title>在线文本对比工具 - 比较与高亮差异</title>
+    
+    <!-- CSS and JavaScript includes -->
     <script src="./diffMatchPatch.js"></script>
     <script src="script.js" defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
+    <!-- hreflang 多语言支持 -->
+    <link rel="alternate" href="https://yourwebsite.com/text-diff-tool" hreflang="en" />
+    <link rel="alternate" href="https://yourwebsite.com/text-diff-tool-cn" hreflang="zh-CN" />
+
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold text-center mb-6">Online Text Diff Tool</h1>
+        <header>
+            <h1 class="text-3xl font-bold text-center mb-6">在线文本对比工具</h1>
+        </header>
         
-        <div class="grid grid-cols-2 gap-4 mb-6">
-            <textarea id="text1" class="w-full h-60 p-4 text-lg border border-gray-300 rounded" placeholder="Enter first text..."></textarea>
-            <textarea id="text2" class="w-full h-60 p-4 text-lg border border-gray-300 rounded" placeholder="Enter second text..."></textarea>
-        </div>
+        <main>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <textarea id="text1" class="w-full h-60 p-4 text-lg border border-gray-300 rounded" placeholder="输入第一个文本..."></textarea>
+                <textarea id="text2" class="w-full h-60 p-4 text-lg border border-gray-300 rounded" placeholder="输入第二个文本..."></textarea>
+            </div>
+            
+            <div class="text-center">
+                <button id="compareBtn" class="px-6 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600">比较</button>
+            </div>
+            
+            <div id="diffOutput" class="mt-6 p-4 bg-white shadow rounded border border-gray-200"></div>
+        </main>
         
-        <div class="text-center">
-            <button id="compareBtn" class="px-6 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600">Compare</button>
-        </div>
-        
-        <div id="diffOutput" class="mt-6 p-4 bg-white shadow rounded border border-gray-200"></div>
+        <footer class="text-center mt-6">
+            <p class="text-gray-500">&copy; 2024 你的公司名称. 保留所有权利。</p>
+        </footer>
     </div>
 </body>
 </html>
