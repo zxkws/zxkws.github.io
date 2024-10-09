@@ -1,1 +1,28 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Diff Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/diff-match-patch@latest"></script>
+    <script src="script.js" defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold text-center mb-6">Online Text Diff Tool</h1>
+        
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <textarea id="text1" class="w-full h-60 p-4 text-lg border border-gray-300 rounded" placeholder="Enter first text..."></textarea>
+            <textarea id="text2" class="w-full h-60 p-4 text-lg border border-gray-300 rounded" placeholder="Enter second text..."></textarea>
+        </div>
+        
+        <div class="text-center">
+            <button id="compareBtn" class="px-6 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600">Compare</button>
+        </div>
+        
+        <div id="diffOutput" class="mt-6 p-4 bg-white shadow rounded border border-gray-200"></div>
+    </div>
+</body>
+</html>
