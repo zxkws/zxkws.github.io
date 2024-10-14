@@ -1,21 +1,21 @@
-// scss 全局变量
+// // scss 全局变量
 
-// 响应式布局
-@mixin changeWidth($maxWidth: 1200px) {
-    .container {
-      max-width: $maxWidth;
-    }
-  }
+// // 响应式布局
+// @mixin changeWidth($maxWidth: 1200px) {
+//     .container {
+//       max-width: $maxWidth;
+//     }
+//   }
   
-  // 首次调用
-  @include changeWidth;
-  /* 小于1280px时 */
-  @media (max-width: 1280px) {
-    @include changeWidth($maxWidth: 1100px);
-  }
+//   // 首次调用
+//   @include changeWidth;
+//   /* 小于1280px时 */
+//   @media (max-width: 1280px) {
+//     @include changeWidth($maxWidth: 1100px);
+//   }
   
-  /* 小于992px时 */
-  @media (max-width: 992px) {
-    @include changeWidth($maxWidth: 900px);
-  }
+//   /* 小于992px时 */
+//   @media (max-width: 992px) {
+//     @include changeWidth($maxWidth: 900px);
+//   }
   

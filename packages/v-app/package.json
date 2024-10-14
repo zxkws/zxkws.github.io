@@ -1,19 +1,17 @@
 {
-  "name": "@vue-materials/icestark-child-app",
-  "version": "3.0.2",
-  "description": "icestark 基于 Vue 的子应用模板",
-  "homepage": "https://icestark-vite-vue.vercel.app/",
+  "name": "v-app",
+  "version": "0.0.1",
+  "description": "v-app",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build --base=/sub-app/v3",
-    "postbuild": "cp -rf ./dist/* ../sub-app/v3",
+    "vite": "vite",
+    "build": "vite build",
+    "postbuild": "cp -rf ./dist/* ../../sub-app/v3",
     "serve": "vite preview"
   },
   "dependencies": {
     "@ice/stark-app": "^1.4.1",
     "@icon-park/vue-next": "^1.4.2",
-    "@packages/test-work": "workspace:^",
-    "@vue-materials/icestark-child-app": "^3.0.2",
+    "@packages/test-work": "workspace:*",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
     "sass": "^1.77.8",
@@ -21,28 +19,10 @@
     "vue-router": "^4.0.11"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^1.9.2",
+    "@vitejs/plugin-vue": "^5.1.4",
     "unplugin-auto-import": "^0.18.0",
-    "vite-plugin-index-html": "^2.0.0"
+    "vite-plugin-index-html": "^2.0.0",
+    "vue-tsc":"^2.1.6"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ice-lab/vue-materials/tree/master/scaffolds/icestark-child-app"
-  },
-  "license": "MIT",
-  "keywords": [
-    "ice",
-    "ice-scaffold"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "scaffoldConfig": {
-    "name": "icestark-child-app",
-    "title": "icestark Vue 子应用",
-    "screenshot": "https://img.alicdn.com/tfs/TB1X5.paYr1gK0jSZFDXXb9yVXa-2480-1200.png",
-    "categories": [
-      "icestark"
-    ]
-  }
+  "license": "MIT"
 }

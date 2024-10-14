@@ -1,8 +1,8 @@
 import { createApp } from "vue";
 import type { App as Root } from "vue";
 import { createWebHistory, createRouter } from "vue-router";
-import isInIcestark from "@ice/stark-app/lib/isInIcestark";
-import getBasename from "@ice/stark-app/lib/getBasename";
+import isInIcestark from "./utils/isInIcestark";
+import getBasename from "./utils/getBasename";
 import App from "./App.vue";
 import routes from "./routes";
 import { createPinia } from "pinia";

@@ -1,7 +1,3 @@
-# Vite + icestark + vue3 Demo
+# TODO
 
-Demo for building icestark micro applications created by Vite.
-
-## Online
-
-https://icestark-vite-vue.vercel.app/
+vue-tsc --noEmit && vite build --base=/sub-app/v3
