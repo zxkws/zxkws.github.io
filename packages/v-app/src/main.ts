@@ -12,7 +12,7 @@ import "./style/style.scss";
 let vue: Root<Element> | null = null;
 
 const runApp = (container: Element | string) => {
-  const history = createWebHistory(isInIcestark() ? getBasename() : "/");
+  const history = createWebHistory(isInIcestark() ? getBasename() : "/sub-app/v3");
   const router = createRouter({
     history,
     routes,
