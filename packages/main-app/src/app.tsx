@@ -21,13 +21,13 @@ import PageLoading from '@/components/PageLoading';
 //           path: '/v3',
 //           title: 'vue子应用',
 //           loadScriptMode: 'import',
-//           entry: 'https://abc.look.cloudns.biz/sub-app/v3/index.html',
+//           entry: 'https://zxkws.nyc.mn/sub-app/v3/index.html',
 //         },
 //         {
 //           path: '/rc',
 //           title: 'react子应用',
 //           loadScriptMode: 'import',
-//           entry: 'https://abc.look.cloudns.biz/sub-app/rc/index.html',
+//           entry: 'https://zxkws.nyc.mn/sub-app/rc/index.html',
 //         },
 // {
 //   path: '/seller',
