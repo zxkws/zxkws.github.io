@@ -37,6 +37,7 @@
   "dependencies": {
     "@ahooksjs/use-request": "workspace:*",
     "@ice/runtime": "workspace:*",
+    "@ice/stark-next": "workspace:*",
     "@loadable/component": "^5.16.4",
     "@packages/test-work": "workspace:*",
     "@packages/utils": "workspace:*",

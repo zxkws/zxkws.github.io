@@ -1,7 +1,7 @@
 // import { runApp, IAppConfig } from 'ice';
 import PageLoading from '@/components/PageLoading';
 // import FrameworkLayout from '@/layouts/FrameworkLayout';
-// import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 
 // const appConfig: IAppConfig = {
 //   app: {
@@ -52,45 +52,36 @@ import PageLoading from '@/components/PageLoading';
 //       ];
 //       return apps;
 //     },
-//     appRouter: {
-//       LoadingComponent: PageLoading,
-//     },
 //   },
 // };
 
 // runApp(appConfig);
 
-// src/App.jsx
-import { AppRouter, AppRoute, appHistory } from '@ice/stark';
+import { AppRouter, AppRoute } from '@ice/stark';
 import BasicLayout from '@/layouts/BasicLayout';
-import React from 'react';
 import ReactDom from 'react-dom/client';
 
-class App extends React.Component {
-  componentDidMount(): void {
-    console.log('appHistory', appHistory);
-    setTimeout(() => {
-      // appHistory.push('/seller');
-    }, 1000);
-  }
-  render() {
-    return (
+// https://github.com/ice-lab/icestark
+
+function App1() {
+  return (
+    <AuthProvider>
       <BasicLayout>
-        <PageLoading />
-        <AppRouter>
-          {/* <AppRoute
-            activePath="/"
+        {/* @ts-ignore */}
+        <AppRouter LoadingComponent={<PageLoading />}>
+          <AppRoute
+            activePath="/baidu"
             render={() => {
               return <iframe src="https://www.baidu.com" />;
             }}
             // 或者直接传入 component
             // component={PageLoading}
-          /> */}
+          />
           <AppRoute
             activePath="/"
             loadScriptMode="import"
             title="商家平台"
-            entry="https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-seller-ice-vite/index.html"
+            entry="https://zxkws.nyc.mn/sub-app/rc/index.html"
             // url={[
             //   '//unpkg.com/icestark-child-seller/build/js/index.js',
             //   '//unpkg.com/icestark-child-seller/build/css/index.css',
@@ -98,8 +89,22 @@ class App extends React.Component {
           />
         </AppRouter>
       </BasicLayout>
-    );
-  }
+    </AuthProvider>
+  );
 }
 
-ReactDom.createRoot(document.getElementById('icestark-container') as HTMLElement).render(<App />);
+function render(runtime, options) {
+  const { mountNode, rootId } = options.appConfig || {};
+  const App = getRenderApp(runtime, options);
+  ReactDom.createRoot(getAppMountNode(mountNode, rootId)).render(<App />);
+}
+
+function getAppMountNode(mountNode, rootId) {
+  return mountNode || document.getElementById(rootId) || document.getElementById('icestark-container');
+}
+
+function getRenderApp(runtime, options) {
+  return App1;
+}
+
+render({}, {});
