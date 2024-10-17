@@ -13,6 +13,10 @@ const renderNotFoundPromise = () =>
 
 const routes = [
   {
+    path: "/login",
+    component: () => import("./views/Login/index.vue"),
+  },
+  {
     path: "/",
     component: Home,
   },

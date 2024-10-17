@@ -12,6 +12,7 @@
     "@ice/stark-app": "^1.4.1",
     "@icon-park/vue-next": "^1.4.2",
     "@packages/test-work": "workspace:*",
+    "@tailwindcss/forms": "^0.5.9",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
     "sass": "^1.77.8",

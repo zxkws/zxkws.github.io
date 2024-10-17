@@ -20,6 +20,18 @@ const runApp = (container: Element | string) => {
     history,
     routes,
   });
+
+  let token = null;
+
+  router.beforeEach((to, from, next) => {
+    console.log(to.fullPath);
+    if (!token && !localStorage.getItem("token") && to.fullPath !== "/login") {
+      next("/login");
+      return;
+    }
+    next();
+  });
+
   vue = createApp(App);
   const pinia = createPinia();
   pinia.use(piniaPluginPersistedstate);

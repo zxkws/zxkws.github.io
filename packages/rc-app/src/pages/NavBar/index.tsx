@@ -80,7 +80,7 @@ const navItems = [
     { name: 'css sudy', url: 'https://coding2go.com/'},
     { name: 'tailwind-generator', url: 'https://tailwind-generator.com/'},
     { name: 'for-dev-free', url: 'https://free-for.dev/#/?id=major-cloud-providers'},
-    { name: '', url: ''},
+    { name: 'tailwind-proxy', url: 'https://tailwindui.starxg.com/components'},
     { name: '', url: ''},
     { name: '', url: ''},
     { name: '', url: ''},
