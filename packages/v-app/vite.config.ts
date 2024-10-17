@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     vue(),
     htmlPlugin({
-      input: "./src/main.ts",
+      input: isProd ? "./src/main.ts" : "/src/main.ts",
       preserveEntrySignatures: "exports-only",
     }),
     AutoImport({
@@ -16,7 +16,7 @@ export default defineConfig({
       dts: "src/auto-imports.d.ts", // 自动生成的 TypeScript 声明文件路径
     }),
   ],
-  base: isProd ? "/sub-app/v3" : "/",
+  base: isProd ? "/sub-app/v3" : "./",
   css: {
     preprocessorOptions: {
       scss: {

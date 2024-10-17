@@ -7,12 +7,15 @@ import App from "./App.vue";
 import routes from "./routes";
 import { createPinia } from "pinia";
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
+import "./style/tailwind.css";
 import "./style/style.scss";
 
 let vue: Root<Element> | null = null;
 
 const runApp = (container: Element | string) => {
-  const history = createWebHistory(isInIcestark() ? getBasename() : "/sub-app/v3");
+  const history = createWebHistory(
+    isInIcestark() ? getBasename() : "/sub-app/v3"
+  );
   const router = createRouter({
     history,
     routes,
