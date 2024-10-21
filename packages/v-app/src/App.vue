@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div class="wrapper">
+  <div class="wrapper w-full h-full">
     <router-view />
   </div>
 </template>
@@ -13,6 +13,5 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>

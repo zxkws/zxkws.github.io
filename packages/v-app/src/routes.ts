@@ -13,10 +13,17 @@ const renderNotFoundPromise = () =>
 
 const routes = [
   {
+    name: "todo",
+    path: "/todo",
+    component: () => import("./views/Todo/index.vue"),
+  },
+  {
+    name: "login",
     path: "/login",
     component: () => import("./views/Login/index.vue"),
   },
   {
+    name: "overview",
     path: "/",
     component: Home,
   },

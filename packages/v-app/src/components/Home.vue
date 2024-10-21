@@ -3,6 +3,8 @@ import Loading from "./Loading.vue";
 import Background from "./Background.vue";
 import { helloInit, checkDays } from "../utils/getTime";
 import { mainStore } from "../store";
+import Menu from "./Menu.vue";
+import Content from "./Content.vue";
 
 const store = mainStore();
 // 页面宽度
@@ -41,9 +43,10 @@ const showBackgroud = process.env.NODE_ENV === "production";
 <template>
   <Loading v-if="showBackgroud" />
   <Background v-if="showBackgroud" @loadComplete="loadComplete" />
-  <h1 class="text-3xl font-bold underline">Hello world!</h1>
-  <RouterLink to="/list" class="text-3xl">list</RouterLink>
-  <RouterLink to="/detail">detail</RouterLink>
+  <section class="w-full h-full flex">
+    <Menu />
+    <Content />
+  </section>
 </template>
 
 <style lang="scss" scoped>

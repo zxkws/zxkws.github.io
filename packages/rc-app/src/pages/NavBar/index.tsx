@@ -81,7 +81,7 @@ const navItems = [
     { name: 'tailwind-generator', url: 'https://tailwind-generator.com/'},
     { name: 'for-dev-free', url: 'https://free-for.dev/#/?id=major-cloud-providers'},
     { name: 'tailwind-proxy', url: 'https://tailwindui.starxg.com/components'},
-    { name: '', url: ''},
+    { name: '抄一下', url: 'https://xingpingcn.top/'},
     { name: '', url: ''},
     { name: '', url: ''},
   ];

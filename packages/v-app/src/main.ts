@@ -25,7 +25,11 @@ const runApp = (container: Element | string) => {
 
   router.beforeEach((to, from, next) => {
     console.log(to.fullPath);
-    if (!token && !localStorage.getItem("token") && to.fullPath !== "/login") {
+    if (
+      !token &&
+      !localStorage.getItem("Access-Token") &&
+      to.fullPath !== "/login"
+    ) {
       next("/login");
       return;
     }

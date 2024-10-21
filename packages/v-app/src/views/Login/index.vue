@@ -1,26 +1,19 @@
 <script lang="ts" setup>
+import { login } from "../../http";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 const form = ref({
   email: "",
   password: "",
 });
 const onSubmit = () => {
-  fetch(
-    "https://3000-zxkws-monorepoadmin-qgp9qaiie1l.ws-us116.gitpod.io/api/v1/login",
-    {
-      method: "POST",
-      body: JSON.stringify(form.value),
-      headers: {
-        "Content-Type": "application/json",
-      },
+  login(form.value).then((res) => {
+    if (res && res.data && res.data.token) {
+      localStorage.setItem("Access-Token", res.data.token);
+      router.push({ name: "overview" });
     }
-  )
-    .then((res) => res.json())
-    .then((res) => {
-      console.log(res);
-      if (res && res.data && res.data.token) {
-        localStorage.setItem("token", res.data.token);
-      }
-    });
+  });
 };
 </script>
 
@@ -81,8 +74,7 @@ const onSubmit = () => {
           <div class="flex items-center justify-between">
             <div class="flex items-center">
               <input
-                id="remember-me"
-                name="remember-me"
+                checked
                 type="checkbox"
                 class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
               />
