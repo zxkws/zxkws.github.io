@@ -1,6 +1,6 @@
 const BASEURL =
   process.env.NODE_ENV === "development"
-    ? "https://api.zxkws.nyc.mn/api"
+    ? "https://3000-zxkws-monorepoadmin-qgp9qaiie1l.ws-us116.gitpod.io/api"
     : "https://api.zxkws.nyc.mn/api";
 
 export default (url, params) => {

@@ -3,12 +3,7 @@ import { deleteTodo, modifyTodo, queryTodos } from "../../http";
 
 const todoParams = ref("");
 
-const todos = ref([
-  {
-    id: 1,
-    description: "学习",
-  },
-]);
+const todos = ref([]);
 
 onMounted(() => {
   queryTodo();
@@ -16,9 +11,7 @@ onMounted(() => {
 
 const queryTodo = () => {
   queryTodos({}).then((res) => {
-    if (res && res.data && res.data.todos) {
-      todos.value = res.data.todos;
-    }
+    todos.value = res;
   });
 };
 
@@ -44,7 +37,7 @@ const deleteItem = (id) => {
   <ul>
     <li v-for="todo in todos" :key="todo.id">
       {{ todo.description }}
-      <button class="border" @click="() => deleteItem(todo.id)">delete</button>
+      <button class="border" @click="() => deleteItem(todo._id)">delete</button>
     </li>
   </ul>
   <div>
