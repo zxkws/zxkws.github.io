@@ -25,4 +25,13 @@ export default defineConfig({
       },
     },
   },
+  server: {
+    proxy: {
+      "^/api": {
+        target:
+          "https://3000-zxkws-monorepoadmin-qgp9qaiie1l.ws-us116.gitpod.io",
+        changeOrigin: true,
+      },
+    },
+  },
 });

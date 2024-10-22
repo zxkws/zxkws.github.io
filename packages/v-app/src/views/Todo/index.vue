@@ -11,6 +11,7 @@ onMounted(() => {
 
 const queryTodo = () => {
   queryTodos({}).then((res) => {
+    console.log(res);
     todos.value = res;
   });
 };

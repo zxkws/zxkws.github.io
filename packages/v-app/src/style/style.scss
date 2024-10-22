@@ -163,3 +163,9 @@ scrollbar-thumb {
   border-radius: 10px;
   background-color: #eeeeee;
 }
+
+#message-container {
+  position: fixed;
+  top: 20px;
+  z-index: 9999;
+}

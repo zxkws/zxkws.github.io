@@ -1,6 +1,10 @@
 import fetch from "./fetch";
 export const login = (params) => {
-  return fetch("/v1/login", params);
+  return fetch("/v1/user/login", params);
+};
+
+export const register = (params) => {
+  return fetch("/v1/user/register", params);
 };
 
 export const queryTodos = (params) => {

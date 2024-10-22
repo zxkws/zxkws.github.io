@@ -9,8 +9,7 @@ const form = ref({
 });
 const onSubmit = () => {
   login(form.value).then((res) => {
-    if (res && res.data && res.data.token) {
-      localStorage.setItem("Access-Token", res.data.token);
+    if (res === "登录成功") {
       router.push({ name: "overview" });
     }
   });
@@ -168,10 +167,10 @@ const onSubmit = () => {
       <p class="mt-10 text-center text-sm text-gray-500">
         Not a member?
         {{ " " }}
-        <a
-          href="#"
+        <router-link
+          to="Register"
           class="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
-          >Start a 14 day free trial</a
+          >Sign up</router-link
         >
       </p>
     </div>
