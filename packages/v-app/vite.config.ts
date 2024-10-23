@@ -1,8 +1,10 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import htmlPlugin from "vite-plugin-index-html";
 import AutoImport from "unplugin-auto-import/vite";
 const isProd = process.env.NODE_ENV === "production";
+
+const env = loadEnv(process.env.NODE_ENV as string, process.cwd(), "");
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -16,7 +18,7 @@ export default defineConfig({
       dts: "src/auto-imports.d.ts", // 自动生成的 TypeScript 声明文件路径
     }),
   ],
-  base: process.env.VITE_BASE_URL,
+  base: env.VITE_BASE_URL,
   css: {
     preprocessorOptions: {
       scss: {
