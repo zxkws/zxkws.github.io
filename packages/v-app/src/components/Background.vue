@@ -39,7 +39,8 @@ const bgRandom = Math.floor(Math.random() * 10 + 1);
 // 更换壁纸链接
 const changeBg = (type) => {
   if (type == 0) {
-    bgUrl.value = `./images/background${bgRandom}.jpg`;
+    bgUrl.value =
+      import.meta.env.VITE_BASE_URL + `images/background${bgRandom}.jpg`;
   } else if (type == 1) {
     bgUrl.value = "https://api.dujin.org/bing/1920.php";
   } else if (type == 2) {
@@ -65,7 +66,7 @@ const imgAnimationEnd = () => {
 
 // 图片显示失败
 const imgLoadError = () => {
-  console.error("壁纸加载失败：", bgUrl.value);
+  console.error("壁纸加载失败：", bgUrl.value, import.meta.env.VITE_BASE_URL);
   // ElMessage({
   //     message: "壁纸加载失败，已临时切换回默认",
   //     icon: h(Error, {
@@ -73,7 +74,8 @@ const imgLoadError = () => {
   //         fill: "#efefef",
   //     }),
   // });
-  bgUrl.value = `/images/background${bgRandom}.jpg`;
+  bgUrl.value =
+    import.meta.env.VITE_BASE_URL + `/images/background${bgRandom}.jpg`;
 };
 
 // 监听壁纸切换

@@ -16,7 +16,7 @@ export default defineConfig({
       dts: "src/auto-imports.d.ts", // 自动生成的 TypeScript 声明文件路径
     }),
   ],
-  base: isProd ? "/sub-app/v3/" : "./",
+  base: process.env.VITE_BASE_URL,
   css: {
     preprocessorOptions: {
       scss: {

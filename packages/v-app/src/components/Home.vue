@@ -37,7 +37,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", getWidth);
 });
 
-const showBackgroud = process.env.NODE_ENV === "production";
+const showBackgroud = import.meta.env.NODE_ENV !== "production";
 </script>
 
 <template>
