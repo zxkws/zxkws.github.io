@@ -1,1 +1,0 @@
-const s="https://api.zxkws.nyc.mn/api",e=(o,n)=>fetch(s+o,{method:"POST",body:JSON.stringify(n),headers:{"Content-Type":"application/json","Access-Token":localStorage.getItem("Access-Token")}}).then(t=>t.json()).then(t=>t),r=o=>e("/v1/login",o),c=o=>e("/v1/todos",o),d=o=>e("/v1/modifyTodo",o),a=o=>e("/v1/deleteTodo",o);export{a as d,r as l,d as m,c as q};

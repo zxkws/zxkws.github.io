@@ -30,5 +30,8 @@ export default (url, params) => {
         router.push({ name: "login" });
       }
       return res;
+    })
+    .catch((err) => {
+      alert(err);
     });
 };

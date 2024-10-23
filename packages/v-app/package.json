@@ -5,7 +5,7 @@
   "scripts": {
     "vite": "vite",
     "build": "vite build",
-    "postbuild": "cp -rf ./dist/* ../../sub-app/v3",
+    "postbuild": "rm -rf ../../sub-app/v3/* && cp -rf ./dist/* ../../sub-app/v3",
     "serve": "vite preview"
   },
   "dependencies": {

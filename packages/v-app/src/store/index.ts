@@ -4,7 +4,7 @@ export const mainStore = defineStore("main", {
   state: () => ({
     imgLoadStatus: false,
     backgroundShow: false,
-    coverType: "1",
+    coverType: "0",
     setOpenState: false, // 设置页面开启状态
     innerWidth: null, // 当前窗口宽度
     boxOpenState: false, // 盒子开启状态

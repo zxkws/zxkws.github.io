@@ -13,7 +13,7 @@
   "scripts": {
     "start": "BROWSER=none icejs start",
     "build": "icejs build",
-    "postbuild": "cp -fr ./build/* ../sub-app/rc",
+    "postbuild": "rm -rf ../../sub-app/rc/* && cp -fr ./build/* ../sub-app/rc",
     "prepublishOnly": "npm run build",
     "lint": "npm run eslint && npm run stylelint",
     "eslint": "eslint --cache --ext .js,.jsx,.ts,.tsx ./",
