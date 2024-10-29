@@ -1,1 +1,0 @@
-import{m as n}from"./main-DE0-nnOr.js";const s=n("main",{state:()=>({loading:!0,loadingMessage:"加载中",innerWidth:null}),getters:{getInnerWidth(t){return t.innerWidth}},actions:{setLoading(t,e){this.loading=t,this.loadingMessage=e||"加载中"},setInnerWidth(t){this.innerWidth=t}}});export{s as m};

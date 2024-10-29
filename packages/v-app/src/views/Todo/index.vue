@@ -49,13 +49,13 @@ const deleteItem = (id: string) => {
       <li
         v-for="todo in todos"
         :key="todo._id"
-        class="flex items-start justify-between p-4 bg-gray-100 border border-gray-300 rounded-lg"
+        class="flex items-start p-4 bg-gray-100 border border-gray-300 rounded-lg"
       >
-        <p class="flex-1 text-gray-700 break-words">
+        <p class="fflex-1 text-gray-700 break-words overflow-hidden">
           {{ todo.description }}
         </p>
         <button
-          class="ml-4 px-3 py-1 text-white bg-red-500 rounded-lg hover:bg-red-600"
+          class="ml-4 px-3 py-1 text-white bg-red-500 rounded-lg hover:bg-red-600 flex-shrink-0"
           @click="() => deleteItem(todo._id)"
         >
           delete

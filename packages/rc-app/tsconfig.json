@@ -5,11 +5,14 @@
     "baseUrl": ".",
     "outDir": "build",
     "module": "esnext",
-    "target": "es6",
+    "target": "esnext",
     "jsx": "react-jsx",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "lib": ["es6", "dom"],
+    "lib": [
+      "es6",
+      "dom"
+    ],
     "sourceMap": true,
     "allowJs": true,
     "rootDir": "./",
@@ -19,15 +22,27 @@
     "noImplicitAny": false,
     "importHelpers": true,
     "strictNullChecks": true,
-    "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
     "skipLibCheck": true,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "paths": {
-      "@/*": ["./src/*"],
-      "ice": [".ice"]
+      "@/*": [
+        "./src/*"
+      ],
+      "ice": [
+        ".ice"
+      ]
     }
   },
-  "include": ["src", ".ice"],
-  "exclude": ["node_modules", "build", "public"]
+  "include": [
+    "src",
+    ".ice"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "public"
+  ]
 }

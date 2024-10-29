@@ -18,7 +18,7 @@ onMounted(() => {
   <div class="w-full h-full flex">
     <Loading />
     <Menu v-if="showMenu" />
-    <section class="h-full flex-1">
+    <section class="w-full h-full flex-1">
       <router-view></router-view>
     </section>
   </div>
