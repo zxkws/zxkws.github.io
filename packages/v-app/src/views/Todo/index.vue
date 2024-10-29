@@ -55,7 +55,7 @@ const deleteItem = (id: string) => {
           {{ todo.description }}
         </p>
         <button
-          class="ml-4 px-3 py-1 text-white bg-red-500 rounded-lg hover:bg-red-600 flex-shrink-0"
+          class="ml-auto px-3 py-1 text-white bg-red-500 rounded-lg hover:bg-red-600 flex-shrink-0"
           @click="() => deleteItem(todo._id)"
         >
           delete
