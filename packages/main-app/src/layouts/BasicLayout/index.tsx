@@ -1,6 +1,6 @@
 import PageNav from './components/PageNav';
-import Footer from './components/Footer';
-import PrivateRoute from '@/components/PrivateRoute';
+// import Footer from './components/Footer';
+// import PrivateRoute from '@/components/PrivateRoute';
 
 declare global {
   interface Window {
@@ -10,17 +10,21 @@ declare global {
 
 export default function BasicLayout(props: { children: React.ReactNode; pathname?: string }) {
   const { children, pathname } = props;
+  console.log(pathname);
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-      }}
-    >
-      {pathname}
-      {children}
-      <PageNav />
-      <PrivateRoute>{children}</PrivateRoute>
-      <Footer />
-    </div>
+    <>
+      <div>header bar</div>
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+        }}
+      >
+        <PageNav />
+        {children}
+        {/* <PrivateRoute>{children}</PrivateRoute> */}
+        {/* <Footer /> */}
+      </div>
+    </>
   );
 }

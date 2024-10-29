@@ -2,6 +2,10 @@ const headerMenuConfig = [];
 
 const asideMenuConfig = [
   {
+    name: 'curlconverter',
+    path: '/curlconverter',
+  },
+  {
     name: 'Home',
     path: '/',
     icon: 'chart-pie',

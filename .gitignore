@@ -4,3 +4,13 @@ dist
 .ice
 build
 .idea
+# 忽略操作系统生成的文件
+.DS_Store                # macOS
+Thumbs.db                # Windows
+desktop.ini              # Windows
+# 忽略日志文件
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

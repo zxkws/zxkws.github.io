@@ -25,6 +25,12 @@ export const wrapperPageWithErrorBoundary = () => {
   };
 };
 
+declare global {
+  interface Window {
+    __ICE_PAGE_PROPS__: any;
+  }
+}
+
 export const wrapperPageWithCSR = () => {
   return (PageComponent) => {
     const { pageConfig } = PageComponent;
@@ -38,8 +44,8 @@ export const wrapperPageWithCSR = () => {
         if (scrollToTop) {
           window.scrollTo(0, 0);
         }
-        if (Window.__ICE_PAGE_PROPS__) {
-          Window.__ICE_PAGE_PROPS__ = null;
+        if (window.__ICE_PAGE_PROPS__) {
+          window.__ICE_PAGE_PROPS__ = null;
         } else if (PageComponent.getInitialProps) {
           (async () => {
             const result = await PageComponent.getInitialProps();

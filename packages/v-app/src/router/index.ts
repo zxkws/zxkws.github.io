@@ -1,6 +1,5 @@
 import { createWebHistory, createRouter } from "vue-router";
 import getBasename from "../utils/getBasename";
-import Home from "../components/Home.vue";
 import List from "../components/List.vue";
 import Detail from "../components/Detail.vue";
 import NotFound from "../components/404.vue";
@@ -15,9 +14,28 @@ const renderNotFoundPromise = () =>
 
 const routes = [
   {
-    name: "todo",
-    path: "/todo",
-    component: () => import("../views/Todo/index.vue"),
+    name: "overview",
+    path: "/",
+    component: () => import("@/components/Home.vue"),
+    children: [
+      {
+        name: "todo",
+        path: "/todo",
+        component: () => import("../views/Todo/index.vue"),
+      },
+      {
+        path: "/list",
+        component: List,
+      },
+      {
+        path: "/detail",
+        component: Detail,
+      },
+      {
+        path: "/siteProxy",
+        component: () => import("../views/SiteProxy/index.vue"),
+      },
+    ],
   },
   {
     name: "login",
@@ -28,23 +46,6 @@ const routes = [
     name: "register",
     path: "/register",
     component: () => import("../views/Register/index.vue"),
-  },
-  {
-    name: "overview",
-    path: "/",
-    component: Home,
-  },
-  {
-    path: "/list",
-    component: List,
-  },
-  {
-    path: "/detail",
-    component: Detail,
-  },
-  {
-    path: "/siteProxy",
-    component: () => import("../views/SiteProxy/index.vue"),
   },
   {
     path: "/:pathMatch(.*)",

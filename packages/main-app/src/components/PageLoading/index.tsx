@@ -1,1 +1,6 @@
-export default () => <div style={{ paddingTop: 200, textAlign: 'center' }}>loading...</div>;
+export default (props) => {
+  const { children, loading = false } = props;
+  return (
+    <div style={{ flex: 1, textAlign: 'center', alignContent: 'center' }}>{loading ? 'loading...' : children}</div>
+  );
+};

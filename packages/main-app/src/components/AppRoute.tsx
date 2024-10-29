@@ -1,0 +1,3 @@
+interface AppRouteState {
+  showComponent: boolean;
+}

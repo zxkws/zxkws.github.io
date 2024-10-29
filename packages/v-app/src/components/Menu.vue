@@ -5,12 +5,30 @@ const menus = [
     value: "TODO",
     name: "todo",
   },
+  {
+    label: "list",
+    value: "list",
+    name: "list",
+  },
+  {
+    label: "detail",
+    value: "detail",
+    name: "detail",
+  },
+  {
+    label: "siteProxy",
+    value: "siteProxy",
+    name: "siteProxy",
+  },
 ];
 </script>
 <template>
-  <div class="menu mr-auto">
-    <ul>
-      <li v-for="menu in menus">
+  <div class="w-1/6 p-4 border-r border-gray-200 shadow-lg">
+    <ul class="space-y-2">
+      <li
+        v-for="menu in menus"
+        class="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100"
+      >
         <button @click="$router.push(menu.name)">{{ menu.label }}</button>
       </li>
     </ul>

@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import htmlPlugin from "vite-plugin-index-html";
 import AutoImport from "unplugin-auto-import/vite";
+import { resolve } from "path";
 const isProd = process.env.NODE_ENV === "production";
 
 const env = loadEnv(process.env.NODE_ENV as string, process.cwd(), "");
@@ -30,10 +31,16 @@ export default defineConfig({
   server: {
     proxy: {
       "^/api": {
-        target:
-          "https://3000-zxkws-monorepoadmin-qgp9qaiie1l.ws-us116.gitpod.io",
+        target: "https://api.zxkws.nyc.mn",
+        // "https://3000-zxkws-monorepoadmin-qgp9qaiie1l.ws-us116.gitpod.io",
         changeOrigin: true,
       },
+    },
+  },
+  resolve: {
+    // extensions: [".vue", ".ts", ".js", ".jsx", "tsx", ".json"],
+    alias: {
+      "@": resolve("./src"),
     },
   },
 });

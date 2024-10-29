@@ -3,24 +3,13 @@
   "version": "3.3.2",
   "description": "主应用",
   "dependencies": {
-    "@ice/stark": "^2.7.5",
-    "build-plugin-app-core": "^2.1.4",
-    "classnames": "^2.5.1",
-    "history": "^5.3.0",
-    "react-helmet": "^6.1.0",
-    "universal-env": "^3.3.3"
   },
   "devDependencies": {
-    "@ice/plugin-fusion": "*  ",
-    "@iceworks/spec": "^1.6.0"
   },
   "scripts": {
     "serve": "NODE_ENV=development webpack serve -c ./config/webpack.config.js --mode development",
-    "vite": "vite --config=./config/vite.config.ts",
-    "start": "BROWSER=none ice start --mode=development",
-    "build": "ice build --mode=production",
+    "build": "NODE_ENV=development webpack -c ./config/webpack.config.js --mode=production",
     "postbuild": "cp -rf build/* ../ && cp build/index.html ../404.html",
-    "prepublishOnly": "npm run build",
     "lint": "npm run eslint && npm run stylelint",
     "eslint": "eslint --cache --ext .js,.jsx,.ts,.tsx ./",
     "eslint:fix": "npm run eslint -- --fix",

@@ -19,11 +19,15 @@ module.exports = {
               modules: {
                 namedExport: true,
                 auto: true, // 启用 CSS Modules，auto 会针对 .module.css 文件启用
-                localIdentName: "[path][name]__[local]--[hash:base64:5]",
+                localIdentName: '[path][name]__[local]--[hash:base64:5]',
               },
             },
           },
         ],
+      },
+      {
+        test: /\.scss$/,
+        use: ['style-loader', 'css-loader', 'sass-loader'],
       },
       {
         test: /\.tsx?$/,
@@ -60,5 +64,11 @@ module.exports = {
     // 'react-router': 'ReactRouter',
     // 'react-router-dom': 'ReactRouterDOM',
     // 'react-dom/client': 'ReactDOM',
+  },
+  devServer: {
+    historyApiFallback: true,
+  },
+  output: {
+    path: resolve(__dirname, '../build'),
   },
 };

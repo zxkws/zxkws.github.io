@@ -1,12 +1,9 @@
 <template>
-  <div id="loader-wrapper" :class="store.imgLoadStatus ? 'loaded' : null">
+  <div id="loader-wrapper" v-if="store.loading">
     <div class="loader">
       <div class="loader-circle" />
       <div class="loader-text">
-        <span class="name">
-          {{ siteName }}
-        </span>
-        <span class="tip"> 加载中 </span>
+        <span class="tip"> {{ store.loadingMessage }} </span>
       </div>
     </div>
     <div class="loader-section section-left" />
@@ -18,9 +15,6 @@
 import { mainStore } from "../store";
 
 const store = mainStore();
-
-// 配置
-const siteName = import.meta.env.VITE_SITE_NAME || "LHQ";
 </script>
 
 <style lang="scss" scoped>
@@ -31,7 +25,6 @@ const siteName = import.meta.env.VITE_SITE_NAME || "LHQ";
   width: 100%;
   height: 100%;
   z-index: 999;
-  overflow: hidden;
 
   .loader {
     width: 100%;
@@ -102,7 +95,6 @@ const siteName = import.meta.env.VITE_SITE_NAME || "LHQ";
     top: 0;
     width: 51%;
     height: 100%;
-    background: #333;
     z-index: 1;
 
     &.section-left {
