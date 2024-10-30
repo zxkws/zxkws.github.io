@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "npx rimraf node_modules packages/**/node_modules packages/**/**/node_modules pnpm-lock.yaml .ice packages/**/.ice",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "sh ./sh/build.sh"
+    "build": "sh ./scripts/sh/build.sh"
   },
   "imports": {
     "#*": "./*"

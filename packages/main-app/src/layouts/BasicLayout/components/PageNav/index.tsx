@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { asideMenuConfig } from '../../menuConfig';
 import * as styles from './index.module.css';
+import { appHistory } from '@/micro';
 
 export interface IMenuItem {
   name: string;
@@ -76,40 +77,11 @@ export const AppLink: React.FC<AppLinkProps> = (props: AppLinkProps) => {
       {...rest}
       onClick={(e) => {
         e.preventDefault();
-        const changeState = window.history[replace ? 'replaceState' : 'pushState'].bind(window.history);
-        changeState({}, null, linkTo);
+        const changeState = appHistory[replace ? 'replace' : 'push'];
+        changeState(linkTo, {}, '');
       }}
     >
       {children}
     </a>
   );
-};
-
-export type RouterType = 'replaceState' | 'pushState';
-
-export interface AppHistory {
-  push: (path: string) => void;
-  replace: (path: string) => void;
-}
-declare global {
-  interface PopStateEvent {
-    trigger?: RouterType & {};
-  }
-}
-
-function createPopStateEvent(state, eventName) {
-  const event = new PopStateEvent('popstate', { state });
-  event.trigger = eventName;
-  return event;
-}
-
-export const appHistory: AppHistory = {
-  push: (path: string) => {
-    window.history.pushState(null, '', path);
-    createPopStateEvent(null, 'pushState');
-  },
-  replace: (path) => {
-    window.history.replaceState(null, '', path);
-    createPopStateEvent(null, 'replaceState');
-  },
 };

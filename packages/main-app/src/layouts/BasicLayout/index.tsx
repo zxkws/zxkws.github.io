@@ -10,7 +10,7 @@ declare global {
 
 export default function BasicLayout(props: { children: React.ReactNode; pathname?: string }) {
   const { children, pathname } = props;
-  console.log(pathname);
+  console.warn(pathname);
   return (
     <>
       <div>header bar</div>
