@@ -238,6 +238,36 @@ export const unHijackHistory = (): void => {
   window.removeEventListener('hashchange', urlChange, false);
 };
 
+const getAppConfig = (appName) => {
+  return microApps.find((microApp) => microApp.name === appName);
+};
+
+export async function unmountMicroApp(appName: string) {
+  const appConfig = getAppConfig(appName);
+  if (appConfig) {
+    // delete appConfig.mount;
+    // delete appConfig.unmount;
+    // delete appConfig.appAssets;
+    updateAppConfig(appName, { status: 'not_loaded' });
+  }
+}
+
+export function clearMicroApps() {
+  getAllAppNames().forEach((name) => {
+    unmountMicroApp(name);
+  });
+  microApps = [];
+}
+
+export function unload() {
+  // unHijackEventListener();
+  unHijackHistory();
+  isStart = false;
+  // remove all assets added by micro apps
+  // emptyAssets(globalConfiguration.shouldAssetsRemove, true);
+  clearMicroApps();
+}
+
 let historyEvent = null;
 
 function setHistoryEvent(event) {
@@ -260,10 +290,10 @@ const urlChange = (event: PopStateEvent | HashChangeEvent): void => {
 
 // GlobalConfiguration end
 
-let start = false;
-export const render = (options) => {
-  if (start) return;
-  start = true;
+let isStart = false;
+export const start = (options) => {
+  if (isStart) return;
+  isStart = true;
   hijackHistory();
   recordAssets();
   Object.keys(options || {}).forEach((configKey) => {

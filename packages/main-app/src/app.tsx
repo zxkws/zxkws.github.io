@@ -5,7 +5,7 @@ import './global.scss';
 
 import BasicLayout from '@/layouts/BasicLayout';
 import ReactDom from 'react-dom/client';
-import { registerMicroApps, render } from './micro';
+import { registerMicroApps, start } from './micro';
 
 const apps = [
   {
@@ -22,14 +22,13 @@ function App() {
   return (
     <AuthProvider>
       <BasicLayout>
-        <PageLoading>
-        </PageLoading>
+        <PageLoading />
       </BasicLayout>
     </AuthProvider>
   );
 }
 
-render({
+start({
   onAppEnter: () => {},
   onAppLeave: () => {},
   onLoadingApp: () => {},
