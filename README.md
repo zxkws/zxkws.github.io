@@ -23,3 +23,10 @@
 ```shell
 pnpm add @packages/test-work --workspace -w
 ```
+
+```sh
+python3 -m venv myenv
+source myenv/bin/activate
+pip install DrissionPage
+deactivate
+```

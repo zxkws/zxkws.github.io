@@ -1,5 +1,7 @@
 import { createApp } from "vue";
 import type { App as Root } from "vue";
+import "@surely-vue/table/dist/index.less";
+import STable, { setLicenseKey } from "@surely-vue/table";
 
 import isInIcestark from "./utils/isInIcestark";
 
@@ -15,6 +17,11 @@ let vue: Root<Element> | null = null;
 
 const runApp = (container: Element | string) => {
   vue = createApp(App);
+  setLicenseKey(
+    "0b50c5c2999298c91d183c696087eb90T1JERVI6MDAwMDEsRVhQSVJZPTQxMDIzNTg0MDAwMDAsRE9NQUlOPV8sS0VZVkVSU0lPTj0xLFVMVElNQVRFPTE="
+  );
+
+  vue.use(STable);
   const pinia = createPinia();
   pinia.use(piniaPluginPersistedstate);
   vue.use(pinia);

@@ -35,6 +35,10 @@ const routes = [
         path: "/siteProxy",
         component: () => import("../views/SiteProxy/index.vue"),
       },
+      {
+        path: "/table",
+        component: () => import("../views/table/index.vue"),
+      },
     ],
   },
   {

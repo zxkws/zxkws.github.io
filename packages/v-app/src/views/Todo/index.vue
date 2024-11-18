@@ -1,6 +1,17 @@
-<script setup lang="ts">
+<script lang="tsx">
+export const VirtualList = defineComponent({
+  setup() {
+    return {};
+  },
+  render() {
+    return <div>1111</div>;
+  },
+});
+</script>
+<script setup lang="tsx">
 import { deleteTodo, modifyTodo, queryTodos } from "@/http";
 import { mainStore } from "@/store";
+
 const store = mainStore();
 
 const todoParams = ref("");

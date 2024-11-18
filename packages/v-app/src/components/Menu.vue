@@ -20,6 +20,11 @@ const menus = [
     value: "siteProxy",
     name: "siteProxy",
   },
+  {
+    label: "table",
+    value: "table",
+    name: "table",
+  },
 ];
 </script>
 <template>

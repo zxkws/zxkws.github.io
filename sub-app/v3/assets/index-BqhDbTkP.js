@@ -1,0 +1,1 @@
+import{n as e}from"./main-B2ok2XuL.js";const s=e("main",{state:()=>({loading:!0,loadingMessage:"加载中",innerWidth:null}),getters:{getInnerWidth(n){return n.innerWidth}},actions:{setLoading(n,t){this.loading=n,this.loadingMessage=t||"加载中"},setInnerWidth(n){this.innerWidth=n}}});export{s as m};
