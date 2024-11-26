@@ -7,11 +7,17 @@ let token = "";
 
 import router from "../router";
 
-export default (url, params) => {
+export default (url, params, options = {}) => {
+  let body;
+  if (options.file) {
+    body = params;
+  } else {
+    body = JSON.stringify(params);
+  }
   return fetch(BASEURL + url, {
     method: "POST",
     credentials: "include",
-    body: JSON.stringify(params),
+    body,
     headers: {
       "Content-Type": "application/json",
       Authorization: token ? "Bearer " + token : "",

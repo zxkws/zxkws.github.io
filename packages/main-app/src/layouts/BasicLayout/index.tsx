@@ -13,7 +13,7 @@ export default function BasicLayout(props: { children: React.ReactNode; pathname
   console.warn(pathname);
   return (
     <>
-      <div>header bar</div>
+      <div className={'flex justify-center'}>header bar</div>
       <div
         style={{
           flex: 1,

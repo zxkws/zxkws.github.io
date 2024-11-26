@@ -1,46 +1,33 @@
 {
-  "compileOnSave": false,
-  "buildOnSave": false,
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "esModuleInterop": true,
-    "baseUrl": ".",
-    "outDir": "build",
-    "module": "esnext",
-    "target": "esnext",
+    "outDir": "./build",
     "jsx": "react-jsx",
-    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "lib": [
       "ESNext",
       "dom"
     ],
-    "sourceMap": true,
     "allowJs": true,
-    "rootDir": "./",
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
     "noImplicitAny": false,
     "importHelpers": true,
-    "strictNullChecks": true,
-    "noUnusedLocals": true,
-    "skipLibCheck": true,
     "types": [
       "node"
     ],
     "paths": {
       "@/*": [
-        "./src/*"
+        "packages/*/src"
       ],
-      "ice": [
-        ".ice"
-      ]
     }
   },
   "include": [
     "src",
-    ".ice",
     "typings.d.ts"
+  ],
+  "references": [
+    {
+      "path": "../micro-lib"
+    }
   ],
   "exclude": [
     "node_modules",

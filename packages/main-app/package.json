@@ -3,12 +3,17 @@
   "version": "3.3.2",
   "description": "主应用",
   "dependencies": {
-  },
-  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "history": "^5.3.0",
+    "micro-lib": "workspace:*",
+    "postcss": "^8.4.39",
+    "postcss-loader": "^8.1.1",
+    "styled-components": "^6.1.13",
+    "tailwindcss": "^3.4.5"
   },
   "scripts": {
     "dev": "NODE_ENV=development webpack serve -c ./config/webpack.config.js --mode development",
-    "build": "NODE_ENV=development webpack -c ./config/webpack.config.js --mode=production",
+    "build": "webpack -c ./config/webpack.config.js --mode=production",
     "postbuild": "cp -rf build/* ../ && cp build/index.html ../404.html",
     "lint": "npm run eslint && npm run stylelint",
     "eslint": "eslint --cache --ext .js,.jsx,.ts,.tsx ./",

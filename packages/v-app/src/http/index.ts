@@ -18,3 +18,7 @@ export const modifyTodo = (params) => {
 export const deleteTodo = (params) => {
   return fetch("/v1/deleteTodo", params);
 };
+
+export const uploadFile = (formData) => {
+  return fetch("/v1/upload", formData, { file: true });
+};

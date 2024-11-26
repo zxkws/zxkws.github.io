@@ -40,8 +40,9 @@ export default defineConfig({
   server: {
     proxy: {
       "^/api": {
-        target: "https://api.zxkws.nyc.mn",
-        // "https://3000-zxkws-monorepoadmin-qgp9qaiie1l.ws-us116.gitpod.io",
+        target:
+          // "https://api.zxkws.nyc.mn",
+          "https://3000-zxkws-monorepoadmin-qgp9qaiie1l.ws-us116.gitpod.io",
         changeOrigin: true,
       },
     },

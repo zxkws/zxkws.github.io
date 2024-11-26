@@ -1,4 +1,4 @@
-import { setAppConfig } from '@/config/appConfig';
+import { setAppConfig } from '../config/appConfig';
 import { initHistory } from './initHistory';
 import { reactAppRenderer } from './renderer';
 import ErrorBoundary from './ErrorBoundary';

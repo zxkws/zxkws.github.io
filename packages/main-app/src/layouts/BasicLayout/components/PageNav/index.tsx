@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { asideMenuConfig } from '../../menuConfig';
 import * as styles from './index.module.css';
-import { appHistory } from '@/micro';
+import { appHistory } from '../../../../../../micro-lib/src/index';
 
 export interface IMenuItem {
   name: string;

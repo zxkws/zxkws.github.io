@@ -1,4 +1,4 @@
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 // import { Link } from 'ice';
 // import { appHistory } from '@ice/stark-app';
 

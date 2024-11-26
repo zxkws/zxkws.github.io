@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { login } from "../../http";
+import { login } from "@/http";
 import { useRouter } from "vue-router";
 
 const router = useRouter();

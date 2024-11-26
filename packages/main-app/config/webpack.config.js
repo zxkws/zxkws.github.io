@@ -23,6 +23,7 @@ module.exports = {
               },
             },
           },
+          'postcss-loader'
         ],
       },
       {
@@ -54,7 +55,7 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     alias: {
-      '@': resolve(__dirname, '../src'),
+      '@': resolve(__dirname, 'packages/main-app/src'),
     },
   },
   externals: {
