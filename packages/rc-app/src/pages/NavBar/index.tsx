@@ -82,7 +82,7 @@ const navItems = [
     { name: 'for-dev-free', url: 'https://free-for.dev/#/?id=major-cloud-providers'},
     { name: 'tailwind-proxy', url: 'https://tailwindui.starxg.com/components'},
     { name: '抄一下', url: 'https://xingpingcn.top/'},
-    { name: '', url: ''},
+    { name: '模型排行榜', url: 'https://linux.do/t/topic/160263'},
     { name: '', url: ''},
   ];
 
