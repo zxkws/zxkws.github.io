@@ -1,52 +1,25 @@
-import { useState } from 'react';
-
-const Sidebar = ({ navItems }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const filteredNavItems = navItems.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  return (
-    <div className="flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-gray-800 text-white h-screen p-4">
-        <div className="mb-4">
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full p-2 text-gray-900"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <ul className="space-y-2">
-          {filteredNavItems.map(item => (
-            <li key={item.name}>
-              <a
-                target='_blank'
-                href={item.url}
-                className="block py-2 px-4 rounded hover:bg-gray-700"
-              >
-                {item.name}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-      {/* Content area */}
-      <div className="flex-1 p-10">
-        <h1 className="text-3xl font-bold">Content Area</h1>
-        <p>Here is the main content of the website.</p>
+<template>
+  <div class="w-full h-full bg-gray-100 flex">
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-8">导航页面</h1>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a
+          v-for="(item, index) in navItems"
+          :key="index"
+          :href="item.url"
+          target="_blank"
+          class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex items-center"
+        >
+          <span class="text-gray-800 hover:text-blue-600">{{ item.name }}</span>
+        </a>
       </div>
     </div>
-  );
-};
+  </div>
+</template>
 
+<script setup>
 
 const navItems = [
-    { name: 'chrome代理1', url: 'https://github.jbcj.top/https/www.google.com' },
-    { name: 'chrome代理2', url: '#about' },
     { name: 'fofa siteproxy代理', url: 'https://en.fofa.info/result?qbase64=dGl0bGU9InNpdGVwcm94eeS7o%2BeQhiI%3D' },
     { name: 'fofa siteproxy', url: 'https://en.fofa.info/result?qbase64=dGl0bGU9InNpdGVwcm94eSI%3D' },
     { name: '360 siteproxy', url: 'https://quake.360.net/quake/#/index'},
@@ -85,9 +58,4 @@ const navItems = [
     { name: '模型排行榜', url: 'https://linux.do/t/topic/160263'},
     { name: '', url: ''},
   ];
-
-export default () => {
-    return (
-        <Sidebar navItems={navItems} />
-    )
-};
+</script>

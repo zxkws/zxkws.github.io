@@ -1,7 +1,5 @@
 import { createWebHistory, createRouter } from "vue-router";
 import getBasename from "../utils/getBasename";
-import List from "../components/List.vue";
-import Detail from "../components/Detail.vue";
 import NotFound from "../components/404.vue";
 import isInIcestark from "../utils/isInIcestark";
 import renderNotFound from "../utils/renderNotFound";
@@ -24,16 +22,8 @@ const routes = [
         component: () => import("../views/Todo/index.vue"),
       },
       {
-        path: "/list",
-        component: List,
-      },
-      {
-        path: "/detail",
-        component: Detail,
-      },
-      {
-        path: "/siteProxy",
-        component: () => import("../views/SiteProxy/index.vue"),
+        path: "/navList",
+        component: () => import("../views/NavList/index.vue"),
       },
       {
         path: "/table",

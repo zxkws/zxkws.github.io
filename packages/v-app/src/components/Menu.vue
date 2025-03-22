@@ -16,9 +16,9 @@ const menus = [
     name: "detail",
   },
   {
-    label: "siteProxy",
-    value: "siteProxy",
-    name: "siteProxy",
+    label: "navList",
+    value: "navList",
+    name: "navList",
   },
   {
     label: "table",
