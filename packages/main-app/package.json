@@ -12,7 +12,7 @@
     "tailwindcss": "^3.4.5"
   },
   "scripts": {
-    "dev": "NODE_ENV=development webpack serve -c ./config/webpack.config.js --mode development",
+    "dev": "webpack serve -c ./config/webpack.config.js --mode development",
     "build": "webpack -c ./config/webpack.config.js --mode=production",
     "postbuild": "cp -rf build/* ../ && cp build/index.html ../404.html",
     "lint": "npm run eslint && npm run stylelint",
