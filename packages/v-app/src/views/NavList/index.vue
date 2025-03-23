@@ -1,8 +1,6 @@
 <template>
-  <div class="w-full h-full bg-gray-100 flex">
-    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-8">导航页面</h1>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="w-full h-full bg-gray-100 overflow-y-auto p-4">
+      <div class="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4">
         <a
           v-for="(item, index) in navItems"
           :key="index"
@@ -13,7 +11,6 @@
           <span class="text-gray-800 hover:text-blue-600">{{ item.name }}</span>
         </a>
       </div>
-    </div>
   </div>
 </template>
 
@@ -30,10 +27,8 @@ const navItems = [
     { name: '博客', url: 'https://jdssl.top/'},
     { name: 'cf反代', url: 'https://www.smallstep.one/article/cf-cdn-ip-youxuan'},
     { name: '电子书', url: 'https://annas-archive.li/'},
-    { name: 'http代理', url: 'http://testt.leov.asia/linuxdo/ip.php'},
     { name: '高德交通指数', url: 'https://report.amap.com/m/dist/#/ct'},
-    { name: '埋堆堆TVB', url: '#'},
-    { name: 'my sub', url: 'https://proxy.look.cloudns.biz/proxy/https://gist.githubusercontent.com/zxkws/6bb690997dc4af34b5938ecc91249f91/raw/clash.yaml'},
+    { name: 'my sub', url: 'https://p.lookli.nyc.mn/proxy/https://gist.githubusercontent.com/zxkws/6bb690997dc4af34b5938ecc91249f91/raw/clash.yaml'},
     { name: 'sub 转换', url: 'https://my.subcloud.xyz/'},
     { name: '影视网址导航', url: 'https://axutongxue.com/'},
     { name: '浏览器去广告', url: 'https://mp.weixin.qq.com/s/USvQbx7AwyEVkMDTPnzbQA'},
