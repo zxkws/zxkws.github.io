@@ -24,11 +24,6 @@
     "src",
     "typings.d.ts"
   ],
-  "references": [
-    {
-      "path": "../micro-lib"
-    }
-  ],
   "exclude": [
     "node_modules",
     "build",

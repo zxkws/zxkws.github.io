@@ -2,7 +2,6 @@
 import * as React from 'react';
 import { asideMenuConfig } from '../../menuConfig';
 import * as styles from './index.module.css';
-import { appHistory } from '../../../../../../micro-lib/src/index';
 
 export interface IMenuItem {
   name: string;
@@ -77,8 +76,6 @@ export const AppLink: React.FC<AppLinkProps> = (props: AppLinkProps) => {
       {...rest}
       onClick={(e) => {
         e.preventDefault();
-        const changeState = appHistory[replace ? 'replace' : 'push'];
-        changeState(linkTo, {}, '');
       }}
     >
       {children}

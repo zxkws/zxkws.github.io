@@ -1,14 +1,6 @@
 import { createWebHistory, createRouter } from "vue-router";
-import getBasename from "../utils/getBasename";
 import NotFound from "../components/404.vue";
-import isInIcestark from "../utils/isInIcestark";
-import renderNotFound from "../utils/renderNotFound";
 
-const renderNotFoundPromise = () =>
-  new Promise((resolve) => {
-    renderNotFound();
-    resolve(true);
-  });
 
 const routes = [
   {
@@ -47,13 +39,11 @@ const routes = [
   },
   {
     path: "/:pathMatch(.*)",
-    component: isInIcestark() ? () => renderNotFoundPromise() : NotFound,
+    component: NotFound,
   },
 ];
 
-const history = createWebHistory(
-  isInIcestark() ? getBasename() : "/sub-app/v3"
-);
+const history = createWebHistory();
 const router = createRouter({
   history,
   routes,

@@ -1,11 +1,10 @@
 import { useAuth } from '../context/AuthContext';
-import { appHistory } from '../../../micro-lib/src/index';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
-    appHistory.push('/login');
+    window.location.href = '/login';
     return null;
   }
 

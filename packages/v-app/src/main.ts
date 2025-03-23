@@ -3,7 +3,6 @@ import type { App as Root } from "vue";
 import "@surely-vue/table/dist/index.less";
 import STable, { setLicenseKey } from "@surely-vue/table";
 
-import isInIcestark from "./utils/isInIcestark";
 
 import App from "./App.vue";
 
@@ -29,16 +28,4 @@ const runApp = (container: Element | string) => {
   vue.mount(container);
 };
 
-if (!isInIcestark()) {
-  runApp("#app");
-}
-
-export function mount({ container }: { container: Element }) {
-  runApp(container);
-}
-
-export function unmount() {
-  if (vue) {
-    vue.unmount();
-  }
-}
+runApp("#app");

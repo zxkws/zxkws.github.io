@@ -1,6 +1,4 @@
 import { useAuth } from '../../context/AuthContext';
-// import { Link } from 'ice';
-// import { appHistory } from '@ice/stark-app';
 
 const Login = () => {
   const { login } = useAuth();
@@ -8,7 +6,6 @@ const Login = () => {
   const onLogin = () => {
     localStorage.setItem('id', '1');
     login && login();
-    // appHistory.push('/')
   };
   return (
     <>
