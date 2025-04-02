@@ -54,7 +54,7 @@ jobs:
             mv packages/v-app/dist/* .
             rm -rf node_modules packages
             cp index.html 404.html
-            echo "zxkws.nyc.mn" > cname
+            echo "zxkws.nyc.mn" > CNAME
             touch .nojekyll
             git add .
             git commit -m "Deploy to GitHub Pages"
