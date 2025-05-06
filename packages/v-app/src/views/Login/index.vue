@@ -12,7 +12,7 @@ const onSubmit = () => {
   login(form.value).then((res) => {
     if (res === "登录成功") {
       if(route.query.redirect){
-        window.location.href = router.query.redirect;
+        window.location.href = route.query.redirect;
         return;
       }
       router.push({ name: "overview" });
