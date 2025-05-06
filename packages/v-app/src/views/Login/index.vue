@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { login } from "@/http";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 const router = useRouter();
+const route = useRoute();
 const form = ref({
   email: "",
   password: "",
@@ -10,7 +11,7 @@ const form = ref({
 const onSubmit = () => {
   login(form.value).then((res) => {
     if (res === "登录成功") {
-      if(router.query.redirect){
+      if(route.query.redirect){
         window.location.href = router.query.redirect;
         return;
       }
