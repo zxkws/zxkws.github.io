@@ -10,6 +10,10 @@ const form = ref({
 const onSubmit = () => {
   login(form.value).then((res) => {
     if (res === "登录成功") {
+      if(router.query.redirect){
+        window.location.href = router.query.redirect;
+        return;
+      }
       router.push({ name: "overview" });
     }
   });
