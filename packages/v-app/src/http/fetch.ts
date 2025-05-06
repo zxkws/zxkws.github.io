@@ -25,6 +25,7 @@ export default (url, params, options = {}) => {
   })
     .then((res) => {
       token = res.headers.get("Token") || token;
+      localStorage.setItem('auth_token',token);
       const contentType = res.headers.get("Content-Type");
       if (contentType?.includes("application/json")) {
         return res.json();
