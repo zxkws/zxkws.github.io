@@ -17,6 +17,9 @@
 <script setup>
 
 const navItems = [
+    {name: 'todo', url: 'https://zxkws.nyc.mn/todo'},
+    {name: 'apikey_manage', url: 'https://zxkws.nyc.mn/api_key_manager/'},
+    {name: 'file_manage', url: 'https://zxkws.nyc.mn/file-management-system/'},
     { name: 'fofa siteproxy代理', url: 'https://en.fofa.info/result?qbase64=dGl0bGU9InNpdGVwcm94eeS7o%2BeQhiI%3D' },
     { name: 'fofa siteproxy', url: 'https://en.fofa.info/result?qbase64=dGl0bGU9InNpdGVwcm94eSI%3D' },
     { name: '360 siteproxy', url: 'https://quake.360.net/quake/#/index'},

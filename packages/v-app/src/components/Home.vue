@@ -15,7 +15,7 @@ onMounted(() => {
 <template>
   <div class="w-full h-full flex">
     <Loading />
-    <Menu />
+    <!-- <Menu /> -->
     <section class="w-full h-full flex-1">
       <router-view></router-view>
     </section>

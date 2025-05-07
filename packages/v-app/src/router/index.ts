@@ -1,13 +1,16 @@
 import { createWebHistory, createRouter } from "vue-router";
 import NotFound from "../components/404.vue";
 
-
 const routes = [
   {
     name: "overview",
     path: "/",
     component: () => import("@/components/Home.vue"),
     children: [
+      {
+        path: "/",
+        redirect: "/navList",
+      },
       {
         name: "todo",
         path: "/todo",
@@ -16,14 +19,6 @@ const routes = [
       {
         path: "/navList",
         component: () => import("../views/NavList/index.vue"),
-      },
-      {
-        path: "/table",
-        component: () => import("../views/table/index.vue"),
-      },
-      {
-        path: "/upload",
-        component: () => import("../views/upload/index.vue"),
       },
     ],
   },
