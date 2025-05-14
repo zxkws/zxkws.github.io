@@ -54,6 +54,8 @@ const navItems = [
     { name: 'tailwind-proxy', url: 'https://tailwindui.starxg.com/components'},
     { name: '抄一下', url: 'https://xingpingcn.top/'},
     { name: '模型排行榜', url: 'https://linux.do/t/topic/160263'},
-    { name: '', url: ''},
+    { name: 'bestofjs', url: 'https://bestofjs.org/'},
+    { name: 'risingstars', url: 'https://risingstars.js.org/2024/en'},
+  
   ];
 </script>
