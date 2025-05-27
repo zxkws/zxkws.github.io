@@ -28,7 +28,7 @@ const onSubmit = () => {
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
       <img
         class="mx-auto h-10 w-auto"
-        src="https://tailwindui.starxg.com/plus/img/logos/mark.svg?color=indigo&shade=600"
+        src="https://zxkws.nyc.mn/favicon.ico"
         alt="Your Company"
       />
       <h2
