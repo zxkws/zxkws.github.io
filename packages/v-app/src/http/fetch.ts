@@ -3,7 +3,7 @@ const BASEURL =
     ? "/api"
     : "https://api.zxkws.nyc.mn/api";
 
-let token = "";
+let token = localStorage.getItem('auth_token');
 
 import router from "../router";
 
