@@ -33,10 +33,10 @@ export default (url, params, options = {}) => {
       return res.text();
     })
     .then((res) => {
-      if (res.statusCode === 401) {
+      if (res.code === 401) {
         router.push({ name: "login" });
       }
-      return res;
+      return res.data;
     })
     .catch((err) => {
       alert(err);
