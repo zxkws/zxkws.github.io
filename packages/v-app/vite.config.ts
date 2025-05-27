@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import vueJsx from "@vitejs/plugin-vue-jsx";
 import AutoImport from "unplugin-auto-import/vite";
 import { resolve } from "path";
 
@@ -8,10 +7,6 @@ import { resolve } from "path";
 export default defineConfig({
   plugins: [
     vue(),
-    vueJsx({
-      // 可以在这里添加其他 JSX 相关配置
-      // 比如: transformOn: true, optimize: true 等
-    }),
     AutoImport({
       imports: ["vue"],
       dts: "src/auto-imports.d.ts", // 自动生成的 TypeScript 声明文件路径
