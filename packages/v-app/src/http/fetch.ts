@@ -3,8 +3,6 @@ const BASEURL =
     ? "/api"
     : "https://api.zxkws.nyc.mn/api";
 
-let token = localStorage.getItem('auth_token');
-
 import router from "../router";
 
 export default (url, params, options = {}) => {
@@ -20,12 +18,14 @@ export default (url, params, options = {}) => {
     body,
     headers: {
       "Content-Type": "application/json",
-      Authorization: token ? "Bearer " + token : "",
+      Authorization: "Bearer " + (JSON.parse(localStorage.getItem('auth_token')) || ''),
     },
   })
     .then((res) => {
-      token = res.headers.get("Token") || token;
-      localStorage.setItem('auth_token',token);
+      const token = res.headers.get("Token");
+      if(token) {
+        localStorage.setItem('auth_token',token);
+      }
       const contentType = res.headers.get("Content-Type");
       if (contentType?.includes("application/json")) {
         return res.json();
