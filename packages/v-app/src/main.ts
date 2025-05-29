@@ -21,7 +21,7 @@ if(token) {
   localStorage.setItem('auth_token',token);
   const newUrl = window.location.origin + window.location.pathname + window.location.hash;
   window.history.replaceState({}, '', newUrl);
-  console.log("已清空")
+  console.log("已清空",window.location.href)
 }
   vue = createApp(App);
   setLicenseKey(
