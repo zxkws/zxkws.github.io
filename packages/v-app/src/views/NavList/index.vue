@@ -53,6 +53,10 @@ const navItems = [
     { name: 'risingstars', url: 'https://risingstars.js.org/2024/en'},
   { name: '薅羊毛', url: 'https://new.xianbao.fun/'},
   { name: '薅羊毛', url: 'http://www.0818tuan.com/'},
+  {name:'algo',url:"https://codetop.cc/home"},
+  {name:'algo',url:"https://github.com/labuladong/fucking-algorithm"},
+   {name:'algo',url:"https://www.luogu.com.cn/"},
+  {name:'algo',url:"https://github.com/krahets/hello-algo"},
   {name:'ssh-tool', url: 'https://ssh.lookli.nyc.mn/'}
   ];
 </script>
