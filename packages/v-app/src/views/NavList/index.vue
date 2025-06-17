@@ -51,6 +51,8 @@ const navItems = [
     { name: '模型排行榜', url: 'https://linux.do/t/topic/160263'},
     { name: 'bestofjs', url: 'https://bestofjs.org/'},
     { name: 'risingstars', url: 'https://risingstars.js.org/2024/en'},
+  { name: '薅羊毛', url: 'https://new.xianbao.fun/'},
+  { name: '薅羊毛', url: 'http://www.0818tuan.com/'},
   {name:'ssh-tool', url: 'https://ssh.lookli.nyc.mn/'}
   ];
 </script>
