@@ -20,6 +20,11 @@ const routes = [
         path: "/navList",
         component: () => import("../views/NavList/index.vue"),
       },
+      {
+        name: "accountManagement",
+        path: "/account",
+        component: () => import("../views/AccountManagement/index.vue"),
+      },
     ],
   },
   {
