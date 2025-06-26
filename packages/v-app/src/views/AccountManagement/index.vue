@@ -2,6 +2,10 @@
   <div class="account-management p-5 max-w-4xl mx-auto">
     <h1 class="text-2xl font-bold mb-6">账户管理</h1>
     
+    <div v-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+      {{ error }}
+    </div>
+    
     <div class="account-form bg-white rounded-lg shadow-md p-6 mb-8">
       <h2 class="text-xl font-semibold mb-4">{{ editingAccount ? '编辑账户' : '添加账户' }}</h2>
       <form @submit.prevent="handleSubmit" class="space-y-4">
@@ -33,15 +37,17 @@
         <div class="flex space-x-3">
           <button 
             type="submit" 
-            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            :disabled="loading"
+            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >
-            {{ editingAccount ? '更新' : '添加' }}
+            {{ loading ? '处理中...' : (editingAccount ? '更新' : '添加') }}
           </button>
           <button 
             v-if="editingAccount" 
             @click="cancelEdit"
             type="button"
-            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            :disabled="loading"
+            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
           >
             取消
           </button>
@@ -51,7 +57,13 @@
 
     <div class="account-list bg-white rounded-lg shadow-md p-6">
       <h2 class="text-xl font-semibold mb-4">账户列表</h2>
-      <div class="overflow-x-auto">
+      <div v-if="loadingAccounts" class="text-center py-4">
+        加载中...
+      </div>
+      <div v-else-if="accounts.length === 0" class="text-center py-4 text-gray-500">
+        暂无账户数据
+      </div>
+      <div v-else class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
@@ -89,7 +101,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
+import { 
+  createAccount, 
+  getAccounts, 
+  updateAccount, 
+  deleteAccount as deleteAccountApi 
+} from '@/http';
 
 interface Account {
   id: number;
@@ -100,27 +118,53 @@ interface Account {
 
 const accounts = ref<Account[]>([]);
 const editingAccount = ref<Account | null>(null);
+const loading = ref(false);
+const loadingAccounts = ref(false);
+const error = ref('');
+
 const form = reactive({
   account: '',
   password: '',
   remark: ''
 });
 
-const handleSubmit = () => {
-  if (editingAccount.value) {
-    // 更新账户
-    const index = accounts.value.findIndex(a => a.id === editingAccount.value?.id);
-    if (index !== -1) {
-      accounts.value[index] = { ...editingAccount.value, ...form };
-    }
-  } else {
-    // 添加新账户
-    accounts.value.push({
-      id: Date.now(),
-      ...form
-    });
+onMounted(() => {
+  fetchAccounts();
+});
+
+const fetchAccounts = async () => {
+  try {
+    loadingAccounts.value = true;
+    accounts.value = await getAccounts();
+  } catch (err) {
+    error.value = '获取账户列表失败';
+    console.error(err);
+  } finally {
+    loadingAccounts.value = false;
   }
-  resetForm();
+};
+
+const handleSubmit = async () => {
+  try {
+    loading.value = true;
+    error.value = '';
+    
+    if (editingAccount.value) {
+      // 更新账户
+      await updateAccount(editingAccount.value.id, form);
+    } else {
+      // 添加新账户
+      await createAccount(form);
+    }
+    
+    resetForm();
+    await fetchAccounts();
+  } catch (err) {
+    error.value = editingAccount.value ? '更新账户失败' : '添加账户失败';
+    console.error(err);
+  } finally {
+    loading.value = false;
+  }
 };
 
 const editAccount = (account: Account) => {
@@ -130,8 +174,16 @@ const editAccount = (account: Account) => {
   form.remark = account.remark;
 };
 
-const deleteAccount = (id: number) => {
-  accounts.value = accounts.value.filter(account => account.id !== id);
+const deleteAccount = async (id: number) => {
+  if (!confirm('确定要删除此账户吗？')) return;
+  
+  try {
+    await deleteAccountApi(id);
+    await fetchAccounts();
+  } catch (err) {
+    error.value = '删除账户失败';
+    console.error(err);
+  }
 };
 
 const cancelEdit = () => {
