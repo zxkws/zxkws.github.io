@@ -57,6 +57,7 @@ const navItems = [
   {name:'algo',url:"https://github.com/labuladong/fucking-algorithm"},
    {name:'algo',url:"https://www.luogu.com.cn/"},
   {name:'algo',url:"https://github.com/krahets/hello-algo"},
-  {name:'ssh-tool', url: 'https://ssh.lookli.nyc.mn/'}
+  {name:'ssh-tool', url: 'https://ssh.lookli.nyc.mn/'},
+  {name:"mineru",url:"https://mineru.net/OpenSourceTools/Extractor"},
   ];
 </script>
