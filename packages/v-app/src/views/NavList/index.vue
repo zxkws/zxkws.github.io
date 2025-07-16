@@ -61,5 +61,8 @@ const navItems = [
   {name:"mineru",url:"https://mineru.net/OpenSourceTools/Extractor"},
   {name:'quark', url: 'https://www.quark.so/'},
   {name:"baidu",url:"https://baiduwangpan.app/"},
+  {name:"googletrends",url:"https://trends.google.com/trends/explore?date=all&q=npm,webpack,vite,vue,react"},
+  {name:"stateofjs",url:"https://stateofjs.com/en-US"},
+  
   ];
 </script>
