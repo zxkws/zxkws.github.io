@@ -63,7 +63,7 @@ const navItems = [
   {name:"baidu",url:"https://baiduwangpan.app/"},
   {name:"googletrends",url:"https://trends.google.com/trends/explore?date=all&q=npm,webpack,vite,vue,react"},
   {name:"stateofjs",url:"https://stateofjs.com/en-US"},
-  {name:"stateofjs",url:"https://y.wjhe.top/"},
+  {name:"music",url:"https://y.wjhe.top/"},
   
   ];
 </script>
