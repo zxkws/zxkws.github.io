@@ -31,7 +31,7 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
-    allowedHosts: ["5173-zxkws-zxkwsgithubio-kv2ddskkt66.ws-us118.gitpod.io"],
+    allowedHosts: [".gitpod.io"],
   },
   resolve: {
     // extensions: [".vue", ".ts", ".js", ".jsx", "tsx", ".json"],

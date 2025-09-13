@@ -14,7 +14,42 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { WebMcpServer, z } from '@opentiny/next-sdk'
+
+const serverTransport = inject('serverTransport')
+
+const server = new WebMcpServer()
+
+const mcpNavList = ref([])
+
+// 注册添加商品工具，支持所有商品属性
+server.registerTool(
+  'add-nav',
+  {
+    description: '添加菜单',
+    inputSchema: {
+      name: z.string().describe('菜单名称'),
+      url: z.string().describe('菜单地址'),
+    }
+  },
+  async (productData: {name: string; url: string }) => {
+    // 显示添加商品弹窗并填充数据
+    productData.id = productData.id || new Date().getTime()
+    // const success = await store.addProduct(productData)
+    const navList = JSON.parse(localStorage.getItem('navList')) || []
+    navList.push(productData)
+    localStorage.setItem('navList', JSON.stringify(navList))
+    mcpNavList.value = navList;
+    return JSON.parse(localStorage.getItem('navList')) || []
+  }
+)
+
+onMounted(async () => {
+  await server.connect(serverTransport)
+})
+
+
 
 const navItems = [
     {name: 'todo', url: 'https://zxkws.nyc.mn/todo'},
