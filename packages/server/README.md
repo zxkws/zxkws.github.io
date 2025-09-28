@@ -1,1 +1,0 @@
-pnpm -F server i @opentiny/next-sdk
