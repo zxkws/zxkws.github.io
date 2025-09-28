@@ -51,7 +51,13 @@
           </MenuItems>
         </transition>
       </Menu>
-      <div class="user-info ml-4 text-gray-800 dark:text-white">User</div>
+      <div class="user-info ml-4 text-gray-800 dark:text-white">
+        <div class="flex items-center relative">
+            <div class="avatar-z"><img class="w-[36px] h-[36px] rounded-full"
+                src="https://p3-search.byteimg.com/obj/labis/240409394f2fa795c03c46212d79ec52" /></div>
+            <div class="ml-2 dark:text-white">zxkws</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -76,5 +82,35 @@ const store = mainStore();
 .logo {
   font-size: 20px;
   font-weight: bold;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: .5;
+    transform: scale(0.95)
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1)
+  }
+
+  100% {
+    opacity: .5;
+    transform: scale(0.95)
+  }
+}
+
+.avatar-z::after {
+  width: 36px;
+  height: 36px;
+  position: absolute;
+  top: 1px;
+  content: " ";
+  display: block;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow: 0 0 20px #961cc4;
+  animation: pulse 3s ease-in-out infinite;
 }
 </style>

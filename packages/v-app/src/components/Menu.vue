@@ -81,13 +81,6 @@ function closeMenu() {
           leave-to="-translate-x-full"
         >
           <DialogPanel class="relative flex w-full max-w-xs flex-1 flex-col bg-white dark:bg-gray-800">
-            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                <div class="flex items-center relative">
-                    <div class="avatar-z"><img class="w-[36px] h-[36px]"
-                        src="https://p3-search.byteimg.com/obj/labis/240409394f2fa795c03c46212d79ec52" /></div>
-                    <div class="ml-2 dark:text-white">zxkws</div>
-                </div>
-            </div>
             <ul class="space-y-2 mt-2 p-4">
               <li v-for="menu in menus" class="p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600"
                 :key="menu.name">
@@ -103,13 +96,6 @@ function closeMenu() {
   <!-- Desktop sidebar -->
   <div :class="['hidden md:flex md:flex-shrink-0 transition-all duration-300', isMenuCollapsed ? 'w-20' : 'w-64']">
     <div class="flex w-full flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-            <div class="flex items-center relative">
-                <div class="avatar-z"><img class="w-[36px] h-[36px]"
-                    src="https://p3-search.byteimg.com/obj/labis/240409394f2fa795c03c46212d79ec52" /></div>
-                <div :class="['ml-2 transition-opacity duration-300 dark:text-white', isMenuCollapsed ? 'opacity-0' : 'opacity-100']">zxkws</div>
-            </div>
-        </div>
         <ul class="space-y-2 mt-2 p-4">
             <li v-for="menu in menus" class="p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600"
             :key="menu.name">
@@ -122,33 +108,4 @@ function closeMenu() {
   </div>
 </template>
 <style>
-@keyframes pulse {
-  0% {
-    opacity: .5;
-    transform: scale(0.95)
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1)
-  }
-
-  100% {
-    opacity: .5;
-    transform: scale(0.95)
-  }
-}
-
-.avatar-z::after {
-  width: 36px;
-  height: 36px;
-  position: absolute;
-  top: 1px;
-  content: " ";
-  display: block;
-  border-radius: 10%;
-  pointer-events: none;
-  box-shadow: 0 0 20px #961cc4;
-  animation: pulse 3s ease-in-out infinite;
-}
 </style>
