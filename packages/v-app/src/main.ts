@@ -11,18 +11,19 @@ import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 import "./style/tailwind.css";
 import "./style/style.scss";
 import router from "./router";
+import { mainStore } from "./store";
 
 let vue: Root<Element> | null = null;
 
 const runApp = (container: Element | string) => {
-const params = new URLSearchParams(window.location.search);
-const token = params.get('token');
-if(token) {
-  localStorage.setItem('auth_token',token);
-  const newUrl = window.location.origin + window.location.pathname + window.location.hash;
-  window.history.replaceState({}, '', newUrl);
-  console.log("已清空",window.location.href)
-}
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if(token) {
+    localStorage.setItem('auth_token',token);
+    const newUrl = window.location.origin + window.location.pathname + window.location.hash;
+    window.history.replaceState({}, '', newUrl);
+    console.log("已清空",window.location.href)
+  }
   vue = createApp(App);
   setLicenseKey(
     "0b50c5c2999298c91d183c696087eb90T1JERVI6MDAwMDEsRVhQSVJZPTQxMDIzNTg0MDAwMDAsRE9NQUlOPV8sS0VZVkVSU0lPTj0xLFVMVElNQVRFPTE="
@@ -33,6 +34,17 @@ if(token) {
   pinia.use(piniaPluginPersistedstate);
   vue.use(pinia);
   vue.use(router);
+
+  const store = mainStore();
+  router.beforeEach((to, from, next) => {
+    store.isLoading = true;
+    next();
+  });
+
+  router.afterEach(() => {
+    store.isLoading = false;
+  });
+
   vue.mount(container);
 };
 

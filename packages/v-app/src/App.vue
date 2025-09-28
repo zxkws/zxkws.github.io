@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { onMounted, provide } from 'vue'
+import { onMounted, provide, computed } from 'vue'
 import { WebMcpClient, createMessageChannelPairTransport } from '@opentiny/next-sdk'
 import { TinyRemoter } from '@opentiny/next-remoter'
 import '@opentiny/next-remoter/dist/style.css'
 import { useTheme } from '@/hooks/useTheme';
+import { mainStore } from '@/store';
+import Loading from '@/components/Loading.vue';
 
 useTheme();
+
+const store = mainStore();
+const isLoading = computed(() => store.isLoading);
 
 const [serverTransport, clientTransport] = createMessageChannelPairTransport()
 provide('serverTransport', serverTransport)
@@ -27,6 +32,7 @@ onMounted(async () => {
   <div class="wrapper w-full h-full">
     <router-view />
   </div>
+  <Loading :show="isLoading" />
   <tiny-remoter session-id="5f8edea7-e3ae-4852-a334-1bb6b3a1cfa9" />
 </template>
 

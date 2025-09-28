@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 export const mainStore = defineStore("main", {
   state: () => ({
     loading: true,
+    isLoading: false,
     loadingMessage: "加载中",
     innerWidth: null,
     isMenuOpen: false, // for mobile
