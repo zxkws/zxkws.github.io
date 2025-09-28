@@ -30,6 +30,11 @@ const menus = [
     value: "upload",
     name: "upload",
   },
+  {
+    label: "大模型信息榜",
+    value: "llmRanking",
+    name: "llm-ranking",
+  },
 ];
 </script>
 <template>
