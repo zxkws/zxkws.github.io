@@ -15,6 +15,7 @@
     "cssnano": "^7.0.6",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
+    "@headlessui/vue": "^1.7.22",
     "sass": "^1.77.8",
     "vue": "^3.5.12",
     "vue-router": "^4.0.11"

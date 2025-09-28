@@ -5,6 +5,8 @@ export const mainStore = defineStore("main", {
     loading: true,
     loadingMessage: "加载中",
     innerWidth: null,
+    isMenuOpen: false, // for mobile
+    isMenuCollapsed: false, // for desktop
   }),
   getters: {
     // 获取页面宽度
@@ -20,6 +22,12 @@ export const mainStore = defineStore("main", {
     // 更改当前页面宽度
     setInnerWidth(value: number) {
       this.innerWidth = value as any;
+    },
+    toggleMenu() {
+      this.isMenuOpen = !this.isMenuOpen;
+    },
+    toggleMenuCollapse() {
+      this.isMenuCollapsed = !this.isMenuCollapsed;
     },
   },
   // persist: {
