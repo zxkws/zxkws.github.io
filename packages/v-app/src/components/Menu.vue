@@ -19,34 +19,14 @@ const menus = [
     name: 'todo',
   },
   {
-    label: 'list',
-    value: 'list',
-    name: 'list',
-  },
-  {
-    label: 'detail',
-    value: 'detail',
-    name: 'detail',
-  },
-  {
     label: 'navList',
     value: 'navList',
     name: 'navList',
   },
   {
-    label: 'table',
-    value: 'table',
-    name: 'table',
-  },
-  {
-    label: 'upload',
-    value: 'upload',
-    name: 'upload',
-  },
-  {
     label: '大模型信息榜',
     value: 'llmRanking',
-    name: 'llm-ranking',
+    name: 'llmRanking',
   },
 ];
 

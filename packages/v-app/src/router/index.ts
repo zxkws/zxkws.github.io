@@ -17,6 +17,7 @@ const routes = [
         component: () => import("../views/Todo/index.vue"),
       },
       {
+        name: "navList",
         path: "/navList",
         component: () => import("../views/NavList/index.vue"),
       },

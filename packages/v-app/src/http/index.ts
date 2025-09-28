@@ -82,5 +82,5 @@ export const updateAccount = (id: number, params: UpdateAccountDto) => {
 };
 
 export const deleteAccount = (id: number) => {
-  return fetch(`/account-manage/$remove`, {id}, { method: "DELETE" });
+  return fetch(`/account-manage/remove`, {id}, { method: "DELETE" });
 };
