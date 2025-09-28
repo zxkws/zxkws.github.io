@@ -21,7 +21,7 @@ onMounted(() => {
     <Header />
     <div class="flex flex-1 overflow-hidden">
       <Menu />
-      <section class="flex-1 overflow-y-auto p-5">
+      <section class="flex-1 overflow-y-auto p-5 bg-gray-100 dark:bg-gray-900">
         <router-view></router-view>
       </section>
     </div>

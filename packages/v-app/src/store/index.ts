@@ -7,6 +7,7 @@ export const mainStore = defineStore("main", {
     innerWidth: null,
     isMenuOpen: false, // for mobile
     isMenuCollapsed: false, // for desktop
+    theme: 'system', // 'light', 'dark', 'system'
   }),
   getters: {
     // 获取页面宽度
@@ -28,6 +29,9 @@ export const mainStore = defineStore("main", {
     },
     toggleMenuCollapse() {
       this.isMenuCollapsed = !this.isMenuCollapsed;
+    },
+    setTheme(theme: string) {
+      this.theme = theme;
     },
   },
   // persist: {

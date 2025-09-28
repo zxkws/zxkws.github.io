@@ -3,6 +3,9 @@ import { onMounted, provide } from 'vue'
 import { WebMcpClient, createMessageChannelPairTransport } from '@opentiny/next-sdk'
 import { TinyRemoter } from '@opentiny/next-remoter'
 import '@opentiny/next-remoter/dist/style.css'
+import { useTheme } from '@/hooks/useTheme';
+
+useTheme();
 
 const [serverTransport, clientTransport] = createMessageChannelPairTransport()
 provide('serverTransport', serverTransport)
