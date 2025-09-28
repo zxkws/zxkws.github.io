@@ -34,9 +34,9 @@ export const mainStore = defineStore("main", {
       this.theme = theme;
     },
   },
-  // persist: {
-  //   key: "data",
-  //   storage: window.localStorage,
-  //   paths: [],
-  // },
+  persist: {
+    key: "v-app-settings",
+    storage: window.localStorage,
+    paths: ['theme', 'isMenuCollapsed'],
+  },
 });
