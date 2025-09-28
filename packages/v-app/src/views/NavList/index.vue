@@ -1,14 +1,14 @@
 <template>
-  <div class="w-full h-full bg-gray-100 overflow-y-auto p-4">
+  <div class="w-full h-full bg-gray-100 dark:bg-gray-900 overflow-y-auto p-4">
       <div class="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4">
         <a
           v-for="(item, index) in navItems"
           :key="index"
           :href="item.url"
           target="_blank"
-          class="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex items-center"
+          class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex items-center"
         >
-          <span class="text-gray-800 hover:text-blue-600">{{ item.name }}</span>
+          <span class="text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400">{{ item.name }}</span>
         </a>
       </div>
   </div>
