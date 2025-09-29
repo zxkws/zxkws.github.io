@@ -1,1 +1,16 @@
-这是一个数据的例子， [ { id: 1, name: 'Gemini', description: 'A powerful and versatile large language model from Google.', url: 'https://gemini.google.com/' }, { id: 2, name: 'GPT-4', description: 'The latest generation of OpenAIs language model.', url: 'https://openai.com/gpt-4' }, { id: 3, name: 'Claude 3', description: 'A family of large language models developed by Anthropic.', url: 'https://www.anthropic.com/claude' }, ] 请给我100个与ai技术有关的网站，例如AI 工具、AI 平台、AI 研究网站、AI 应用案例，mcp工具，mcp包，agent2agent协议demo等等与ai相关的内容，必须是100个，而且得是有价值的ai网站，比如dify，n8n，这种要求格式为上面的json数据格式，不需要返回其他的内容，也不用再问我的反馈，因为我相信你的能力
+请帮我收集并输出 **100 个高价值的 AI 相关网站**，包括但不限于以下类别：  
+- **AI 工具与平台**：如 Dify、Coze、n8n、LangChain 等  
+- **AI 研究网站与论文库**：如 arXiv、Papers with Code  
+- **AI 框架与开发工具**：如 Hugging Face、LlamaIndex、OpenAI  
+- **MCP 工具与 MCP 包**  
+- **Agent 相关资源**：agent-to-agent 协议示例、agent 框架、开源多智能体系统  
+- **AI 应用案例、AI 社区、AI 教程站点**  
+
+要求：  
+1. 结果必须 **正好 100 个**。  
+2. 每条数据使用以下 JSON 格式输出：  
+```json
+{ "id": 1, "name": "网站名称", "description": "一句简短介绍（中英文均可，但不要太长）", "url": "https://xxx.xxx" }
+3. 结果以 JSON 数组形式返回，不要包含其他说明或多余文本。
+4. 优先列出有实际价值、活跃、能直接访问的 AI 相关网站。
+5. 排序建议：先列主流 AI 平台（Coze、Dify、LangChain、n8n、AutoGPT 等），再列研究、框架、应用案例，最后补充工具与社区资源。
