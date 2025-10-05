@@ -99,6 +99,7 @@ const navItems = [
   {name:"googletrends",url:"https://trends.google.com/trends/explore?date=all&q=npm,webpack,vite,vue,react"},
   {name:"stateofjs",url:"https://stateofjs.com/en-US"},
   {name:"music",url:"https://y.wjhe.top/"},
-  
+  {name:"中国科学技术大学测速网站",url:"https://test.ustc.edu.cn/"},
+  {name:"fast",url:"https://fast.com/"},
   ];
 </script>
