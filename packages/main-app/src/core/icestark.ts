@@ -1,8 +1,18 @@
+import React from 'react';
 import { registerMicroApps, start, type AppConfig } from '@ice/stark';
+import type { AppRouteProps } from '@ice/stark/lib/AppRoute';
+import CurlConverterMicroApp from '../microApps/CurlConverterMicroApp';
 
-type RuntimeMicroApp = AppConfig & { url?: string | string[] };
+type MicroAppConfig = AppRouteProps;
+type RuntimeMicroApp = MicroAppConfig & { url?: string | string[] };
 
-const DEFAULT_MICRO_APPS: AppConfig[] = [
+const DEFAULT_MICRO_APPS: MicroAppConfig[] = [
+  {
+    name: 'curlconverter',
+    title: 'curlconverter 在线转换',
+    activePath: ['/curlconverter'],
+    component: React.createElement(CurlConverterMicroApp),
+  },
   {
     name: 'seller',
     title: 'React 微应用',
@@ -45,16 +55,20 @@ const normalizeUrl = (url?: string | string[]): string[] | undefined => {
   return url ? [url] : undefined;
 };
 
-const mergeMicroApps = (runtime: RuntimeMicroApp[] = []): AppConfig[] => {
-  const merged = new Map<string, AppConfig>();
+const mergeMicroApps = (runtime: RuntimeMicroApp[] = []): MicroAppConfig[] => {
+  const merged = new Map<string, MicroAppConfig>();
   DEFAULT_MICRO_APPS.forEach((app) => {
     if (!app.name) {
       return;
     }
     const normalizedUrl = normalizeUrl(app.url);
+    const next: MicroAppConfig = { ...app };
     if (normalizedUrl && normalizedUrl.length > 0) {
-      merged.set(app.name, { ...app, url: normalizedUrl });
+      next.url = normalizedUrl;
+    } else {
+      delete (next as { url?: string | string[] }).url;
     }
+    merged.set(app.name, next);
   });
 
   runtime.forEach((app) => {
@@ -62,15 +76,17 @@ const mergeMicroApps = (runtime: RuntimeMicroApp[] = []): AppConfig[] => {
       return;
     }
     const normalizedUrl = normalizeUrl(app.url);
-    if (!normalizedUrl || normalizedUrl.length === 0) {
-      return;
-    }
     const existing = merged.get(app.name);
-    merged.set(app.name, {
+    const next: MicroAppConfig = {
       ...(existing ?? {}),
       ...app,
-      url: normalizedUrl,
-    });
+    };
+    if (normalizedUrl && normalizedUrl.length > 0) {
+      next.url = normalizedUrl;
+    } else {
+      delete (next as { url?: string | string[] }).url;
+    }
+    merged.set(app.name, next);
   });
 
   return Array.from(merged.values());
@@ -83,7 +99,7 @@ const emitLoading = (loading: boolean) => {
   loadingEventTarget.dispatchEvent(new CustomEvent('micro-app-loading', { detail: loading }));
 };
 
-export const resolveMicroApps = (): AppConfig[] => {
+export const resolveMicroApps = (): MicroAppConfig[] => {
   if (typeof window === 'undefined') {
     return mergeMicroApps();
   }
@@ -98,8 +114,9 @@ export const ensureIcestarkStarted = (options?: StartOptions) => {
   }
 
   const apps = resolveMicroApps();
-  if (apps.length > 0) {
-    registerMicroApps(apps);
+  const registerable = apps.filter((app) => !('component' in app) && !('render' in app));
+  if (registerable.length > 0) {
+    registerMicroApps(registerable as AppConfig[]);
   }
 
   start({
