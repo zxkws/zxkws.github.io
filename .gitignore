@@ -4,14 +4,59 @@ dist
 .ice
 build
 .idea
-# 忽略操作系统生成的文件
-.DS_Store                # macOS
-Thumbs.db                # Windows
-desktop.ini              # Windows
-# 忽略日志文件
+.pnpm-store
+.npm
+.eslintcache
+*.tsbuildinfo
+coverage
+
+# 操作系统生成文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 日志文件
 *.log
 logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-myenv
+pnpm-debug.log*
+
+# 环境文件
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# 调试文件
+.vscode/launch.json
+
+# 依赖目录
+jspm_packages/
+
+# 本地开发文件
+.dockerignore
+docker-compose.override.yml
+
+# 测试相关
+jest-cache/
+cypress/screenshots/
+cypress/videos/
+
+# 构建输出
+.next/
+out/
+.nuxt/
+.cache/
+.temp/
+.svelte-kit/
+
+# 包管理器相关
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 类型声明文件
+*.css.d.ts
