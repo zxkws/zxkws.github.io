@@ -1,0 +1,125 @@
+.headerBar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 28px;
+  height: 64px;
+  background: var(--header-bg);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--header-border);
+  box-shadow: var(--header-shadow);
+  transition:
+    background-color 0.4s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.brandMark {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.4em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.brandTagline {
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  color: var(--color-muted);
+  text-transform: uppercase;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.themeToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.themeToggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px -18px rgba(37, 99, 235, 0.55);
+}
+
+[data-theme='dark'] .themeToggle:hover {
+  box-shadow: 0 14px 28px -16px rgba(56, 189, 248, 0.5);
+}
+
+.themeToggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.themeIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--accent);
+}
+
+[data-theme='dark'] .themeIcon {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+}
+
+.themeText {
+  white-space: nowrap;
+}
+
+.localePlaceholder {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px dashed var(--color-muted);
+  background: transparent;
+  color: var(--color-muted-strong);
+  font-size: 13px;
+  cursor: not-allowed;
+}
+
+.localeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-muted);
+  opacity: 0.6;
+}
