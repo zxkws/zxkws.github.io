@@ -1,4 +1,10 @@
-export default (props) => {
+import type { PropsWithChildren } from 'react';
+
+type PageLoadingProps = PropsWithChildren<{
+  loading?: boolean;
+}>;
+
+const PageLoading = (props: PageLoadingProps) => {
   const { children, loading = false } = props;
   return (
     <div id="child-container" style={{ alignContent: 'center' }} className="flex flex-1 text-center">
@@ -6,3 +12,5 @@ export default (props) => {
     </div>
   );
 };
+
+export default PageLoading;

@@ -60,3 +60,4 @@ pnpm-lock.yaml
 
 # 类型声明文件
 *.css.d.ts
+.serena

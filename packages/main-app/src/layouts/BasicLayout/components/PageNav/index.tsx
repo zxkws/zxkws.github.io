@@ -1,4 +1,4 @@
-// import { AppLink } from '@ice/stark';
+import { AppLink } from '@ice/stark';
 import * as React from 'react';
 import { asideMenuConfig } from '../../menuConfig';
 import * as styles from './index.module.css';
@@ -60,25 +60,3 @@ const Nav = ({ menus = asideMenuConfig, textIndent = 0 } = {}) => {
 };
 
 export default Nav;
-
-export type AppLinkProps = {
-  to: string;
-  hashType?: boolean;
-  replace?: boolean;
-  children: React.ReactNode;
-} & React.AnchorHTMLAttributes<any>;
-
-export const AppLink: React.FC<AppLinkProps> = (props: AppLinkProps) => {
-  const { to, hashType, replace, children, ...rest } = props;
-  const linkTo = hashType && to.indexOf('#') === -1 ? `/#${to}` : to;
-  return (
-    <a
-      {...rest}
-      onClick={(e) => {
-        e.preventDefault();
-      }}
-    >
-      {children}
-    </a>
-  );
-};
