@@ -1,3 +1,0 @@
-interface AppRouteState {
-  showComponent: boolean;
-}

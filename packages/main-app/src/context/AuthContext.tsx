@@ -1,8 +1,18 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect, type PropsWithChildren } from 'react';
 
-const AuthContext = createContext<{ isAuthenticated: boolean; login: () => void; logout: () => void }>({} as any);
+type AuthContextValue = {
+  isAuthenticated: boolean;
+  login: () => void;
+  logout: () => void;
+};
 
-export const AuthProvider = ({ children }) => {
+const AuthContext = createContext<AuthContextValue>({
+  isAuthenticated: false,
+  login: () => undefined,
+  logout: () => undefined,
+});
+
+export const AuthProvider = ({ children }: PropsWithChildren) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const login = () => setIsAuthenticated(true);
   const logout = () => setIsAuthenticated(false);

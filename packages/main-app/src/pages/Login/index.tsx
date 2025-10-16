@@ -12,7 +12,6 @@ const Login = () => {
       <h2>登录页面</h2>
       <p>使用独立的 Layout</p>
       <div>
-        {/* <Link to="/">返回首页</Link> */}
         <button onClick={onLogin}>登陆</button>
       </div>
     </>
