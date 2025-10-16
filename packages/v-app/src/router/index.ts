@@ -1,62 +1,64 @@
-import { createWebHistory, createRouter } from "vue-router";
-import NotFound from "../components/404.vue";
+import { createWebHistory, createRouter, type Router } from 'vue-router';
+import NotFound from '../components/404.vue';
 
-const routes = [
+export const routes = [
   {
-    name: "overview",
-    path: "/",
-    component: () => import("@/components/Home.vue"),
+    name: 'overview',
+    path: '/',
+    component: () => import('@/components/Home.vue'),
     children: [
       {
-        path: "/",
-        redirect: "/navList",
+        path: '/',
+        redirect: '/navList',
       },
       {
-        name: "todo",
-        path: "/todo",
-        component: () => import("../views/Todo/index.vue"),
+        name: 'todo',
+        path: '/todo',
+        component: () => import('../views/Todo/index.vue'),
       },
       {
-        name: "navList",
-        path: "/navList",
-        component: () => import("../views/NavList/index.vue"),
+        name: 'navList',
+        path: '/navList',
+        component: () => import('../views/NavList/index.vue'),
       },
       {
-        name: "accountManagement",
-        path: "/account",
-        component: () => import("../views/AccountManagement/index.vue"),
+        name: 'accountManagement',
+        path: '/account',
+        component: () => import('../views/AccountManagement/index.vue'),
       },
       {
-        name: "llmRanking",
-        path: "/llm-ranking",
-        component: () => import("../views/LlmRanking/index.vue"),
+        name: 'llmRanking',
+        path: '/llm-ranking',
+        component: () => import('../views/LlmRanking/index.vue'),
       },
     ],
   },
   {
-    name: "login",
-    path: "/login",
-    component: () => import("../views/Login/index.vue"),
+    name: 'login',
+    path: '/login',
+    component: () => import('../views/Login/index.vue'),
   },
   {
-    name: "register",
-    path: "/register",
-    component: () => import("../views/Register/index.vue"),
+    name: 'register',
+    path: '/register',
+    component: () => import('../views/Register/index.vue'),
   },
   {
-    path: "/:pathMatch(.*)",
+    path: '/:pathMatch(.*)',
     component: NotFound,
   },
 ];
 
-const history = createWebHistory();
-const router = createRouter({
-  history,
-  routes,
-});
+let currentRouter: Router | null = null;
 
-router.beforeEach((to, from, next) => {
-  next();
-});
+export const createRouterInstance = (base?: string) => {
+  currentRouter = createRouter({
+    history: createWebHistory(base ?? import.meta.env.BASE_URL),
+    routes,
+  });
+  return currentRouter;
+};
 
-export default router;
+export const getRouter = () => currentRouter;
+
+export default createRouterInstance;
