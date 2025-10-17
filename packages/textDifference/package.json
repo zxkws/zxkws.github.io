@@ -1,0 +1,9 @@
+{
+  "name": "textdifference",
+  "version": "0.0.1",
+  "description": "Text Difference Tool",
+  "scripts": {
+    "build": "mkdir -p dist && cp -r *.html *.js dist/"
+  },
+  "license": "MIT"
+}

@@ -72,6 +72,11 @@ module.exports = {
     historyApiFallback: true,
   },
   output: {
-    path: resolve(__dirname, '../build'),
+    path: resolve(__dirname, '../dist'),
+    publicPath: isProd ? '/' : '/',
+    filename: isProd ? 'js/[name].[contenthash:8].js' : 'js/[name].js',
+    chunkFilename: isProd ? 'js/[name].[contenthash:8].chunk.js' : 'js/[name].chunk.js',
+    assetModuleFilename: 'assets/[name].[hash][ext]',
+    clean: true,
   },
 };

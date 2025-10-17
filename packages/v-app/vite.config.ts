@@ -39,8 +39,10 @@ export default defineConfig({
       "@": resolve("./src"),
     },
   },
+  base: process.env.NODE_ENV === 'production' ? '/v-app/' : '/',
   build: {
     sourcemap: false,
+    outDir: 'dist',
     rollupOptions: {
       output: {
         manualChunks(id) {

@@ -6,34 +6,35 @@ import CurlConverterMicroApp from '../microApps/CurlConverterMicroApp';
 type MicroAppConfig = AppRouteProps;
 type RuntimeMicroApp = MicroAppConfig & { url?: string | string[] };
 
+const getBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+  return window.location.origin;
+};
+
 const DEFAULT_MICRO_APPS: MicroAppConfig[] = [
   {
     name: 'curlconverter',
-    title: 'curlconverter 在线转换',
+    title: 'Curl Converter',
     activePath: ['/curlconverter'],
     component: React.createElement(CurlConverterMicroApp),
   },
   {
-    name: 'seller',
-    title: 'React 微应用',
-    activePath: ['/seller'],
+    name: 'v-app',
+    title: 'Vue Application',
+    activePath: ['/v-app'],
     loadScriptMode: 'fetch',
     sandbox: true,
-    url: [
-      'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-seller-react/build/js/index.js',
-      'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-seller-react/build/css/index.css',
-    ],
+    entry: `${getBaseUrl()}/v-app/`,
   },
   {
-    name: 'waiter',
-    title: 'Vue 微应用',
-    activePath: ['/waiter'],
+    name: 'textdiff',
+    title: 'Text Difference',
+    activePath: ['/textdiff'],
     loadScriptMode: 'fetch',
     sandbox: true,
-    url: [
-      'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/js/app.js',
-      'https://iceworks.oss-cn-hangzhou.aliyuncs.com/icestark/child-waiter-vue/dist/css/app.css',
-    ],
+    entry: `${getBaseUrl()}/textdiff/`,
   },
 ];
 

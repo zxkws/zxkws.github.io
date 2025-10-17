@@ -8,7 +8,7 @@ on:
       - README.md
 
 jobs:
-  my_job:
+  deploy:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-22.04
     steps:
@@ -39,9 +39,23 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Main App
+        run: pnpm --filter main-app build
+
+      - name: Build v-app
+        run: pnpm --filter v-app build
+
+      - name: Build textDifference
+        run: pnpm --filter textdifference build
+
+      - name: Prepare Deployment
         run: |
-          pnpm install
-          pnpm --filter v-app build
+          mkdir -p deploy
+          cp -r packages/main-app/dist/* deploy/
+          cp -r packages/v-app/dist deploy/v-app
+          cp -r packages/textDifference/dist deploy/textdiff
 
       - name: Deploy to GitHub Pages
         env:
@@ -51,11 +65,11 @@ jobs:
             git config --global user.email "${{ github.actor }}@users.noreply.github.com"
             git checkout --orphan gh-pages
             git rm -rf .
-            mv packages/v-app/dist/* .
-            rm -rf node_modules packages
+            mv deploy/* .
+            rm -rf node_modules packages deploy
             cp index.html 404.html
             echo "zxkws.nyc.mn" > CNAME
             touch .nojekyll
             git add .
-            git commit -m "Deploy to GitHub Pages"
+            git commit -m "Deploy all apps to GitHub Pages"
             git push -f origin gh-pages
