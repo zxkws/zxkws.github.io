@@ -191,5 +191,3 @@ export const subscribeMicroAppLoading = (listener: (loading: boolean) => void): 
   loadingEventTarget.addEventListener('micro-app-loading', handler);
   return () => loadingEventTarget.removeEventListener('micro-app-loading', handler);
 };
-
-export { DEFAULT_MICRO_APPS };
