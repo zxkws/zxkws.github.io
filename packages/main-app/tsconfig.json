@@ -1,32 +1,19 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "inlineSourceMap": true,
     "outDir": "./build",
     "jsx": "react-jsx",
     "allowSyntheticDefaultImports": true,
-    "lib": [
-      "ESNext",
-      "dom"
-    ],
+    "lib": ["ESNext", "dom"],
     "allowJs": true,
     "noImplicitAny": false,
     "importHelpers": true,
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "paths": {
-      "@/*": [
-        "packages/*/src"
-      ],
+      "@/*": ["packages/*/src"]
     }
   },
-  "include": [
-    "src",
-    "typings.d.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "build",
-    "public"
-  ]
+  "include": ["src", "typings.d.ts"],
+  "exclude": ["node_modules", "build", "public"]
 }
