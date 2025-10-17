@@ -55,7 +55,7 @@ const DEFAULT_MICRO_APPS: MicroAppConfig[] = [
     name: 'textdiff',
     title: 'Text Difference',
     activePath: ['/textdiff'],
-    loadScriptMode: 'fetch',
+    loadScriptMode: 'script',
     sandbox: true,
     entry: getMicroAppUrl('textdiff', 5174),
   },
