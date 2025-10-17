@@ -50,7 +50,11 @@ function App() {
             <AppRoute exact activePath="/about" component={<About />} />
             <AppRoute exact activePath="/login" component={<Login />} />
             {microApps.map((app) => (
-              <AppRoute key={app.name} {...app} />
+              <AppRoute
+                key={app.name}
+                {...app}
+                {...(app['iframe'] ? { render: () => <iframe src={app.entry} /> } : {})}
+              />
             ))}
           </AppRouter>
         </PageLoading>

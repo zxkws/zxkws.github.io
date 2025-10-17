@@ -11,7 +11,7 @@
       "entry": "/v-app/",
       "activeRule": ["/v-app"],
       "sandbox": false,
-      "loadScriptMode": "script",
+      "loadScriptMode": "fetch",
       "enabled": true,
       "menu": {
         "id": "v-app-menu",
@@ -71,8 +71,8 @@
       "prodEntry": "https://zxkws.nyc.mn/textdiff/",
       "entry": "/textdiff/",
       "activeRule": ["/textdiff"],
-      "sandbox": false,
       "enabled": true,
+      "iframe": true,
       "menu": {
         "id": "textdiff-menu",
         "name": "文本对比",

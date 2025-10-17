@@ -138,6 +138,7 @@ export function convertToIceStarkApps(config: SystemConfig) {
       activePath: app.activeRule,
       sandbox: app.sandbox ?? true,
       loadScriptMode: app.loadScriptMode || 'fetch',
+      iframe: app.iframe,
     }));
 }
 
