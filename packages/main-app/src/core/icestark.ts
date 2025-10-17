@@ -63,10 +63,14 @@ const initializeMicroAppMenus = () => {
   }
 
   MICRO_APP_MENU_META.forEach((meta) => {
-    const existingIndex = window.__MICRO_APP_MENUS__!.findIndex((config) => config.appName === meta.appName);
+    if (!window.__MICRO_APP_MENUS__) {
+      return;
+    }
+
+    const existingIndex = window.__MICRO_APP_MENUS__.findIndex((config) => config.appName === meta.appName);
 
     if (existingIndex === -1) {
-      window.__MICRO_APP_MENUS__!.push({
+      window.__MICRO_APP_MENUS__.push({
         appName: meta.appName,
         menus: meta.defaultMenus,
       });
