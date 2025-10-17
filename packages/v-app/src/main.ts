@@ -1,4 +1,6 @@
 import { createApp, type App as RootApp } from 'vue';
+import isInIcestark from '@ice/stark-app/lib/isInIcestark';
+import setLibraryName from '@ice/stark-app/lib/setLibraryName';
 import '@surely-vue/table/dist/index.less';
 import STable, { setLicenseKey } from '@surely-vue/table';
 
@@ -11,7 +13,6 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 import { createRouterInstance } from './router';
 import { mainStore } from './store';
-import { exposeMenuToHost } from './menuConfig';
 
 type MountOptions = {
   container?: Element | string;
@@ -26,10 +27,10 @@ type MountOptions = {
 type RenderOptions = {
   container: Element;
   basename?: string;
-  isMicroApp: boolean;
 };
 
 let appInstance: RootApp<Element> | null = null;
+setLibraryName('v-app');
 let piniaInstance: Pinia | null = null;
 
 const resolveContainer = (target?: Element | string): Element | null => {
@@ -52,7 +53,7 @@ const registerTokenFromQuery = () => {
   }
 };
 
-const renderApp = ({ container, basename, isMicroApp }: RenderOptions) => {
+const renderApp = ({ container, basename }: RenderOptions) => {
   registerTokenFromQuery();
 
   appInstance = createApp(App);
@@ -70,11 +71,7 @@ const renderApp = ({ container, basename, isMicroApp }: RenderOptions) => {
   appInstance.use(router);
 
   const store = mainStore(piniaInstance);
-  store.setMicroAppMode(isMicroApp);
-
-  if (isMicroApp) {
-    exposeMenuToHost(basename);
-  }
+  store.setMicroAppMode(isInIcestark());
 
   router.beforeEach((_to, _from, next) => {
     store.isLoading = true;
@@ -88,7 +85,13 @@ const renderApp = ({ container, basename, isMicroApp }: RenderOptions) => {
   appInstance.mount(container);
 };
 
-export const bootstrap = async () => undefined;
+export const unmount = async () => {
+  if (appInstance) {
+    appInstance.unmount();
+    appInstance = null;
+  }
+  piniaInstance = null;
+};
 
 export const mount = async (options: MountOptions = {}) => {
   const { container, basename, customProps } = options;
@@ -105,36 +108,12 @@ export const mount = async (options: MountOptions = {}) => {
   renderApp({
     container: target,
     basename: basename ?? customProps?.basename,
-    isMicroApp: customProps?.isMicroApp ?? true,
   });
 };
 
-export const unmount = async () => {
-  if (appInstance) {
-    appInstance.unmount();
-    appInstance = null;
-  }
-  piniaInstance = null;
-};
-
-const defaultContainer = resolveContainer('#app');
-if (defaultContainer) {
+if (!isInIcestark()) {
   renderApp({
-    container: defaultContainer,
+    container: resolveContainer('#app')!,
     basename: import.meta.env.BASE_URL,
-    isMicroApp: false,
   });
 }
-
-const microAppExports = {
-  bootstrap,
-  mount,
-  unmount,
-};
-
-if (typeof window !== 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).VAppMicroApp = microAppExports;
-}
-
-export default microAppExports;

@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import htmlPlugin from 'vite-plugin-index-html';
 import AutoImport from 'unplugin-auto-import/vite';
 import { resolve } from 'path';
 
@@ -10,6 +11,10 @@ export default defineConfig({
     AutoImport({
       imports: ['vue'],
       dts: 'src/auto-imports.d.ts',
+    }),
+    htmlPlugin({
+      input: './src/main.ts',
+      preserveEntrySignatures: 'exports-only',
     }),
   ],
   css: {
