@@ -6,11 +6,20 @@ import CurlConverterMicroApp from '../microApps/CurlConverterMicroApp';
 type MicroAppConfig = AppRouteProps;
 type RuntimeMicroApp = MicroAppConfig & { url?: string | string[] };
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 const getBaseUrl = () => {
   if (typeof window === 'undefined') {
     return '';
   }
   return window.location.origin;
+};
+
+const getMicroAppUrl = (name: string, devPort?: number): string => {
+  if (isDevelopment && devPort) {
+    return `http://localhost:${devPort}`;
+  }
+  return `${getBaseUrl()}/${name}/`;
 };
 
 const DEFAULT_MICRO_APPS: MicroAppConfig[] = [
@@ -26,7 +35,7 @@ const DEFAULT_MICRO_APPS: MicroAppConfig[] = [
     activePath: ['/v-app'],
     loadScriptMode: 'fetch',
     sandbox: true,
-    entry: `${getBaseUrl()}/v-app/`,
+    entry: getMicroAppUrl('v-app', 5173),
   },
   {
     name: 'textdiff',
@@ -34,7 +43,7 @@ const DEFAULT_MICRO_APPS: MicroAppConfig[] = [
     activePath: ['/textdiff'],
     loadScriptMode: 'fetch',
     sandbox: true,
-    entry: `${getBaseUrl()}/textdiff/`,
+    entry: getMicroAppUrl('textdiff', 5174),
   },
 ];
 
@@ -105,7 +114,8 @@ export const resolveMicroApps = (): MicroAppConfig[] => {
     return mergeMicroApps();
   }
 
-  const runtime = (window as typeof window & { __MAIN_APP_MICRO_APPS__?: RuntimeMicroApp[] }).__MAIN_APP_MICRO_APPS__ ?? [];
+  const runtime =
+    (window as typeof window & { __MAIN_APP_MICRO_APPS__?: RuntimeMicroApp[] }).__MAIN_APP_MICRO_APPS__ ?? [];
   return mergeMicroApps(runtime);
 };
 

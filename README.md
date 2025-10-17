@@ -27,25 +27,61 @@ packages/
 pnpm install
 ```
 
-### 开发主应用
+### 方式一：同时开发所有应用（推荐）
+
+一键启动主应用和所有微应用，支持热更新和微前端联调：
 
 ```bash
-cd packages/main-app
 pnpm dev
 ```
 
-### 开发 v-app 微应用
+此命令会并行启动：
+
+- 主应用：`http://localhost:3000`
+- v-app 微应用：`http://localhost:5173`
+- textDifference 微应用：`http://localhost:5174`
+
+主应用会自动加载本地开发中的微应用，实现实时热更新。
+
+### 方式二：单独开发
+
+如果只需要开发某个应用：
 
 ```bash
-cd packages/v-app
-pnpm vite
+# 只开发主应用
+pnpm dev:main
+
+# 只开发 v-app 微应用
+pnpm dev:v-app
+
+# 只开发 textDifference 微应用
+pnpm dev:textdiff
 ```
+
+### 端口说明
+
+| 应用           | 开发端口 | 访问地址              |
+| -------------- | -------- | --------------------- |
+| main-app       | 3000     | http://localhost:3000 |
+| v-app          | 5173     | http://localhost:5173 |
+| textDifference | 5174     | http://localhost:5174 |
+
+### 本地开发特性
+
+- ✅ 支持微前端联调（主应用自动加载本地微应用）
+- ✅ 支持热更新（HMR）
+- ✅ 自动配置 CORS
+- ✅ 彩色日志输出，方便区分不同应用
 
 ## 构建
 
 ### 构建所有应用
 
 ```bash
+# 使用统一命令
+pnpm build:all
+
+# 或者分别构建
 pnpm --filter main-app build
 pnpm --filter v-app build
 pnpm --filter textdifference build

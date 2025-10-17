@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const { resolve } = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-process.env.NODE_ENV = process.env.NODE_ENV || 'development'
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -25,7 +26,7 @@ module.exports = {
               },
             },
           },
-          'postcss-loader'
+          'postcss-loader',
         ],
       },
       {
@@ -69,7 +70,13 @@ module.exports = {
     // 'react-dom/client': 'ReactDOM',
   },
   devServer: {
+    port: 3000,
     historyApiFallback: true,
+    hot: true,
+    open: true,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    },
   },
   output: {
     path: resolve(__dirname, '../dist'),
