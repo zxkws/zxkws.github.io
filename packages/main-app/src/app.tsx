@@ -1,12 +1,12 @@
 import { AppRoute, AppRouter } from '@ice/stark';
 import ReactDom from 'react-dom/client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import PageLoading from './components/PageLoading';
 import './global.scss';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
-import { ensureIcestarkStarted, resolveMicroApps, subscribeMicroAppLoading } from './core/icestark';
+import { ensureIcestarkStarted, resolveMicroApps, subscribeMicroAppLoading, loadConfig } from './core/icestark';
 import BasicLayout from './layouts/BasicLayout';
 import About from './pages/About';
 import Home from './pages/Home';
@@ -16,16 +16,25 @@ const NotFound = () => <div className="flex flex-1 items-center justify-center">
 
 function App() {
   const [isMicroAppLoading, setIsMicroAppLoading] = useState(false);
-  const microApps = useMemo(() => resolveMicroApps(), []);
+  const [configLoaded, setConfigLoaded] = useState(false);
+  const [microApps, setMicroApps] = useState<ReturnType<typeof resolveMicroApps>>([]);
 
   useEffect(() => {
-    ensureIcestarkStarted();
+    loadConfig().then(() => {
+      setConfigLoaded(true);
+      setMicroApps(resolveMicroApps());
+      ensureIcestarkStarted();
+    });
   }, []);
 
   useEffect(() => {
     const unsubscribe = subscribeMicroAppLoading(setIsMicroAppLoading);
     return unsubscribe;
   }, []);
+
+  if (!configLoaded) {
+    return <PageLoading loading={true} />;
+  }
 
   return (
     <AuthProvider>

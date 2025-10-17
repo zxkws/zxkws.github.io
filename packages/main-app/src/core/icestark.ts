@@ -2,11 +2,15 @@ import React from 'react';
 import { registerMicroApps, start, type AppConfig } from '@ice/stark';
 import type { AppRouteProps } from '@ice/stark/lib/AppRoute';
 import CurlConverterMicroApp from '../microApps/CurlConverterMicroApp';
+import { loadSystemConfig, convertToIceStarkApps } from '../services/configService';
+import type { SystemConfig } from '../types/config';
 
 type MicroAppConfig = AppRouteProps;
 type RuntimeMicroApp = MicroAppConfig & { url?: string | string[] };
 
 const isDevelopment = process.env.NODE_ENV === 'development';
+
+let systemConfig: SystemConfig | null = null;
 
 const getBaseUrl = () => {
   if (typeof window === 'undefined') {
@@ -165,9 +169,26 @@ const emitLoading = (loading: boolean) => {
   loadingEventTarget.dispatchEvent(new CustomEvent('micro-app-loading', { detail: loading }));
 };
 
+export const loadConfig = async (): Promise<SystemConfig> => {
+  if (systemConfig) {
+    return systemConfig;
+  }
+  systemConfig = await loadSystemConfig();
+  return systemConfig;
+};
+
+export const getSystemConfig = (): SystemConfig | null => {
+  return systemConfig;
+};
+
 export const resolveMicroApps = (): MicroAppConfig[] => {
   if (typeof window === 'undefined') {
     return mergeMicroApps();
+  }
+
+  if (systemConfig) {
+    const configApps = convertToIceStarkApps(systemConfig);
+    return mergeMicroApps(configApps as RuntimeMicroApp[]);
   }
 
   const runtime =

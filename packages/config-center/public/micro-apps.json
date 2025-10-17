@@ -1,0 +1,53 @@
+{
+  "version": "1.0.0",
+  "microApps": [
+    {
+      "id": "v-app",
+      "name": "v-app",
+      "displayName": "Vue 应用",
+      "description": "基于 Vue 3 开发的微应用",
+      "devEntry": "http://localhost:5173",
+      "prodEntry": "https://zxkws.nyc.mn/v-app/",
+      "entry": "/v-app/",
+      "activeRule": ["/v-app"],
+      "sandbox": true,
+      "loadScriptMode": "fetch",
+      "enabled": true,
+      "menu": {
+        "id": "v-app-menu",
+        "name": "Vue 应用",
+        "icon": "⚡",
+        "type": "group",
+        "visible": true,
+        "source": "static",
+        "order": 1
+      },
+      "order": 1
+    },
+    {
+      "id": "textdiff",
+      "name": "textdiff",
+      "displayName": "文本对比",
+      "description": "在线文本差异对比工具",
+      "devEntry": "http://localhost:5174",
+      "prodEntry": "https://zxkws.nyc.mn/textdiff/",
+      "entry": "/textdiff/",
+      "activeRule": ["/textdiff"],
+      "sandbox": false,
+      "enabled": true,
+      "menu": {
+        "id": "textdiff-menu",
+        "name": "文本对比",
+        "icon": "📝",
+        "type": "item",
+        "path": "/textdiff/",
+        "visible": true,
+        "source": "static",
+        "order": 2
+      },
+      "order": 2
+    }
+  ],
+  "standaloneMenus": [],
+  "updatedAt": "2025-01-17T10:00:00Z"
+}

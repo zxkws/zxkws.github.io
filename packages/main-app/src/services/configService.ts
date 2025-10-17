@@ -3,16 +3,28 @@ import type { MenuItem } from '../types/menu';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
+const getConfigUrl = () => {
+  if (isDevelopment) {
+    return 'http://localhost:5175/micro-apps.json';
+  }
+  return `${window.location.origin}/config-center/micro-apps.json`;
+};
+
 /**
- * 从服务端加载配置
+ * 从配置中心加载配置
  */
 export async function loadSystemConfig(): Promise<SystemConfig> {
   try {
-    const response = await fetch('/api/micro-apps/config');
+    const configUrl = getConfigUrl();
+    const response = await fetch(configUrl);
     if (!response.ok) {
       throw new Error(`Failed to load config: ${response.statusText}`);
     }
-    return await response.json();
+    const config = await response.json();
+    return {
+      ...config,
+      updatedAt: new Date(config.updatedAt),
+    };
   } catch (error) {
     console.error('Failed to load system config:', error);
     return getFallbackConfig();
@@ -30,6 +42,7 @@ function getFallbackConfig(): SystemConfig {
         id: 'v-app',
         name: 'v-app',
         displayName: 'Vue 应用',
+        entry: '/v-app/',
         devEntry: 'http://localhost:5173',
         prodEntry: 'https://zxkws.nyc.mn/v-app/',
         activeRule: ['/v-app'],
@@ -49,6 +62,7 @@ function getFallbackConfig(): SystemConfig {
         id: 'textdiff',
         name: 'textdiff',
         displayName: '文本对比',
+        entry: '/textdiff/',
         devEntry: 'http://localhost:5174',
         prodEntry: 'https://zxkws.nyc.mn/textdiff/',
         activeRule: ['/textdiff'],

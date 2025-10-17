@@ -1,0 +1,10 @@
+{
+  "name": "config-center",
+  "version": "1.0.0",
+  "description": "Micro-app Configuration Center",
+  "scripts": {
+    "dev": "npx http-server public -p 5175 --cors -c-1",
+    "build": "mkdir -p dist && cp -r public/* dist/"
+  },
+  "license": "MIT"
+}

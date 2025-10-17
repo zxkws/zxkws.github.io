@@ -50,12 +50,16 @@ jobs:
       - name: Build textDifference
         run: pnpm --filter textdifference build
 
+      - name: Build config-center
+        run: pnpm --filter config-center build
+
       - name: Prepare Deployment
         run: |
           mkdir -p deploy
           cp -r packages/main-app/dist/* deploy/
           cp -r packages/v-app/dist deploy/v-app
           cp -r packages/textDifference/dist deploy/textdiff
+          cp -r packages/config-center/dist deploy/config-center
 
       - name: Deploy to GitHub Pages
         env:

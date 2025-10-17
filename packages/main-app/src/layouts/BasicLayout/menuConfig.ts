@@ -1,4 +1,6 @@
 import type { MenuItem } from '../../types/menu';
+import { getSystemConfig } from '../../core/icestark';
+import { generateMenusFromConfig, mergeMenus } from '../../services/configService';
 
 const headerMenuConfig: MenuItem[] = [];
 
@@ -7,16 +9,6 @@ const staticMenuConfig: MenuItem[] = [
     name: 'Home',
     path: '/',
     icon: 'chart-pie',
-  },
-  {
-    name: 'About',
-    path: '/about',
-    icon: 'chart-pie',
-  },
-  {
-    name: 'Login',
-    path: '/login',
-    icon: 'account',
   },
   {
     name: 'Curl Converter',
@@ -48,8 +40,17 @@ const getAsideMenuConfig = (): MenuItem[] => {
     return cachedMenus;
   }
 
-  const microMenus = getMicroAppMenus();
-  cachedMenus = [...staticMenuConfig, ...microMenus];
+  const config = getSystemConfig();
+  if (config) {
+    const configMenus = generateMenusFromConfig(config);
+    const microMenus = getMicroAppMenus();
+    const mergedMenus = mergeMenus(configMenus, microMenus);
+    cachedMenus = [...staticMenuConfig, ...mergedMenus];
+  } else {
+    const microMenus = getMicroAppMenus();
+    cachedMenus = [...staticMenuConfig, ...microMenus];
+  }
+
   return cachedMenus;
 };
 

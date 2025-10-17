@@ -6,12 +6,13 @@
   "scripts": {
     "clean": "npx rimraf node_modules packages/**/node_modules packages/**/**/node_modules pnpm-lock.yaml .ice packages/**/.ice",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently -n \"main,v-app,textdiff\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen.bold\" \"pnpm dev:main\" \"pnpm dev:v-app\" \"pnpm dev:textdiff\"",
+    "dev": "concurrently -n \"main,v-app,textdiff,config\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen.bold,bgCyan.bold\" \"pnpm dev:main\" \"pnpm dev:v-app\" \"pnpm dev:textdiff\" \"pnpm dev:config\"",
     "dev:main": "pnpm --filter main-app dev",
     "dev:v-app": "pnpm --filter v-app vite",
     "dev:textdiff": "pnpm --filter textdifference dev",
+    "dev:config": "pnpm --filter config-center dev",
     "build": "sh ./scripts/sh/build.sh",
-    "build:all": "pnpm --filter main-app build && pnpm --filter v-app build && pnpm --filter textdifference build",
+    "build:all": "pnpm --filter main-app build && pnpm --filter v-app build && pnpm --filter textdifference build && pnpm --filter config-center build",
     "postinstall": "pnpm i @google/gemini-cli @anthropic-ai/claude-code -g || true",
     "prepare": "husky install"
   },
