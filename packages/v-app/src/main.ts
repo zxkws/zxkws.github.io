@@ -11,6 +11,7 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
 import { createRouterInstance } from './router';
 import { mainStore } from './store';
+import { exposeMenuToHost } from './menuConfig';
 
 type MountOptions = {
   container?: Element | string;
@@ -70,6 +71,10 @@ const renderApp = ({ container, basename, isMicroApp }: RenderOptions) => {
 
   const store = mainStore(piniaInstance);
   store.setMicroAppMode(isMicroApp);
+
+  if (isMicroApp) {
+    exposeMenuToHost(basename);
+  }
 
   router.beforeEach((to, from, next) => {
     store.isLoading = true;

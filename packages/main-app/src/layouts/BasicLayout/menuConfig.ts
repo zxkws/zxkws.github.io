@@ -1,10 +1,8 @@
-const headerMenuConfig = [];
+import type { MenuItem } from '../../types/menu';
 
-const asideMenuConfig = [
-  {
-    name: 'curlconverter',
-    path: '/curlconverter',
-  },
+const headerMenuConfig: MenuItem[] = [];
+
+const staticMenuConfig: MenuItem[] = [
   {
     name: 'Home',
     path: '/',
@@ -21,63 +19,40 @@ const asideMenuConfig = [
     icon: 'account',
   },
   {
-    name: 'Angular',
+    name: 'Curl Converter',
+    path: '/curlconverter',
     icon: 'set',
-    children: [
-      {
-        path: '/angular',
-        name: 'router contact',
-      },
-      {
-        path: '/angular/detail',
-        name: 'router detail',
-      },
-    ],
-  },
-  {
-    name: 'React 微应用',
-    icon: 'atm',
-    children: [
-      {
-        path: '/seller',
-        name: '首页',
-      },
-      {
-        path: '/seller/list',
-        name: '列表',
-      },
-      {
-        path: '/seller/detail',
-        name: '详情',
-      },
-      {
-        path: '/seller/404',
-        name: '404',
-      },
-    ],
-  },
-  {
-    name: 'Vue 微应用',
-    icon: 'account',
-    children: [
-      {
-        path: '/waiter',
-        name: '首页',
-      },
-      {
-        path: '/waiter/list',
-        name: '列表',
-      },
-      {
-        path: '/waiter/detail',
-        name: '详情',
-      },
-      {
-        path: '/waiter/404',
-        name: '404',
-      },
-    ],
   },
 ];
 
-export { headerMenuConfig, asideMenuConfig };
+const getMicroAppMenus = (): MenuItem[] => {
+  if (typeof window === 'undefined' || !window.__MICRO_APP_MENUS__) {
+    return [];
+  }
+
+  return window.__MICRO_APP_MENUS__.map((config) => ({
+    name: config.appName === 'v-app' ? 'Vue 应用' : config.appName,
+    icon: 'atm',
+    children: config.menus,
+  }));
+};
+
+let cachedMenus: MenuItem[] | null = null;
+
+const getAsideMenuConfig = (): MenuItem[] => {
+  if (cachedMenus) {
+    return cachedMenus;
+  }
+
+  const microMenus = getMicroAppMenus();
+  cachedMenus = [...staticMenuConfig, ...microMenus];
+  return cachedMenus;
+};
+
+export const refreshMenus = () => {
+  cachedMenus = null;
+};
+
+const asideMenuConfig = getAsideMenuConfig();
+
+export { headerMenuConfig, asideMenuConfig, getAsideMenuConfig };

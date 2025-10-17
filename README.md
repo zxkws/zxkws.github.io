@@ -97,9 +97,32 @@ pnpm --filter textdifference build
 - **v-app**: Vue 3 + Vite + Pinia
 - **textDifference**: 纯静态 HTML/JS
 
+## 微前端特性
+
+### 菜单管理
+
+主应用统一管理所有微应用的菜单：
+
+- ✅ 微应用在主应用中隐藏自己的导航
+- ✅ 微应用将菜单暴露给主应用
+- ✅ 独立访问时显示完整导航
+- ✅ 动态集成菜单配置
+
+详细说明请查看 [菜单管理文档](./docs/MENU_MANAGEMENT.md)
+
+### 环境检测
+
+微应用自动检测运行环境：
+
+```typescript
+// 主应用环境: isMicroApp = true，隐藏导航
+// 独立访问: isMicroApp = false，显示导航
+```
+
 ## 参考文档
 
 - [ice-stark 微前端框架](https://micro-frontends.ice.work/docs/guide/)
+- [菜单管理机制](./docs/MENU_MANAGEMENT.md)
 - [Tailwind CSS](https://tailwindui.starxg.com/components)
 - [shadcn-vue](https://www.shadcn-vue.com/docs/introduction.html)
 - [Tailwind Generator](https://tailwind-generator.com/generators)

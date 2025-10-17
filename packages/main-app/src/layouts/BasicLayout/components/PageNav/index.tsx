@@ -1,14 +1,8 @@
 import { AppLink } from '@ice/stark';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { asideMenuConfig } from '../../menuConfig';
+import { getAsideMenuConfig, refreshMenus } from '../../menuConfig';
+import type { MenuItem } from '../../../../types/menu';
 import * as styles from './index.module.css';
-
-type MenuItem = {
-  name: string;
-  path?: string;
-  icon?: string;
-  children?: MenuItem[];
-};
 
 type MenuGroupState = Set<string>;
 
@@ -90,13 +84,14 @@ const isMicroAppEntry = (path?: string) => {
   if (!path) {
     return false;
   }
-  return ['/seller', '/waiter', '/curlconverter'].some((prefix) => path.startsWith(prefix));
+  return ['/v-app', '/textdiff', '/curlconverter'].some((prefix) => path.startsWith(prefix));
 };
 
 const PageNav = () => {
   const [activePath, setActivePath] = useState<string>(() => getCurrentPath());
+  const [menuConfig, setMenuConfig] = useState<MenuItem[]>(() => getAsideMenuConfig());
   const [expandedGroups, setExpandedGroups] = useState<MenuGroupState>(() => {
-    const keys = collectExpandedKeys(asideMenuConfig, getCurrentPath());
+    const keys = collectExpandedKeys(getAsideMenuConfig(), getCurrentPath());
     return new Set(keys);
   });
 
@@ -107,6 +102,8 @@ const PageNav = () => {
 
     const handlePathChange = () => {
       setActivePath(getCurrentPath());
+      refreshMenus();
+      setMenuConfig(getAsideMenuConfig());
     };
 
     const historyRef = window.history;
@@ -137,11 +134,11 @@ const PageNav = () => {
   useEffect(() => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
-      const requiredKeys = collectExpandedKeys(asideMenuConfig, activePath);
+      const requiredKeys = collectExpandedKeys(menuConfig, activePath);
       requiredKeys.forEach((key) => next.add(key));
       return next;
     });
-  }, [activePath]);
+  }, [activePath, menuConfig]);
 
   const toggleGroup = useCallback((key: string) => {
     setExpandedGroups((prev) => {
@@ -223,7 +220,7 @@ const PageNav = () => {
     [activePath, expandedGroups, toggleGroup],
   );
 
-  const menuContent = useMemo(() => renderMenuItems(asideMenuConfig), [renderMenuItems]);
+  const menuContent = useMemo(() => renderMenuItems(menuConfig), [renderMenuItems, menuConfig]);
 
   return (
     <nav className={styles.navContainer} aria-label="主导航">
