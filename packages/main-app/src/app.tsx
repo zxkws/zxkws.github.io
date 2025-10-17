@@ -45,10 +45,10 @@ function App() {
     <AuthProvider>
       <BasicLayout>
         <PageLoading loading={isMicroAppLoading}>
-          <AppRouter NotFoundComponent={NotFound}>
-            <AppRoute exact path="/" component={<Home />} />
-            <AppRoute exact path="/about" component={<About />} />
-            <AppRoute exact path="/login" component={<Login />} />
+          <AppRouter NotFoundComponent={NotFound} onRouteChange={console.log}>
+            <AppRoute exact activePath="/" component={<Home />} />
+            <AppRoute exact activePath="/about" component={<About />} />
+            <AppRoute exact activePath="/login" component={<Login />} />
             {microApps.map((app) => (
               <AppRoute key={app.name} {...app} />
             ))}
