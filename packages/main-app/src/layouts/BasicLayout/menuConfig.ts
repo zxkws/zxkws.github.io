@@ -30,11 +30,15 @@ const getMicroAppMenus = (): MenuItem[] => {
     return [];
   }
 
-  return window.__MICRO_APP_MENUS__.map((config) => ({
-    name: config.appName === 'v-app' ? 'Vue 应用' : config.appName,
-    icon: 'atm',
-    children: config.menus,
-  }));
+  return window.__MICRO_APP_MENUS__.map((config) => {
+    const displayName =
+      config.appName === 'v-app' ? 'Vue 应用' : config.appName === 'textdiff' ? '文本对比' : config.appName;
+    return {
+      name: displayName,
+      icon: 'atm',
+      children: config.menus,
+    };
+  });
 };
 
 let cachedMenus: MenuItem[] | null = null;

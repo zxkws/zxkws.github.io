@@ -56,6 +56,8 @@ export const exposeMenuToHost = (basename = '/v-app') => {
       menus,
     });
   }
+
+  window.dispatchEvent(new CustomEvent('micro-app-menu-updated', { detail: { appName: 'v-app' } }));
 };
 
 declare global {

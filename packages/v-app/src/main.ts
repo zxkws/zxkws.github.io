@@ -76,7 +76,7 @@ const renderApp = ({ container, basename, isMicroApp }: RenderOptions) => {
     exposeMenuToHost(basename);
   }
 
-  router.beforeEach((to, from, next) => {
+  router.beforeEach((_to, _from, next) => {
     store.isLoading = true;
     next();
   });
@@ -133,6 +133,7 @@ const microAppExports = {
 };
 
 if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).VAppMicroApp = microAppExports;
 }
 

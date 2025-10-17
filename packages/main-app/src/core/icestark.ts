@@ -22,6 +22,58 @@ const getMicroAppUrl = (name: string, devPort?: number): string => {
   return `${getBaseUrl()}/${name}/`;
 };
 
+interface MicroAppMenuMeta {
+  appName: string;
+  title: string;
+  icon?: string;
+  defaultMenus: Array<{
+    name: string;
+    path: string;
+    icon?: string;
+  }>;
+}
+
+const MICRO_APP_MENU_META: MicroAppMenuMeta[] = [
+  {
+    appName: 'v-app',
+    title: 'Vue 应用',
+    icon: 'atm',
+    defaultMenus: [
+      { name: '导航列表', path: '/v-app/navList', icon: '🏠' },
+      { name: 'Todo', path: '/v-app/todo', icon: '✅' },
+      { name: '账户管理', path: '/v-app/account', icon: '👤' },
+      { name: 'LLM 排名', path: '/v-app/llm-ranking', icon: '📊' },
+    ],
+  },
+  {
+    appName: 'textdiff',
+    title: '文本对比',
+    icon: 'set',
+    defaultMenus: [{ name: '文本对比工具', path: '/textdiff/', icon: '📝' }],
+  },
+];
+
+const initializeMicroAppMenus = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  if (!window.__MICRO_APP_MENUS__) {
+    window.__MICRO_APP_MENUS__ = [];
+  }
+
+  MICRO_APP_MENU_META.forEach((meta) => {
+    const existingIndex = window.__MICRO_APP_MENUS__!.findIndex((config) => config.appName === meta.appName);
+
+    if (existingIndex === -1) {
+      window.__MICRO_APP_MENUS__!.push({
+        appName: meta.appName,
+        menus: meta.defaultMenus,
+      });
+    }
+  });
+};
+
 const DEFAULT_MICRO_APPS: MicroAppConfig[] = [
   {
     name: 'curlconverter',
@@ -124,6 +176,8 @@ export const ensureIcestarkStarted = (options?: StartOptions) => {
     return;
   }
 
+  initializeMicroAppMenus();
+
   const apps = resolveMicroApps();
   const registerable = apps.filter((app) => !('component' in app) && !('render' in app));
   if (registerable.length > 0) {
@@ -132,7 +186,12 @@ export const ensureIcestarkStarted = (options?: StartOptions) => {
 
   start({
     onLoadingApp: () => emitLoading(true),
-    onFinishLoading: () => emitLoading(false),
+    onFinishLoading: () => {
+      emitLoading(false);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('micro-app-mounted'));
+      }
+    },
     ...(options ?? {}),
   });
 

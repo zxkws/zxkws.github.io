@@ -102,6 +102,9 @@ const PageNav = () => {
 
     const handlePathChange = () => {
       setActivePath(getCurrentPath());
+    };
+
+    const handleMenuUpdate = () => {
       refreshMenus();
       setMenuConfig(getAsideMenuConfig());
     };
@@ -122,12 +125,16 @@ const PageNav = () => {
 
     window.addEventListener('popstate', handlePathChange);
     window.addEventListener('hashchange', handlePathChange);
+    window.addEventListener('micro-app-mounted', handleMenuUpdate);
+    window.addEventListener('micro-app-menu-updated', handleMenuUpdate);
 
     return () => {
       historyRef.pushState = originalPush;
       historyRef.replaceState = originalReplace;
       window.removeEventListener('popstate', handlePathChange);
       window.removeEventListener('hashchange', handlePathChange);
+      window.removeEventListener('micro-app-mounted', handleMenuUpdate);
+      window.removeEventListener('micro-app-menu-updated', handleMenuUpdate);
     };
   }, []);
 
