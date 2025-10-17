@@ -13,9 +13,7 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
       <HeaderBar />
       <div className="flex flex-1 overflow-hidden">
         <PageNav />
-        <main className="flex flex-1 flex-col overflow-auto px-8 py-10">
-          {children}
-        </main>
+        <main className="flex flex-1 flex-col overflow-auto px-8 py-10">{children}</main>
       </div>
     </div>
   );
