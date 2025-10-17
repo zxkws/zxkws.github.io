@@ -26,37 +26,6 @@ const getMicroAppUrl = (name: string, devPort?: number): string => {
   return `${getBaseUrl()}/${name}/`;
 };
 
-interface MicroAppMenuMeta {
-  appName: string;
-  title: string;
-  icon?: string;
-  defaultMenus: Array<{
-    name: string;
-    path: string;
-    icon?: string;
-  }>;
-}
-
-const MICRO_APP_MENU_META: MicroAppMenuMeta[] = [
-  {
-    appName: 'v-app',
-    title: 'Vue 应用',
-    icon: 'atm',
-    defaultMenus: [
-      { name: '导航列表', path: '/v-app/navList', icon: '🏠' },
-      { name: 'Todo', path: '/v-app/todo', icon: '✅' },
-      { name: '账户管理', path: '/v-app/account', icon: '👤' },
-      { name: 'LLM 排名', path: '/v-app/llm-ranking', icon: '📊' },
-    ],
-  },
-  {
-    appName: 'textdiff',
-    title: '文本对比',
-    icon: 'set',
-    defaultMenus: [{ name: '文本对比工具', path: '/textdiff/', icon: '📝' }],
-  },
-];
-
 const initializeMicroAppMenus = () => {
   if (typeof window === 'undefined') {
     return;
@@ -65,21 +34,6 @@ const initializeMicroAppMenus = () => {
   if (!window.__MICRO_APP_MENUS__) {
     window.__MICRO_APP_MENUS__ = [];
   }
-
-  MICRO_APP_MENU_META.forEach((meta) => {
-    if (!window.__MICRO_APP_MENUS__) {
-      return;
-    }
-
-    const existingIndex = window.__MICRO_APP_MENUS__.findIndex((config) => config.appName === meta.appName);
-
-    if (existingIndex === -1) {
-      window.__MICRO_APP_MENUS__.push({
-        appName: meta.appName,
-        menus: meta.defaultMenus,
-      });
-    }
-  });
 };
 
 const DEFAULT_MICRO_APPS: MicroAppConfig[] = [
@@ -171,9 +125,12 @@ const emitLoading = (loading: boolean) => {
 
 export const loadConfig = async (): Promise<SystemConfig> => {
   if (systemConfig) {
+    console.log('[Icestark] Using cached config:', systemConfig);
     return systemConfig;
   }
+  console.log('[Icestark] Loading config...');
   systemConfig = await loadSystemConfig();
+  console.log('[Icestark] Config loaded and cached:', systemConfig);
   return systemConfig;
 };
 

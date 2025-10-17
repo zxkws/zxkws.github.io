@@ -10,8 +10,8 @@
       "prodEntry": "https://zxkws.nyc.mn/v-app/",
       "entry": "/v-app/",
       "activeRule": ["/v-app"],
-      "sandbox": true,
-      "loadScriptMode": "fetch",
+      "sandbox": false,
+      "loadScriptMode": "script",
       "enabled": true,
       "menu": {
         "id": "v-app-menu",
@@ -20,7 +20,45 @@
         "type": "group",
         "visible": true,
         "source": "static",
-        "order": 1
+        "order": 1,
+        "children": [
+          {
+            "id": "v-app-navlist",
+            "name": "导航列表",
+            "path": "/v-app/navList",
+            "icon": "🏠",
+            "type": "item",
+            "visible": true,
+            "source": "static"
+          },
+          {
+            "id": "v-app-todo",
+            "name": "Todo",
+            "path": "/v-app/todo",
+            "icon": "✅",
+            "type": "item",
+            "visible": true,
+            "source": "static"
+          },
+          {
+            "id": "v-app-account",
+            "name": "账户管理",
+            "path": "/v-app/account",
+            "icon": "👤",
+            "type": "item",
+            "visible": true,
+            "source": "static"
+          },
+          {
+            "id": "v-app-llm-ranking",
+            "name": "LLM 排名",
+            "path": "/v-app/llm-ranking",
+            "icon": "📊",
+            "type": "item",
+            "visible": true,
+            "source": "static"
+          }
+        ]
       },
       "order": 1
     },

@@ -70,14 +70,16 @@ const collectExpandedKeys = (items: MenuItem[], current: string, parentKey = 'ro
 };
 
 const getIconSymbol = (item: MenuItem) => {
-  if (item.icon && ICON_SYMBOLS[item.icon]) {
+  if (!item.icon) {
+    const firstLetter = item.name?.trim().charAt(0);
+    return firstLetter ? firstLetter.toUpperCase() : '•';
+  }
+
+  if (ICON_SYMBOLS[item.icon]) {
     return ICON_SYMBOLS[item.icon];
   }
-  const firstLetter = item.name?.trim().charAt(0);
-  if (!firstLetter) {
-    return '•';
-  }
-  return firstLetter.toUpperCase();
+
+  return item.icon;
 };
 
 const isMicroAppEntry = (path?: string) => {
@@ -89,7 +91,10 @@ const isMicroAppEntry = (path?: string) => {
 
 const PageNav = () => {
   const [activePath, setActivePath] = useState<string>(() => getCurrentPath());
-  const [menuConfig, setMenuConfig] = useState<MenuItem[]>(() => getAsideMenuConfig());
+  const [menuConfig, setMenuConfig] = useState<MenuItem[]>(() => {
+    console.log('[PageNav] Initial menu config load');
+    return getAsideMenuConfig();
+  });
   const [expandedGroups, setExpandedGroups] = useState<MenuGroupState>(() => {
     const keys = collectExpandedKeys(getAsideMenuConfig(), getCurrentPath());
     return new Set(keys);
@@ -100,13 +105,18 @@ const PageNav = () => {
       return;
     }
 
+    console.log('[PageNav] Component mounted, setting up event listeners');
+
     const handlePathChange = () => {
       setActivePath(getCurrentPath());
     };
 
     const handleMenuUpdate = () => {
+      console.log('[PageNav] Menu update triggered, refreshing menus');
       refreshMenus();
-      setMenuConfig(getAsideMenuConfig());
+      const newMenuConfig = getAsideMenuConfig();
+      console.log('[PageNav] New menu config:', newMenuConfig);
+      setMenuConfig(newMenuConfig);
     };
 
     const historyRef = window.history;
@@ -125,14 +135,20 @@ const PageNav = () => {
 
     window.addEventListener('popstate', handlePathChange);
     window.addEventListener('hashchange', handlePathChange);
+    window.addEventListener('config-loaded', handleMenuUpdate);
     window.addEventListener('micro-app-mounted', handleMenuUpdate);
     window.addEventListener('micro-app-menu-updated', handleMenuUpdate);
+
+    console.log('[PageNav] Event listeners registered');
+
+    handleMenuUpdate();
 
     return () => {
       historyRef.pushState = originalPush;
       historyRef.replaceState = originalReplace;
       window.removeEventListener('popstate', handlePathChange);
       window.removeEventListener('hashchange', handlePathChange);
+      window.removeEventListener('config-loaded', handleMenuUpdate);
       window.removeEventListener('micro-app-mounted', handleMenuUpdate);
       window.removeEventListener('micro-app-menu-updated', handleMenuUpdate);
     };

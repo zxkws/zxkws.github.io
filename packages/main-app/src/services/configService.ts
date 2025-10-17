@@ -16,17 +16,20 @@ const getConfigUrl = () => {
 export async function loadSystemConfig(): Promise<SystemConfig> {
   try {
     const configUrl = getConfigUrl();
+    console.log('[ConfigService] Loading config from:', configUrl);
     const response = await fetch(configUrl);
     if (!response.ok) {
       throw new Error(`Failed to load config: ${response.statusText}`);
     }
     const config = await response.json();
+    console.log('[ConfigService] Config loaded successfully:', config);
     return {
       ...config,
       updatedAt: new Date(config.updatedAt),
     };
   } catch (error) {
-    console.error('Failed to load system config:', error);
+    console.error('[ConfigService] Failed to load system config:', error);
+    console.log('[ConfigService] Using fallback config');
     return getFallbackConfig();
   }
 }
@@ -55,6 +58,44 @@ function getFallbackConfig(): SystemConfig {
           type: 'group',
           visible: true,
           source: 'static',
+          children: [
+            {
+              id: 'v-app-navlist',
+              name: '导航列表',
+              path: '/v-app/navList',
+              icon: '🏠',
+              type: 'item',
+              visible: true,
+              source: 'static',
+            },
+            {
+              id: 'v-app-todo',
+              name: 'Todo',
+              path: '/v-app/todo',
+              icon: '✅',
+              type: 'item',
+              visible: true,
+              source: 'static',
+            },
+            {
+              id: 'v-app-account',
+              name: '账户管理',
+              path: '/v-app/account',
+              icon: '👤',
+              type: 'item',
+              visible: true,
+              source: 'static',
+            },
+            {
+              id: 'v-app-llm-ranking',
+              name: 'LLM 排名',
+              path: '/v-app/llm-ranking',
+              icon: '📊',
+              type: 'item',
+              visible: true,
+              source: 'static',
+            },
+          ],
         },
         order: 1,
       },
@@ -108,6 +149,8 @@ export function generateMenusFromConfig(config: SystemConfig, userPermissions?: 
     .filter((app) => app.enabled && app.menu)
     .map((app) => convertMenuConfigToMenuItem(app));
 
+  console.log('[ConfigService] Generated microAppMenus:', microAppMenus);
+
   const standaloneMenus: MenuItem[] = (config.standaloneMenus || []).map((menu) => ({
     name: menu.name,
     path: menu.path,
@@ -124,6 +167,8 @@ export function generateMenusFromConfig(config: SystemConfig, userPermissions?: 
     const orderB = (b as { order?: number }).order || 0;
     return orderA - orderB;
   });
+
+  console.log('[ConfigService] All menus after sorting:', allMenus);
 
   if (userPermissions) {
     return filterMenusByPermissions(allMenus, userPermissions);
