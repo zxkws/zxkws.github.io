@@ -129,10 +129,6 @@ const HeaderBar = () => {
           </span>
           <span className={styles.themeText}>{theme === 'dark' ? '暗色模式' : '亮色模式'}</span>
         </button>
-        <button type="button" className={styles.localePlaceholder} title="多语言支持即将上线" disabled>
-          <span className={styles.localeDot} aria-hidden="true" />
-          多语言（Soon）
-        </button>
       </div>
     </header>
   );

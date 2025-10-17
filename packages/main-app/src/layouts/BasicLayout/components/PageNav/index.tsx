@@ -162,7 +162,9 @@ const PageNav = () => {
         const hasChildren = !!item.children && item.children.length > 0;
         const isExpanded = expandedGroups.has(key);
         const active = isPathMatch(item.path, activePath);
-        const hasActiveChild = hasChildren ? item.children!.some((child) => menuItemHasActive(child, activePath)) : false;
+        const hasActiveChild = hasChildren
+          ? item.children!.some((child) => menuItemHasActive(child, activePath))
+          : false;
         const emblem = getIconSymbol(item);
 
         if (hasChildren) {
@@ -225,10 +227,6 @@ const PageNav = () => {
 
   return (
     <nav className={styles.navContainer} aria-label="主导航">
-      <div className={styles.navHeader}>
-        <div className={styles.navTitle}>全局导航</div>
-        <div className={styles.navSubtitle}>选择模块或进入微应用</div>
-      </div>
       <div className={styles.navInner}>{menuContent}</div>
     </nav>
   );
