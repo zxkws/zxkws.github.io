@@ -20,20 +20,17 @@ const getConfigUrl = () => {
 export async function loadSystemConfig(): Promise<SystemConfig> {
   try {
     const configUrl = getConfigUrl();
-    console.log('[ConfigService] Loading config from:', configUrl);
     const response = await fetch(configUrl);
     if (!response.ok) {
       throw new Error(`Failed to load config: ${response.statusText}`);
     }
     const config = await response.json();
-    console.log('[ConfigService] Config loaded successfully:', config);
     return {
       ...config,
       updatedAt: new Date(config.updatedAt),
     };
   } catch (error) {
     console.error('[ConfigService] Failed to load system config:', error);
-    console.log('[ConfigService] Using fallback config');
     return getFallbackConfig();
   }
 }
@@ -180,8 +177,6 @@ export function generateMenusFromConfig(config: SystemConfig, userPermissions?: 
     .filter((app) => app.enabled && app.menu)
     .map((app) => convertMenuConfigToMenuItem(app));
 
-  console.log('[ConfigService] Generated microAppMenus:', microAppMenus);
-
   const standaloneMenus: MenuItem[] = (config.standaloneMenus || []).map((menu) => ({
     name: menu.name,
     path: menu.path,
@@ -198,8 +193,6 @@ export function generateMenusFromConfig(config: SystemConfig, userPermissions?: 
     const orderB = (b as { order?: number }).order || 0;
     return orderA - orderB;
   });
-
-  console.log('[ConfigService] All menus after sorting:', allMenus);
 
   if (userPermissions) {
     return filterMenusByPermissions(allMenus, userPermissions);

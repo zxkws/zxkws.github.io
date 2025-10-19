@@ -91,10 +91,7 @@ const isMicroAppEntry = (path?: string) => {
 
 const PageNav = () => {
   const [activePath, setActivePath] = useState<string>(() => getCurrentPath());
-  const [menuConfig, setMenuConfig] = useState<MenuItem[]>(() => {
-    console.log('[PageNav] Initial menu config load');
-    return getAsideMenuConfig();
-  });
+  const [menuConfig, setMenuConfig] = useState<MenuItem[]>(() => getAsideMenuConfig());
   const [expandedGroups, setExpandedGroups] = useState<MenuGroupState>(() => {
     const keys = collectExpandedKeys(getAsideMenuConfig(), getCurrentPath());
     return new Set(keys);
@@ -105,17 +102,13 @@ const PageNav = () => {
       return;
     }
 
-    console.log('[PageNav] Component mounted, setting up event listeners');
-
     const handlePathChange = () => {
       setActivePath(getCurrentPath());
     };
 
     const handleMenuUpdate = () => {
-      console.log('[PageNav] Menu update triggered, refreshing menus');
       refreshMenus();
       const newMenuConfig = getAsideMenuConfig();
-      console.log('[PageNav] New menu config:', newMenuConfig);
       setMenuConfig(newMenuConfig);
     };
 
@@ -138,8 +131,6 @@ const PageNav = () => {
     window.addEventListener('config-loaded', handleMenuUpdate);
     window.addEventListener('micro-app-mounted', handleMenuUpdate);
     window.addEventListener('micro-app-menu-updated', handleMenuUpdate);
-
-    console.log('[PageNav] Event listeners registered');
 
     handleMenuUpdate();
 

@@ -22,12 +22,10 @@ function App() {
 
   useEffect(() => {
     loadConfig().then(() => {
-      console.log('[App] Config loaded, updating state and dispatching event');
       setConfigLoaded(true);
       setMicroApps(resolveMicroApps());
       ensureIcestarkStarted();
       if (typeof window !== 'undefined') {
-        console.log('[App] Dispatching config-loaded event');
         window.dispatchEvent(new CustomEvent('config-loaded'));
       }
     });
@@ -46,7 +44,7 @@ function App() {
     <AuthProvider>
       <BasicLayout>
         <PageLoading loading={isMicroAppLoading}>
-          <AppRouter NotFoundComponent={NotFound} onRouteChange={console.log}>
+          <AppRouter NotFoundComponent={NotFound}>
             <AppRoute exact activePath="/" component={<Home />} />
             <AppRoute exact activePath="/about" component={<About />} />
             <AppRoute exact activePath="/login" component={<Login />} />

@@ -36,25 +36,16 @@ const getAsideMenuConfig = (): MenuItem[] => {
   }
 
   const config = getSystemConfig();
-  console.log('[MenuConfig] System config:', config);
-
   if (config) {
     const configMenus = generateMenusFromConfig(config);
-    console.log('[MenuConfig] Config menus:', configMenus);
-
     const microMenus = getMicroAppMenus();
-    console.log('[MenuConfig] Micro menus:', microMenus);
-
     const mergedMenus = mergeMenus(configMenus, microMenus);
-    console.log('[MenuConfig] Merged menus:', mergedMenus);
-
     cachedMenus = [...staticMenuConfig, ...mergedMenus];
   } else {
     const microMenus = getMicroAppMenus();
     cachedMenus = [...staticMenuConfig, ...microMenus];
   }
 
-  console.log('[MenuConfig] Final cached menus:', cachedMenus);
   return cachedMenus;
 };
 

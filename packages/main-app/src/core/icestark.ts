@@ -86,12 +86,9 @@ const emitLoading = (loading: boolean) => {
 
 export const loadConfig = async (): Promise<SystemConfig> => {
   if (systemConfig) {
-    console.log('[Icestark] Using cached config:', systemConfig);
     return systemConfig;
   }
-  console.log('[Icestark] Loading config...');
   systemConfig = await loadSystemConfig();
-  console.log('[Icestark] Config loaded and cached:', systemConfig);
   return systemConfig;
 };
 
