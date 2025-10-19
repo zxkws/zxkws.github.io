@@ -47,6 +47,18 @@ body,
   display: none;
 }
 
+.ice-stark-loaded {
+  display: flex;
+  flex: 1 1 auto;
+  width: calc(100% + 4rem);
+  margin-left: -2rem;
+  margin-right: -2rem;
+}
+
+.ice-stark-loaded > * {
+  flex: 1 1 auto;
+}
+
 iframe {
   border: none;
   width: 100%;
