@@ -1,5 +1,6 @@
 import { createApp, type App as RootApp } from 'vue';
 import isInIcestark from '@ice/stark-app/lib/isInIcestark';
+import getBasename from '@ice/stark-app/lib/getBasename';
 import setLibraryName from '@ice/stark-app/lib/setLibraryName';
 import '@surely-vue/table/dist/index.less';
 import STable, { setLicenseKey } from '@surely-vue/table';
@@ -67,7 +68,7 @@ const renderApp = ({ container, basename }: RenderOptions) => {
   appInstance.use(STable);
   appInstance.use(piniaInstance);
 
-  const router = createRouterInstance(basename);
+  const router = createRouterInstance(basename ?? getBasename());
   appInstance.use(router);
 
   const store = mainStore(piniaInstance);
@@ -86,18 +87,26 @@ const renderApp = ({ container, basename }: RenderOptions) => {
 };
 
 export const unmount = async () => {
-  if (appInstance) {
-    appInstance.unmount();
-    appInstance = null;
+  // Guard against unmount being triggered before mount finishes (prefetch, rapid toggles, etc.)
+  const instance = appInstance as (RootApp<Element> & { _container?: Element | null }) | null;
+  if (instance?._container) {
+    instance.unmount();
   }
+  appInstance = null;
   piniaInstance = null;
 };
 
 export const mount = async (options: MountOptions = {}) => {
   const { container, basename, customProps } = options;
-  const target = resolveContainer(container ?? customProps?.container ?? '#app');
+  const fallbackSelector = isInIcestark() ? undefined : '#app';
+  const containerSource = container ?? customProps?.container ?? fallbackSelector;
+  if (!containerSource) {
+    // Prefetch phase inside icestark where no container is provided yet
+    return;
+  }
+  const target = resolveContainer(containerSource);
   if (!target) {
-    console.error('[v-app] mount container not found');
+    console.error('[v-app] mount container not found', containerSource);
     return;
   }
 

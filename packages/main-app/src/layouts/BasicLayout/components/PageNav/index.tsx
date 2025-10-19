@@ -1,8 +1,8 @@
-import { AppLink } from '@ice/stark';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { getAsideMenuConfig, refreshMenus } from '../../menuConfig';
 import type { MenuItem } from '../../../../types/menu';
 import * as styles from './index.module.css';
+import SafeAppLink from '../../../../components/SafeAppLink';
 
 type MenuGroupState = Set<string>;
 
@@ -224,7 +224,7 @@ const PageNav = () => {
         }
 
         return (
-          <AppLink
+          <SafeAppLink
             key={key}
             to={item.path}
             className={CX(styles.navLink, active && styles.navLinkActive)}
@@ -237,7 +237,7 @@ const PageNav = () => {
               <span className={styles.linkText}>{item.name}</span>
             </span>
             {isMicroAppEntry(item.path) && <span className={styles.microBadge}>Micro</span>}
-          </AppLink>
+          </SafeAppLink>
         );
       }),
     [activePath, expandedGroups, toggleGroup],

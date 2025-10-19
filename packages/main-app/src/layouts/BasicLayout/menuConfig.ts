@@ -10,11 +10,6 @@ const staticMenuConfig: MenuItem[] = [
     path: '/',
     icon: 'chart-pie',
   },
-  {
-    name: 'Curl Converter',
-    path: '/curlconverter',
-    icon: 'set',
-  },
 ];
 
 const getMicroAppMenus = (): MenuItem[] => {

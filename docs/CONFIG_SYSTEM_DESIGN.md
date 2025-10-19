@@ -34,6 +34,9 @@ interface MicroAppConfig {
   // 菜单配置（基础入口）
   menu?: MenuConfig; // 关联的菜单配置
 
+  // iframe 模式（true 表示主应用通过 iframe 渲染该微应用）
+  iframe?: boolean | string;
+
   // 权限
   permissions?: string[]; // 需要的权限
   roles?: string[]; // 允许的角色

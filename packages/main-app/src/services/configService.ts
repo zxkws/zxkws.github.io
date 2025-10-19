@@ -109,6 +109,7 @@ function getFallbackConfig(): SystemConfig {
         prodEntry: 'https://zxkws.nyc.mn/textdiff/',
         activeRule: ['/textdiff'],
         enabled: true,
+        iframe: true,
         menu: {
           id: 'textdiff-menu',
           name: '文本对比',
@@ -119,6 +120,27 @@ function getFallbackConfig(): SystemConfig {
           source: 'static',
         },
         order: 2,
+      },
+      {
+        id: 'curlconverter',
+        name: 'curlconverter',
+        displayName: 'Curl Converter',
+        entry: 'https://curlconverter.com/',
+        devEntry: 'https://curlconverter.com/',
+        prodEntry: 'https://curlconverter.com/',
+        activeRule: ['/curlconverter'],
+        enabled: true,
+        iframe: true,
+        menu: {
+          id: 'curlconverter-menu',
+          name: 'Curl Converter',
+          icon: '🧩',
+          type: 'item',
+          path: '/curlconverter',
+          visible: true,
+          source: 'static',
+        },
+        order: 3,
       },
     ],
     standaloneMenus: [],
@@ -135,7 +157,13 @@ export function convertToIceStarkApps(config: SystemConfig) {
     .map((app) => ({
       name: app.name,
       title: app.displayName,
-      entry: isDevelopment ? app.devEntry || app.entry : app.prodEntry || app.entry,
+      entry: app.iframe
+        ? isDevelopment
+          ? app.devEntry || app.entry
+          : app.prodEntry || app.entry
+        : isDevelopment
+        ? app.devEntry || app.entry
+        : app.prodEntry || app.entry,
       activePath: app.activeRule,
       sandbox: app.sandbox ?? true,
       loadScriptMode: app.loadScriptMode || 'import',

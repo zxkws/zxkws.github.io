@@ -156,6 +156,29 @@
       "tags": ["admin", "config"],
       "createdAt": "2025-01-17T10:00:00Z",
       "updatedAt": "2025-01-17T10:00:00Z"
+    },
+    {
+      "id": "curlconverter",
+      "name": "curlconverter",
+      "displayName": "Curl Converter",
+      "description": "在线 curl 命令转换工具",
+      "devEntry": "https://curlconverter.com/",
+      "prodEntry": "https://curlconverter.com/",
+      "entry": "https://curlconverter.com/",
+      "activeRule": ["/curlconverter"],
+      "enabled": true,
+      "iframe": true,
+      "menu": {
+        "id": "curlconverter-menu",
+        "name": "Curl Converter",
+        "icon": "🧩",
+        "type": "item",
+        "path": "/curlconverter",
+        "visible": true,
+        "source": "static",
+        "order": 3
+      },
+      "order": 3
     }
   ],
   "standaloneMenus": [

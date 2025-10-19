@@ -31,7 +31,7 @@ export interface MicroAppConfig {
 
   createdAt?: Date;
   updatedAt?: Date;
-  iframe?: string;
+  iframe?: boolean | string;
 }
 
 export type MenuType = 'group' | 'item' | 'link' | 'external';
