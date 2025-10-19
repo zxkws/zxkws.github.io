@@ -17,16 +17,19 @@ export function useTheme() {
   onMounted(() => {
     applyTheme(store.theme);
 
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (_event) => {
       if (store.theme === 'system') {
         applyTheme('system');
       }
     });
   });
 
-  watch(() => store.theme, (newTheme) => {
-    applyTheme(newTheme);
-  });
+  watch(
+    () => store.theme,
+    (newTheme) => {
+      applyTheme(newTheme);
+    },
+  );
 
   return {
     setTheme: store.setTheme,

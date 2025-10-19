@@ -9,7 +9,7 @@ declare module '*.module.css' {
 
 declare global {
   interface Window {
-    __ICE_PAGE_PROPS__?: any;
+    __ICE_PAGE_PROPS__?: Record<string, unknown>;
     __MAIN_APP_MICRO_APPS__?: Array<import('@ice/stark').AppConfig>;
   }
 }

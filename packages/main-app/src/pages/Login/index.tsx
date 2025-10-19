@@ -5,7 +5,9 @@ const Login = () => {
 
   const onLogin = () => {
     localStorage.setItem('id', '1');
-    login && login();
+    if (login) {
+      login();
+    }
   };
   return (
     <>

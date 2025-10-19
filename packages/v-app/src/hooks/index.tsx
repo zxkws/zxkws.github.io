@@ -1,12 +1,15 @@
-import { mainStore } from "../store";
+import { onMounted, onBeforeUnmount } from 'vue';
+import { mainStore } from '../store';
+
 export const useResizeWidth = () => {
   const store = mainStore();
-  // 页面宽度
-  const getWidth = () => {
-    store.setInnerWidth(window.innerWidth);
-  };
+  const updateWidth = () => store.setInnerWidth(window.innerWidth);
 
+  onMounted(() => {
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+  });
   onBeforeUnmount(() => {
-    window.removeEventListener("resize", getWidth);
+    window.removeEventListener('resize', updateWidth);
   });
 };

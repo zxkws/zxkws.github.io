@@ -1,30 +1,64 @@
 import { defineStore } from 'pinia';
+import type { PersistenceOptions } from 'pinia-plugin-persistedstate';
 
-export const mainStore = defineStore('main', {
+type ThemeMode = 'light' | 'dark' | 'system';
+
+interface MainState {
+  loading: boolean;
+  isLoading: boolean;
+  loadingMessage: string;
+  innerWidth: number | null;
+  isMenuOpen: boolean;
+  isMenuCollapsed: boolean;
+  theme: ThemeMode;
+  isMicroApp: boolean;
+}
+
+type MainGetters = Record<string, (_state: MainState) => unknown> & {
+  getInnerWidth: (_state: MainState) => number | null;
+};
+
+type MainActions = {
+  setLoading: (_value: boolean, _loadingMessage?: string) => void;
+  setInnerWidth: (_value: number) => void;
+  toggleMenu: () => void;
+  toggleMenuCollapse: () => void;
+  setTheme: (_theme: ThemeMode) => void;
+  setMicroAppMode: (_isMicroApp: boolean) => void;
+};
+
+const persistConfig: PersistenceOptions<MainState> | false =
+  typeof window === 'undefined'
+    ? false
+    : {
+        key: 'v-app-settings',
+        storage: window.localStorage,
+        pick: ['theme', 'isMenuCollapsed'],
+      };
+
+export const mainStore = defineStore<'main', MainState, MainGetters, MainActions>('main', {
   state: () => ({
     loading: true,
     isLoading: false,
     loadingMessage: '加载中',
     innerWidth: null,
-    isMenuOpen: false, // for mobile
-    isMenuCollapsed: false, // for desktop
-    theme: 'system', // 'light', 'dark', 'system'
+    isMenuOpen: false,
+    isMenuCollapsed: false,
+    theme: 'system' as ThemeMode,
     isMicroApp: false,
   }),
   getters: {
-    // 获取页面宽度
     getInnerWidth(state) {
       return state.innerWidth;
     },
   },
   actions: {
-    setLoading(value: boolean, loadingMessage?: string) {
+    setLoading(value, loadingMessage) {
       this.loading = value;
-      this.loadingMessage = loadingMessage || '加载中';
+      this.loadingMessage = loadingMessage ?? '加载中';
     },
-    // 更改当前页面宽度
-    setInnerWidth(value: number) {
-      this.innerWidth = value as any;
+    setInnerWidth(value) {
+      this.innerWidth = value;
     },
     toggleMenu() {
       this.isMenuOpen = !this.isMenuOpen;
@@ -32,16 +66,12 @@ export const mainStore = defineStore('main', {
     toggleMenuCollapse() {
       this.isMenuCollapsed = !this.isMenuCollapsed;
     },
-    setTheme(theme: string) {
+    setTheme(theme) {
       this.theme = theme;
     },
-    setMicroAppMode(isMicroApp: boolean) {
+    setMicroAppMode(isMicroApp) {
       this.isMicroApp = isMicroApp;
     },
   },
-  persist: {
-    key: 'v-app-settings',
-    storage: window.localStorage,
-    paths: ['theme', 'isMenuCollapsed'],
-  },
+  persist: persistConfig,
 });

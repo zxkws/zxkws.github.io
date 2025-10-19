@@ -1,7 +1,8 @@
-import fetch from "./fetch";
+import fetch from './fetch';
 
 interface LoginParams {
-  username: string;
+  username?: string;
+  email?: string;
   password: string;
 }
 
@@ -12,13 +13,15 @@ interface RegisterParams {
 }
 
 interface TodoParams {
-  id?: number;
-  title: string;
+  id?: string | number;
+  description: string;
   completed?: boolean;
 }
 
-interface FileUploadParams {
-  file: File;
+export interface TodoResponse {
+  _id: string;
+  description: string;
+  completed?: boolean;
 }
 
 interface AccountDto {
@@ -41,46 +44,46 @@ interface UpdateAccountDto {
 }
 
 export const login = (params: LoginParams) => {
-  return fetch("/v1/user/login", params);
+  return fetch<string>('/v1/user/login', params);
 };
 
 export const register = (params: RegisterParams) => {
-  return fetch("/v1/user/register", params);
+  return fetch<string>('/v1/user/register', params);
 };
 
-export const queryTodos = (params: {}) => {
-  return fetch("/v1/todos", params);
+export const queryTodos = (params: Record<string, unknown> = {}) => {
+  return fetch<TodoResponse[]>('/v1/todos', params);
 };
 
 export const modifyTodo = (params: TodoParams) => {
-  return fetch("/v1/modifyTodo", params);
+  return fetch<void>('/v1/modifyTodo', params);
 };
 
-export const deleteTodo = (params: { id: number }) => {
-  return fetch("/v1/deleteTodo", params);
+export const deleteTodo = (params: { id: string | number }) => {
+  return fetch<void>('/v1/deleteTodo', params);
 };
 
 export const uploadFile = (formData: FormData) => {
-  return fetch("/v1/upload", formData, { file: true });
+  return fetch<void>('/v1/upload', formData, { file: true });
 };
 
 // 账户管理API
 export const createAccount = (params: CreateAccountDto) => {
-  return fetch("/account-manage/create", params);
+  return fetch<void>('/account-manage/create', params);
 };
 
 export const getAccounts = () => {
-  return fetch("/account-manage/list", {});
+  return fetch<AccountDto[]>('/account-manage/list', {});
 };
 
 export const getAccount = (id: number) => {
-  return fetch(`/account-manage/detail`, {id});
+  return fetch<AccountDto>(`/account-manage/detail`, { id });
 };
 
 export const updateAccount = (id: number, params: UpdateAccountDto) => {
-  return fetch(`/account-manage/update`, {id, ...params}, { method: "PATCH" });
+  return fetch<void>(`/account-manage/update`, { id, ...params }, { method: 'PATCH' });
 };
 
 export const deleteAccount = (id: number) => {
-  return fetch(`/account-manage/remove`, {id}, { method: "DELETE" });
+  return fetch<void>(`/account-manage/remove`, { id }, { method: 'DELETE' });
 };

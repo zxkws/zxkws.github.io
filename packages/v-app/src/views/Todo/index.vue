@@ -1,31 +1,20 @@
-<script lang="tsx">
-export const VirtualList = defineComponent({
-  setup() {
-    return {};
-  },
-  render() {
-    return <div>1111</div>;
-  },
-});
-</script>
-<script setup lang="tsx">
-import { deleteTodo, modifyTodo, queryTodos } from "@/http";
-import { mainStore } from "@/store";
+<script setup lang="ts">
+import { deleteTodo, modifyTodo, queryTodos, type TodoResponse } from '@/http';
+import { mainStore } from '@/store';
+import { onMounted, ref } from 'vue';
 
 const store = mainStore();
 
-const todoParams = ref("");
+const todoParams = ref('');
 
-type todoType = { _id: string; description: string };
-
-const todos = ref<todoType[]>([]);
+const todos = ref<TodoResponse[]>([]);
 
 onMounted(() => {
   queryTodo();
 });
 
 const queryTodo = () => {
-  store.setLoading(true, "查询todo....");
+  store.setLoading(true, '查询todo....');
   queryTodos({})
     .then((res) => {
       todos.value = res;
@@ -37,25 +26,26 @@ const queryTodo = () => {
 
 const add = () => {
   modifyTodo({
+    id: Date.now(),
     description: todoParams.value,
   }).then(() => {
-    todoParams.value = "";
+    todoParams.value = '';
     queryTodo();
   });
 };
 
 const deleteItem = (id: string) => {
-  deleteTodo({ id }).then((res) => {
+  deleteTodo({ id }).then(() => {
     queryTodo();
   });
 };
 </script>
 
 <template>
-  <div class="flex flex-col h-screen mx-auto p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg text-gray-800 dark:text-gray-200">
-    <h2 class="text-xl font-semibold p-4 border-b border-gray-200 dark:border-gray-700">
-      Todo List
-    </h2>
+  <div
+    class="flex flex-col h-screen mx-auto p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg text-gray-800 dark:text-gray-200"
+  >
+    <h2 class="text-xl font-semibold p-4 border-b border-gray-200 dark:border-gray-700">Todo List</h2>
     <ul class="flex-1 overflow-y-auto space-y-4 p-4">
       <li
         v-for="todo in todos"
@@ -82,12 +72,7 @@ const deleteItem = (id: string) => {
         placeholder="输入新的 Todo..."
         v-model="todoParams"
       ></textarea>
-      <button
-        @click="add"
-        class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-      >
-        添加
-      </button>
+      <button @click="add" class="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600">添加</button>
     </div>
   </div>
 </template>

@@ -12,6 +12,7 @@ import About from './pages/About';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import IframeWrapper from './microApps/IframeWrapper';
+import appHistory from '@ice/stark/lib/appHistory';
 
 const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
 
@@ -23,10 +24,24 @@ function App() {
   useEffect(() => {
     loadConfig().then(() => {
       setConfigLoaded(true);
-      setMicroApps(resolveMicroApps());
+      const apps = resolveMicroApps();
+      setMicroApps(apps);
       ensureIcestarkStarted();
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('config-loaded'));
+        const current = window.location.pathname + window.location.search + window.location.hash;
+        const needsRematch = apps.some((app) => {
+          const path = (app as { path?: string }).path;
+          return path && current.startsWith(path);
+        });
+        if (needsRematch && current !== '/') {
+          appHistory.replace('/');
+          setTimeout(() => {
+            appHistory.replace(current);
+          }, 0);
+        } else {
+          appHistory.replace(current);
+        }
       }
     });
   }, []);
@@ -48,6 +63,12 @@ function App() {
             <AppRoute exact activePath="/" component={<Home />} />
             <AppRoute exact activePath="/about" component={<About />} />
             <AppRoute exact activePath="/login" component={<Login />} />
+            <AppRoute
+              activePath="/foo"
+              render={() => {
+                return <iframe src="http://www.example.com" />;
+              }}
+            />
             {microApps.map((app) => (
               <AppRoute
                 key={app.name}

@@ -1,29 +1,12 @@
 import { registerMicroApps, start, type AppConfig } from '@ice/stark';
 import type { AppRouteProps } from '@ice/stark/lib/AppRoute';
-import IframeWrapper from '../microApps/IframeWrapper';
 import { loadSystemConfig, convertToIceStarkApps } from '../services/configService';
 import type { SystemConfig } from '../types/config';
 
 type MicroAppConfig = AppRouteProps;
 type RuntimeMicroApp = MicroAppConfig & { url?: string | string[] };
 
-const isDevelopment = process.env.NODE_ENV === 'development';
-
 let systemConfig: SystemConfig | null = null;
-
-const getBaseUrl = () => {
-  if (typeof window === 'undefined') {
-    return '';
-  }
-  return window.location.origin;
-};
-
-const getMicroAppUrl = (name: string, devPort?: number): string => {
-  if (isDevelopment && devPort) {
-    return `http://localhost:${devPort}`;
-  }
-  return `${getBaseUrl()}/${name}/`;
-};
 
 const initializeMicroAppMenus = () => {
   if (typeof window === 'undefined') {
@@ -140,7 +123,7 @@ export const ensureIcestarkStarted = (options?: StartOptions) => {
   started = true;
 };
 
-export const subscribeMicroAppLoading = (listener: (loading: boolean) => void): (() => void) => {
+export const subscribeMicroAppLoading = (listener: (_loading: boolean) => void): (() => void) => {
   if (!loadingEventTarget) {
     return () => undefined;
   }

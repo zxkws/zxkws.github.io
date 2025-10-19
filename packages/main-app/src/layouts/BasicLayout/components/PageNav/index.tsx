@@ -89,67 +89,88 @@ const isMicroAppEntry = (path?: string) => {
   return ['/v-app', '/textdiff', '/curlconverter'].some((prefix) => path.startsWith(prefix));
 };
 
-const PageNav = () => {
-  const [activePath, setActivePath] = useState<string>(() => getCurrentPath());
+const hijackHistory = (onChange: () => void) => {
+  if (typeof window === 'undefined') {
+    return () => undefined;
+  }
+
+  const historyRef = window.history;
+  const originalPush = historyRef.pushState.bind(historyRef);
+  const originalReplace = historyRef.replaceState.bind(historyRef);
+
+  historyRef.pushState = ((...args) => {
+    originalPush(...args);
+    onChange();
+  }) as History['pushState'];
+
+  historyRef.replaceState = ((...args) => {
+    originalReplace(...args);
+    onChange();
+  }) as History['replaceState'];
+
+  return () => {
+    historyRef.pushState = originalPush;
+    historyRef.replaceState = originalReplace;
+  };
+};
+
+const registerMenuEvents = (onPathChange: () => void, onMenuUpdate: () => void) => {
+  if (typeof window === 'undefined') {
+    return () => undefined;
+  }
+
+  const pathHandler = () => onPathChange();
+  const menuHandler = () => onMenuUpdate();
+
+  window.addEventListener('popstate', pathHandler);
+  window.addEventListener('hashchange', pathHandler);
+
+  ['config-loaded', 'micro-app-mounted', 'micro-app-menu-updated'].forEach((eventName) =>
+    window.addEventListener(eventName, menuHandler),
+  );
+
+  return () => {
+    window.removeEventListener('popstate', pathHandler);
+    window.removeEventListener('hashchange', pathHandler);
+    ['config-loaded', 'micro-app-mounted', 'micro-app-menu-updated'].forEach((eventName) =>
+      window.removeEventListener(eventName, menuHandler),
+    );
+  };
+};
+
+const useMenuState = () => {
+  const [activePath, setActivePath] = useState(getCurrentPath());
   const [menuConfig, setMenuConfig] = useState<MenuItem[]>(() => getAsideMenuConfig());
-  const [expandedGroups, setExpandedGroups] = useState<MenuGroupState>(() => {
-    const keys = collectExpandedKeys(getAsideMenuConfig(), getCurrentPath());
-    return new Set(keys);
-  });
+  const [expandedGroups, setExpandedGroups] = useState<MenuGroupState>(
+    () => new Set(collectExpandedKeys(getAsideMenuConfig(), getCurrentPath())),
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
     }
 
-    const handlePathChange = () => {
-      setActivePath(getCurrentPath());
-    };
-
-    const handleMenuUpdate = () => {
+    const syncMenus = () => {
       refreshMenus();
-      const newMenuConfig = getAsideMenuConfig();
-      setMenuConfig(newMenuConfig);
+      setMenuConfig(getAsideMenuConfig());
     };
 
-    const historyRef = window.history;
-    const originalPush = historyRef.pushState;
-    const originalReplace = historyRef.replaceState;
+    const restoreHistory = hijackHistory(() => setActivePath(getCurrentPath()));
+    const unregisterEvents = registerMenuEvents(() => setActivePath(getCurrentPath()), syncMenus);
 
-    historyRef.pushState = ((...args) => {
-      originalPush.apply(historyRef, args as Parameters<typeof originalPush>);
-      handlePathChange();
-    }) as History['pushState'];
-
-    historyRef.replaceState = ((...args) => {
-      originalReplace.apply(historyRef, args as Parameters<typeof originalReplace>);
-      handlePathChange();
-    }) as History['replaceState'];
-
-    window.addEventListener('popstate', handlePathChange);
-    window.addEventListener('hashchange', handlePathChange);
-    window.addEventListener('config-loaded', handleMenuUpdate);
-    window.addEventListener('micro-app-mounted', handleMenuUpdate);
-    window.addEventListener('micro-app-menu-updated', handleMenuUpdate);
-
-    handleMenuUpdate();
+    syncMenus();
+    setActivePath(getCurrentPath());
 
     return () => {
-      historyRef.pushState = originalPush;
-      historyRef.replaceState = originalReplace;
-      window.removeEventListener('popstate', handlePathChange);
-      window.removeEventListener('hashchange', handlePathChange);
-      window.removeEventListener('config-loaded', handleMenuUpdate);
-      window.removeEventListener('micro-app-mounted', handleMenuUpdate);
-      window.removeEventListener('micro-app-menu-updated', handleMenuUpdate);
+      restoreHistory();
+      unregisterEvents();
     };
   }, []);
 
   useEffect(() => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
-      const requiredKeys = collectExpandedKeys(menuConfig, activePath);
-      requiredKeys.forEach((key) => next.add(key));
+      collectExpandedKeys(menuConfig, activePath).forEach((key) => next.add(key));
       return next;
     });
   }, [activePath, menuConfig]);
@@ -165,6 +186,12 @@ const PageNav = () => {
       return next;
     });
   }, []);
+
+  return { activePath, menuConfig, expandedGroups, toggleGroup };
+};
+
+const PageNav = () => {
+  const { activePath, menuConfig, expandedGroups, toggleGroup } = useMenuState();
 
   const renderMenuItems = useCallback(
     (items: MenuItem[], parentKey = 'root'): ReactNode =>
