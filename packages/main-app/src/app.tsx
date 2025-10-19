@@ -11,6 +11,7 @@ import BasicLayout from './layouts/BasicLayout';
 import About from './pages/About';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import IframeWrapper from './microApps/IframeWrapper';
 
 const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
 
@@ -53,7 +54,7 @@ function App() {
               <AppRoute
                 key={app.name}
                 {...app}
-                {...(app['iframe'] ? { render: () => <iframe src={app.entry} /> } : {})}
+                {...(app['iframe'] ? { render: () => <IframeWrapper src={app.entry} /> } : {})}
               />
             ))}
           </AppRouter>

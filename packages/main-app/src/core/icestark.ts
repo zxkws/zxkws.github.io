@@ -1,7 +1,6 @@
-import React from 'react';
 import { registerMicroApps, start, type AppConfig } from '@ice/stark';
 import type { AppRouteProps } from '@ice/stark/lib/AppRoute';
-import CurlConverterMicroApp from '../microApps/CurlConverterMicroApp';
+import IframeWrapper from '../microApps/IframeWrapper';
 import { loadSystemConfig, convertToIceStarkApps } from '../services/configService';
 import type { SystemConfig } from '../types/config';
 
@@ -36,31 +35,6 @@ const initializeMicroAppMenus = () => {
   }
 };
 
-const DEFAULT_MICRO_APPS: MicroAppConfig[] = [
-  {
-    name: 'curlconverter',
-    title: 'Curl Converter',
-    activePath: ['/curlconverter'],
-    component: React.createElement(CurlConverterMicroApp),
-  },
-  {
-    name: 'v-app',
-    title: 'Vue Application',
-    activePath: ['/v-app'],
-    loadScriptMode: 'fetch',
-    sandbox: true,
-    entry: getMicroAppUrl('v-app', 5173),
-  },
-  {
-    name: 'textdiff',
-    title: 'Text Difference',
-    activePath: ['/textdiff'],
-    loadScriptMode: 'script',
-    sandbox: true,
-    entry: getMicroAppUrl('textdiff', 5174),
-  },
-];
-
 type StartOptions = Parameters<typeof start>[0];
 
 let started = false;
@@ -81,19 +55,6 @@ const normalizeUrl = (url?: string | string[]): string[] | undefined => {
 
 const mergeMicroApps = (runtime: RuntimeMicroApp[] = []): MicroAppConfig[] => {
   const merged = new Map<string, MicroAppConfig>();
-  DEFAULT_MICRO_APPS.forEach((app) => {
-    if (!app.name) {
-      return;
-    }
-    const normalizedUrl = normalizeUrl(app.url);
-    const next: MicroAppConfig = { ...app };
-    if (normalizedUrl && normalizedUrl.length > 0) {
-      next.url = normalizedUrl;
-    } else {
-      delete (next as { url?: string | string[] }).url;
-    }
-    merged.set(app.name, next);
-  });
 
   runtime.forEach((app) => {
     if (!app.name) {
