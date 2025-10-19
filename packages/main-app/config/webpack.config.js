@@ -6,7 +6,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 const isProd = process.env.NODE_ENV === 'production';
 
 module.exports = {
-  devtool: isProd ? false : 'eval-source-map',
+  devtool: isProd ? false : 'inline-source-map',
   entry: './src/app',
   module: {
     rules: [
