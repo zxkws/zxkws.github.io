@@ -51,6 +51,7 @@ function getFallbackConfig(): SystemConfig {
         activeRule: ['/v-app'],
         enabled: true,
         sandbox: true,
+        loadScriptMode: 'import',
         menu: {
           id: 'v-app-menu',
           name: 'Vue 应用',
@@ -137,7 +138,7 @@ export function convertToIceStarkApps(config: SystemConfig) {
       entry: isDevelopment ? app.devEntry || app.entry : app.prodEntry || app.entry,
       activePath: app.activeRule,
       sandbox: app.sandbox ?? true,
-      loadScriptMode: app.loadScriptMode || 'fetch',
+      loadScriptMode: app.loadScriptMode || 'import',
       iframe: app.iframe,
     }));
 }

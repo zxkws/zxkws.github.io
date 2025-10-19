@@ -25,7 +25,7 @@ interface MicroAppConfig {
 
   // 加载选项
   sandbox?: boolean; // 是否启用沙箱
-  loadScriptMode?: 'fetch' | 'script'; // 脚本加载模式
+  loadScriptMode?: 'fetch' | 'script' | 'import'; // 脚本加载模式
 
   // 状态
   enabled: boolean; // 是否启用

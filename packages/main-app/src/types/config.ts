@@ -15,7 +15,7 @@ export interface MicroAppConfig {
   prodEntry?: string;
 
   sandbox?: boolean;
-  loadScriptMode?: 'fetch' | 'script';
+  loadScriptMode?: 'fetch' | 'script' | 'import';
 
   enabled: boolean;
   version?: string;

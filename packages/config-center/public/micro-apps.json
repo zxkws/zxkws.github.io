@@ -11,7 +11,7 @@
       "entry": "/v-app/",
       "activeRule": ["/v-app"],
       "sandbox": false,
-      "loadScriptMode": "fetch",
+      "loadScriptMode": "import",
       "enabled": true,
       "menu": {
         "id": "v-app-menu",
