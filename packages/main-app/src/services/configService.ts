@@ -5,7 +5,11 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 
 const getConfigUrl = () => {
   if (isDevelopment) {
-    return 'http://localhost:5175/micro-apps.json';
+    if (typeof window !== 'undefined') {
+      const { protocol, hostname } = window.location;
+      return `${protocol}//${hostname}:5175/micro-apps.json`;
+    }
+    return 'http://127.0.0.1:5175/micro-apps.json';
   }
   return `${window.location.origin}/config-center/micro-apps.json`;
 };
@@ -152,18 +156,15 @@ function getFallbackConfig(): SystemConfig {
  * 转换微应用配置为 ice-stark 格式
  */
 export function convertToIceStarkApps(config: SystemConfig) {
+  const resolveEntry = (app: MicroAppConfig) =>
+    isDevelopment ? app.devEntry || app.entry : app.prodEntry || app.entry;
+
   return config.microApps
     .filter((app) => app.enabled)
     .map((app) => ({
       name: app.name,
       title: app.displayName,
-      entry: app.iframe
-        ? isDevelopment
-          ? app.devEntry || app.entry
-          : app.prodEntry || app.entry
-        : isDevelopment
-        ? app.devEntry || app.entry
-        : app.prodEntry || app.entry,
+      entry: resolveEntry(app),
       activePath: app.activeRule,
       sandbox: app.sandbox ?? true,
       loadScriptMode: app.loadScriptMode || 'import',
@@ -222,12 +223,14 @@ function convertMenuConfigToMenuItem(app: MicroAppConfig): MenuItem {
     name: app.menu.name,
     path: app.menu.path,
     icon: app.menu.icon,
+    order: app.menu.order,
     children: app.menu.children?.map((child) => ({
       name: child.name,
       path: child.path,
       icon: child.icon,
+      order: child.order,
     })),
-  };
+  } as MenuItem;
 }
 
 /**

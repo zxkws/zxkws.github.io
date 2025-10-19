@@ -122,7 +122,9 @@ export const ensureIcestarkStarted = (options?: StartOptions) => {
   initializeMicroAppMenus();
 
   const apps = resolveMicroApps();
-  const registerable = apps.filter((app) => !('component' in app) && !('render' in app));
+  const registerable = apps.filter(
+    (app) => !('component' in app) && !('render' in app) && !('iframe' in app && app.iframe),
+  );
   if (registerable.length > 0) {
     registerMicroApps(registerable as AppConfig[]);
   }
