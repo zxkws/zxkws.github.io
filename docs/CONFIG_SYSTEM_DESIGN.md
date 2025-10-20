@@ -143,6 +143,10 @@ interface SystemConfig {
 }
 ```
 
+## 配置管理工具
+
+- `config-hub`：通用配置中心服务（开发入口 `http://localhost:5176`，生产入口 `https://zxkws.nyc.mn/config-hub/`），所有微应用配置均由该服务提供，主应用不再内置本地 fallback。
+
 ### 方案 B：菜单完全独立
 
 **优势：**
@@ -448,13 +452,11 @@ function filterMenusByPermissions(menus: MenuConfig[], userPermissions: string[]
 基于你的需求，我建议：
 
 1. **菜单配置策略**：采用**混合模式**
-
    - 微应用基础菜单与配置绑定
    - 支持微应用运行时覆盖/扩展菜单
    - 支持独立菜单（外部链接、工具菜单等）
 
 2. **实现优先级**：
-
    - P0: 微应用配置基础结构
    - P0: 从配置加载微应用
    - P1: 菜单配置

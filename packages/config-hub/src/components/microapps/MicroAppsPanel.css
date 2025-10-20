@@ -1,0 +1,147 @@
+.microapps-panel {
+  background: rgba(15, 23, 42, 0.72);
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: 420px;
+}
+
+.microapps-panel header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.microapps-panel h3 {
+  margin: 0;
+}
+
+.microapps-panel p {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.microapps-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.microapps-actions button {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.6);
+  color: #93c5fd;
+  cursor: pointer;
+}
+
+.microapps-actions button:hover {
+  background: rgba(96, 165, 250, 0.15);
+}
+
+.microapps-content {
+  display: flex;
+  gap: 18px;
+}
+
+.microapps-content aside {
+  width: 220px;
+}
+
+.microapps-content ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.microapps-content li {
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.microapps-content li.active {
+  border-color: rgba(96, 165, 250, 0.45);
+}
+
+.microapps-content li button {
+  border: none;
+  background: none;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.microapps-content li .title {
+  font-weight: 600;
+}
+
+.microapps-content li .subtitle {
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.microapps-content li.empty {
+  padding: 12px;
+  text-align: center;
+  color: rgba(226, 232, 240, 0.6);
+}
+
+.microapps-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.field,
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+textarea,
+input,
+select {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #e2e8f0;
+}
+
+.microapps-form .checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.microapps-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(226, 232, 240, 0.6);
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
+}

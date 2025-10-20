@@ -9,13 +9,11 @@ type BasicLayoutProps = {
 
 export default function BasicLayout({ children }: BasicLayoutProps) {
   return (
-    <div className="flex min-h-screen w-full flex-1 flex-col bg-[var(--color-bg)] text-[var(--color-text)] transition-colors duration-300">
+    <div className="flex min-h-screen w-full flex-col bg-[var(--color-bg)] text-[var(--color-text)] transition-colors duration-300">
       <HeaderBar />
       <div className="flex flex-1 overflow-hidden">
         <PageNav />
-        <main className="flex flex-1 flex-col overflow-auto px-8 py-10">
-          <div className="flex flex-1">{children}</div>
-        </main>
+        <main className="flex-1 overflow-auto px-8 py-10">{children}</main>
       </div>
     </div>
   );

@@ -1,0 +1,105 @@
+.menus-panel {
+  background: rgba(15, 23, 42, 0.72);
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.menus-panel header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.menus-panel header button {
+  background: rgba(96, 165, 250, 0.2);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  color: #60a5fa;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.menus-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.menus-placeholder {
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  border-radius: 14px;
+  padding: 24px;
+  text-align: center;
+  color: rgba(226, 232, 240, 0.65);
+}
+
+.menu-editor {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.menu-editor-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.menu-editor-tools {
+  display: flex;
+  gap: 8px;
+}
+
+.menu-editor-tools button {
+  background: rgba(248, 250, 252, 0.08);
+  border: none;
+  border-radius: 6px;
+  color: rgba(226, 232, 240, 0.85);
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.menu-editor-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.menu-editor label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.menu-editor input {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #e2e8f0;
+}
+
+.menu-editor .checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.menu-editor-children {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

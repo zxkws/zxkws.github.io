@@ -107,8 +107,33 @@
         "order": 3
       },
       "order": 3
+    },
+    {
+      "id": "config-hub",
+      "name": "config-hub",
+      "displayName": "配置中心",
+      "description": "用于集中管理跨项目配置的通用平台",
+      "devEntry": "http://localhost:5176",
+      "prodEntry": "https://zxkws.nyc.mn/config-hub/",
+      "entry": "/config-hub/",
+      "activeRule": ["/config-hub"],
+      "enabled": true,
+      "sandbox": false,
+      "loadScriptMode": "import",
+      "menu": {
+        "id": "config-hub-menu",
+        "name": "配置中心",
+        "icon": "🗂️",
+        "type": "item",
+        "path": "/config-hub",
+        "visible": true,
+        "source": "static",
+        "order": 4
+      },
+      "order": 4,
+      "iframe": true
     }
   ],
   "standaloneMenus": [],
-  "updatedAt": "2025-01-17T10:00:00Z"
+  "updatedAt": "2025-10-19T00:00:00Z"
 }

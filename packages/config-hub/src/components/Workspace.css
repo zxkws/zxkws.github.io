@@ -1,0 +1,31 @@
+.workspace-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 36px;
+  overflow-y: auto;
+}
+
+.workspace-section {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+}
+
+.workspace-empty {
+  margin: auto;
+  text-align: center;
+  color: rgba(226, 232, 240, 0.8);
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(252, 165, 165, 0.35);
+  color: #fecaca;
+}

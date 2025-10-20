@@ -4,13 +4,11 @@ type PageLoadingProps = PropsWithChildren<{
   loading?: boolean;
 }>;
 
-const PageLoading = (props: PageLoadingProps) => {
-  const { children, loading = false } = props;
-  return (
-    <div id="child-container" style={{ alignContent: 'center' }} className="flex flex-1 text-center">
-      {loading ? 'loading...' : children}
-    </div>
-  );
+const PageLoading = ({ children, loading = false }: PageLoadingProps) => {
+  if (loading) {
+    return <div className="flex flex-1 items-center justify-center">loading...</div>;
+  }
+  return <>{children}</>;
 };
 
 export default PageLoading;

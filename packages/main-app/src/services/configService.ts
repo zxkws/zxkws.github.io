@@ -18,134 +18,15 @@ const getConfigUrl = () => {
  * 从配置中心加载配置
  */
 export async function loadSystemConfig(): Promise<SystemConfig> {
-  try {
-    const configUrl = getConfigUrl();
-    const response = await fetch(configUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to load config: ${response.statusText}`);
-    }
-    const config = await response.json();
-    return {
-      ...config,
-      updatedAt: new Date(config.updatedAt),
-    };
-  } catch (error) {
-    console.error('[ConfigService] Failed to load system config:', error);
-    return getFallbackConfig();
+  const configUrl = getConfigUrl();
+  const response = await fetch(configUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to load config: ${response.status} ${response.statusText}`);
   }
-}
-
-/**
- * 降级配置（服务端不可用时使用）
- */
-function getFallbackConfig(): SystemConfig {
+  const config = await response.json();
   return {
-    version: '1.0.0',
-    microApps: [
-      {
-        id: 'v-app',
-        name: 'v-app',
-        displayName: 'Vue 应用',
-        entry: '/v-app/',
-        devEntry: 'http://localhost:5173',
-        prodEntry: 'https://zxkws.nyc.mn/v-app/',
-        activeRule: ['/v-app'],
-        enabled: true,
-        sandbox: true,
-        loadScriptMode: 'import',
-        menu: {
-          id: 'v-app-menu',
-          name: 'Vue 应用',
-          icon: '⚡',
-          type: 'group',
-          visible: true,
-          source: 'static',
-          children: [
-            {
-              id: 'v-app-navlist',
-              name: '导航列表',
-              path: '/v-app/navList',
-              icon: '🏠',
-              type: 'item',
-              visible: true,
-              source: 'static',
-            },
-            {
-              id: 'v-app-todo',
-              name: 'Todo',
-              path: '/v-app/todo',
-              icon: '✅',
-              type: 'item',
-              visible: true,
-              source: 'static',
-            },
-            {
-              id: 'v-app-account',
-              name: '账户管理',
-              path: '/v-app/account',
-              icon: '👤',
-              type: 'item',
-              visible: true,
-              source: 'static',
-            },
-            {
-              id: 'v-app-llm-ranking',
-              name: 'LLM 排名',
-              path: '/v-app/llm-ranking',
-              icon: '📊',
-              type: 'item',
-              visible: true,
-              source: 'static',
-            },
-          ],
-        },
-        order: 1,
-      },
-      {
-        id: 'textdiff',
-        name: 'textdiff',
-        displayName: '文本对比',
-        entry: '/textdiff/',
-        devEntry: 'http://localhost:5174',
-        prodEntry: 'https://zxkws.nyc.mn/textdiff/',
-        activeRule: ['/textdiff'],
-        enabled: true,
-        iframe: true,
-        menu: {
-          id: 'textdiff-menu',
-          name: '文本对比',
-          icon: '📝',
-          type: 'item',
-          path: '/textdiff/',
-          visible: true,
-          source: 'static',
-        },
-        order: 2,
-      },
-      {
-        id: 'curlconverter',
-        name: 'curlconverter',
-        displayName: 'Curl Converter',
-        entry: 'https://curlconverter.com/',
-        devEntry: 'https://curlconverter.com/',
-        prodEntry: 'https://curlconverter.com/',
-        activeRule: ['/curlconverter'],
-        enabled: true,
-        iframe: true,
-        menu: {
-          id: 'curlconverter-menu',
-          name: 'Curl Converter',
-          icon: '🧩',
-          type: 'item',
-          path: '/curlconverter',
-          visible: true,
-          source: 'static',
-        },
-        order: 3,
-      },
-    ],
-    standaloneMenus: [],
-    updatedAt: new Date(),
+    ...config,
+    updatedAt: new Date(config.updatedAt),
   };
 }
 

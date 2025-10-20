@@ -86,7 +86,7 @@ const isMicroAppEntry = (path?: string) => {
   if (!path) {
     return false;
   }
-  return ['/v-app', '/textdiff', '/curlconverter'].some((prefix) => path.startsWith(prefix));
+  return ['/v-app', '/textdiff', '/curlconverter', '/config-hub'].some((prefix) => path.startsWith(prefix));
 };
 
 const hijackHistory = (onChange: () => void) => {
@@ -157,6 +157,16 @@ const useMenuState = () => {
 
     const restoreHistory = hijackHistory(() => setActivePath(getCurrentPath()));
     const unregisterEvents = registerMenuEvents(() => setActivePath(getCurrentPath()), syncMenus);
+    const routeChangeHandler = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      if (detail) {
+        setActivePath(detail);
+      } else {
+        setActivePath(getCurrentPath());
+      }
+    };
+
+    window.addEventListener('main-route-change', routeChangeHandler);
 
     syncMenus();
     setActivePath(getCurrentPath());
@@ -164,6 +174,7 @@ const useMenuState = () => {
     return () => {
       restoreHistory();
       unregisterEvents();
+      window.removeEventListener('main-route-change', routeChangeHandler);
     };
   }, []);
 

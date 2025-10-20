@@ -1,0 +1,51 @@
+.json-panel {
+  background: rgba(15, 23, 42, 0.72);
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.json-panel header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.json-panel header h3 {
+  margin: 0;
+}
+
+.json-panel header p {
+  margin: 4px 0 0;
+  color: rgba(226, 232, 240, 0.6);
+  font-size: 0.85rem;
+}
+
+.json-panel-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.json-panel-actions button {
+  background: rgba(96, 165, 250, 0.2);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  color: #60a5fa;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.json-panel pre {
+  margin: 0;
+  max-height: 320px;
+  overflow: auto;
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #cbd5f5;
+}
