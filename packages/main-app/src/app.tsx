@@ -90,12 +90,10 @@ function App() {
             <AppRoute exact activePath="/" component={<Home />} />
             <AppRoute exact activePath="/about" component={<About />} />
             <AppRoute exact activePath="/login" component={<Login />} />
+            <AppRoute activePath="/curlconverter" render={() => <iframe src="https://curlconverter.com/" />} />
+            <AppRoute activePath="/textdiff" render={() => <iframe src="https://zxkws.nyc.mn/textdiff/" />} />
             {microApps.map((app) => (
-              <AppRoute
-                key={app.name}
-                {...app}
-                {...(app['iframe'] ? { render: () => <IframeWrapper src={app.entry} /> } : {})}
-              />
+              <AppRoute key={app.name} {...app} />
             ))}
           </AppRouter>
         </PageLoading>
