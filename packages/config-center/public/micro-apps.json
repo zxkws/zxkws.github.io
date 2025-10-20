@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "microApps": [
     {
       "id": "v-app",
@@ -13,127 +13,9 @@
       "sandbox": false,
       "loadScriptMode": "import",
       "enabled": true,
-      "menu": {
-        "id": "v-app-menu",
-        "name": "Vue 应用",
-        "icon": "⚡",
-        "type": "group",
-        "visible": true,
-        "source": "static",
-        "order": 1,
-        "children": [
-          {
-            "id": "v-app-navlist",
-            "name": "导航列表",
-            "path": "/v-app/navList",
-            "icon": "🏠",
-            "type": "item",
-            "visible": true,
-            "source": "static"
-          },
-          {
-            "id": "v-app-todo",
-            "name": "Todo",
-            "path": "/v-app/todo",
-            "icon": "✅",
-            "type": "item",
-            "visible": true,
-            "source": "static"
-          },
-          {
-            "id": "v-app-account",
-            "name": "账户管理",
-            "path": "/v-app/account",
-            "icon": "👤",
-            "type": "item",
-            "visible": true,
-            "source": "static"
-          },
-          {
-            "id": "v-app-llm-ranking",
-            "name": "LLM 排名",
-            "path": "/v-app/llm-ranking",
-            "icon": "📊",
-            "type": "item",
-            "visible": true,
-            "source": "static"
-          }
-        ]
-      },
-      "order": 1
-    },
-    {
-      "id": "textdiff",
-      "name": "textdiff",
-      "displayName": "文本对比",
-      "description": "在线文本差异对比工具",
-      "devEntry": "http://localhost:5174",
-      "prodEntry": "https://zxkws.nyc.mn/textdiff/",
-      "entry": "/textdiff/",
-      "activeRule": ["/textdiff"],
-      "enabled": true,
-      "iframe": true,
-      "menu": {
-        "id": "textdiff-menu",
-        "name": "文本对比",
-        "icon": "📝",
-        "type": "item",
-        "path": "/textdiff/",
-        "visible": true,
-        "source": "static",
-        "order": 2
-      },
-      "order": 2
-    },
-    {
-      "id": "curlconverter",
-      "name": "curlconverter",
-      "displayName": "Curl Converter",
-      "description": "在线 curl 命令转换工具",
-      "devEntry": "https://curlconverter.com/",
-      "prodEntry": "https://curlconverter.com/",
-      "entry": "https://curlconverter.com/",
-      "activeRule": ["/curlconverter"],
-      "enabled": true,
-      "iframe": true,
-      "menu": {
-        "id": "curlconverter-menu",
-        "name": "Curl Converter",
-        "icon": "🧩",
-        "type": "item",
-        "path": "/curlconverter",
-        "visible": true,
-        "source": "static",
-        "order": 3
-      },
-      "order": 3
-    },
-    {
-      "id": "config-hub",
-      "name": "config-hub",
-      "displayName": "配置中心",
-      "description": "用于集中管理跨项目配置的通用平台",
-      "devEntry": "http://localhost:5176",
-      "prodEntry": "https://zxkws.nyc.mn/config-hub/",
-      "entry": "/config-hub/",
-      "activeRule": ["/config-hub"],
-      "enabled": true,
-      "sandbox": false,
-      "loadScriptMode": "import",
-      "menu": {
-        "id": "config-hub-menu",
-        "name": "配置中心",
-        "icon": "🗂️",
-        "type": "item",
-        "path": "/config-hub",
-        "visible": true,
-        "source": "static",
-        "order": 4
-      },
-      "order": 4,
-      "iframe": true
+      "order": 1,
+      "renderType": "microfront"
     }
   ],
-  "standaloneMenus": [],
   "updatedAt": "2025-10-19T00:00:00Z"
 }

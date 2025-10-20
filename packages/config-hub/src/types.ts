@@ -24,7 +24,7 @@ export interface MicroAppRecord {
   enabled: boolean;
   sandbox?: boolean;
   loadScriptMode?: LoadScriptMode;
-  iframe?: boolean | string;
+  renderType?: 'microfront' | 'iframe';
   tags?: string[];
   version?: string;
   menu?: MenuItem;

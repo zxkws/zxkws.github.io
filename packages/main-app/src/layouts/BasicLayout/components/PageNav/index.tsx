@@ -1,17 +1,10 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { getAsideMenuConfig, refreshMenus } from '../../menuConfig';
+import { getAsideMenuConfig } from '../../menuConfig';
 import type { MenuItem } from '../../../../types/menu';
 import * as styles from './index.module.css';
 import SafeAppLink from '../../../../components/SafeAppLink';
 
 type MenuGroupState = Set<string>;
-
-const ICON_SYMBOLS: Record<string, string> = {
-  'chart-pie': '📊',
-  account: '👤',
-  atm: '🧩',
-  set: '🧭',
-};
 
 const CX = (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(' ');
 
@@ -70,16 +63,8 @@ const collectExpandedKeys = (items: MenuItem[], current: string, parentKey = 'ro
 };
 
 const getIconSymbol = (item: MenuItem) => {
-  if (!item.icon) {
-    const firstLetter = item.name?.trim().charAt(0);
-    return firstLetter ? firstLetter.toUpperCase() : '•';
-  }
-
-  if (ICON_SYMBOLS[item.icon]) {
-    return ICON_SYMBOLS[item.icon];
-  }
-
-  return item.icon;
+  const firstLetter = item.name?.trim().charAt(0);
+  return firstLetter ? firstLetter.toUpperCase() : '•';
 };
 
 const isMicroAppEntry = (path?: string) => {
@@ -114,35 +99,27 @@ const hijackHistory = (onChange: () => void) => {
   };
 };
 
-const registerMenuEvents = (onPathChange: () => void, onMenuUpdate: () => void) => {
+const registerMenuEvents = (onPathChange: () => void) => {
   if (typeof window === 'undefined') {
     return () => undefined;
   }
 
   const pathHandler = () => onPathChange();
-  const menuHandler = () => onMenuUpdate();
 
   window.addEventListener('popstate', pathHandler);
   window.addEventListener('hashchange', pathHandler);
 
-  ['config-loaded', 'micro-app-mounted', 'micro-app-menu-updated'].forEach((eventName) =>
-    window.addEventListener(eventName, menuHandler),
-  );
-
   return () => {
     window.removeEventListener('popstate', pathHandler);
     window.removeEventListener('hashchange', pathHandler);
-    ['config-loaded', 'micro-app-mounted', 'micro-app-menu-updated'].forEach((eventName) =>
-      window.removeEventListener(eventName, menuHandler),
-    );
   };
 };
 
 const useMenuState = () => {
   const [activePath, setActivePath] = useState(getCurrentPath());
-  const [menuConfig, setMenuConfig] = useState<MenuItem[]>(() => getAsideMenuConfig());
+  const menuConfig = useMemo(() => getAsideMenuConfig(), []);
   const [expandedGroups, setExpandedGroups] = useState<MenuGroupState>(
-    () => new Set(collectExpandedKeys(getAsideMenuConfig(), getCurrentPath())),
+    () => new Set(collectExpandedKeys(menuConfig, getCurrentPath())),
   );
 
   useEffect(() => {
@@ -150,13 +127,8 @@ const useMenuState = () => {
       return;
     }
 
-    const syncMenus = () => {
-      refreshMenus();
-      setMenuConfig(getAsideMenuConfig());
-    };
-
     const restoreHistory = hijackHistory(() => setActivePath(getCurrentPath()));
-    const unregisterEvents = registerMenuEvents(() => setActivePath(getCurrentPath()), syncMenus);
+    const unregisterEvents = registerMenuEvents(() => setActivePath(getCurrentPath()));
     const routeChangeHandler = (event: Event) => {
       const detail = (event as CustomEvent<string>).detail;
       if (detail) {
@@ -168,7 +140,6 @@ const useMenuState = () => {
 
     window.addEventListener('main-route-change', routeChangeHandler);
 
-    syncMenus();
     setActivePath(getCurrentPath());
 
     return () => {

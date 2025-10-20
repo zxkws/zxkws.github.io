@@ -27,6 +27,8 @@ interface MicroAppConfig {
   sandbox?: boolean; // 是否启用沙箱
   loadScriptMode?: 'fetch' | 'script' | 'import'; // 脚本加载模式
 
+  renderType?: 'microfront' | 'iframe'; // 渲染方式
+
   // 状态
   enabled: boolean; // 是否启用
   version?: string; // 版本号
@@ -35,7 +37,6 @@ interface MicroAppConfig {
   menu?: MenuConfig; // 关联的菜单配置
 
   // iframe 模式（true 表示主应用通过 iframe 渲染该微应用）
-  iframe?: boolean | string;
 
   // 权限
   permissions?: string[]; // 需要的权限

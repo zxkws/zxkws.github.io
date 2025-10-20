@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MicroAppRecord, MenuItem } from '../../types';
+import { MicroAppRecord } from '../../types';
 import { createId } from '../../utils';
 import './MicroAppsPanel.css';
 
@@ -19,6 +19,7 @@ const createBlankMicroApp = (): MicroAppRecord => ({
   enabled: true,
   sandbox: true,
   loadScriptMode: 'import',
+  renderType: 'microfront',
 });
 
 const formatActiveRule = (rules: string[]) => rules.join('\n');
@@ -220,6 +221,21 @@ export const MicroAppsPanel = ({ microApps, onChange }: MicroAppsPanelProps) => 
                   <option value="script">script</option>
                 </select>
               </label>
+              <label>
+                <span>渲染方式</span>
+                <select
+                  value={selected.renderType ?? 'microfront'}
+                  onChange={(event) =>
+                    commit((app) => ({
+                      ...app,
+                      renderType: event.target.value as MicroAppRecord['renderType'],
+                    }))
+                  }
+                >
+                  <option value="microfront">脚本加载</option>
+                  <option value="iframe">IFrame</option>
+                </select>
+              </label>
               <label className="checkbox">
                 <input
                   type="checkbox"
@@ -245,19 +261,6 @@ export const MicroAppsPanel = ({ microApps, onChange }: MicroAppsPanelProps) => 
                   }
                 />
                 <span>开启沙箱</span>
-              </label>
-              <label className="checkbox">
-                <input
-                  type="checkbox"
-                  checked={Boolean(selected.iframe)}
-                  onChange={(event) =>
-                    commit((app) => ({
-                      ...app,
-                      iframe: event.target.checked,
-                    }))
-                  }
-                />
-                <span>以 iframe 嵌入</span>
               </label>
             </div>
             <label className="field">

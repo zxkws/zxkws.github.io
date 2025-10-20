@@ -16,6 +16,42 @@ import appHistory from '@ice/stark/lib/appHistory';
 
 const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+type IframeMicroApp = {
+  name: string;
+  path: string;
+  devSrc?: string;
+  prodSrc: string;
+};
+
+const IFRAME_MICRO_APPS: IframeMicroApp[] = [
+  {
+    name: 'textdiff',
+    path: '/textdiff',
+    devSrc: 'http://localhost:5174',
+    prodSrc: 'https://zxkws.nyc.mn/textdiff/',
+  },
+  {
+    name: 'curlconverter',
+    path: '/curlconverter',
+    prodSrc: 'https://curlconverter.com/',
+  },
+  {
+    name: 'config-hub',
+    path: '/config-hub',
+    devSrc: 'http://localhost:5176',
+    prodSrc: 'https://zxkws.nyc.mn/config-hub/',
+  },
+];
+
+const resolveIframeSrc = (app: IframeMicroApp) => {
+  if (isDevelopment && app.devSrc) {
+    return app.devSrc;
+  }
+  return app.prodSrc;
+};
+
 function App() {
   const [isMicroAppLoading, setIsMicroAppLoading] = useState(false);
   const [configLoaded, setConfigLoaded] = useState(false);
@@ -33,18 +69,9 @@ function App() {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('config-loaded'));
           const current = window.location.pathname + window.location.search + window.location.hash;
-          const needsRematch = apps.some((app) => {
-            const path = (app as { path?: string }).path;
-            return path && current.startsWith(path);
-          });
-          if (needsRematch && current !== '/') {
-            appHistory.replace('/');
-            setTimeout(() => {
-              appHistory.replace(current);
-            }, 0);
-          } else {
-            appHistory.replace(current);
-          }
+          setTimeout(() => {
+            appHistory.replace(current || '/');
+          }, 0);
         }
         setConfigLoaded(true);
       } catch (error) {
@@ -79,23 +106,40 @@ function App() {
   }
 
   if (!configLoaded) {
-    return <PageLoading loading={true} />;
+    return <PageLoading loading />;
   }
 
   return (
     <AuthProvider>
       <BasicLayout>
         <PageLoading loading={isMicroAppLoading}>
-          <AppRouter NotFoundComponent={NotFound}>
-            <AppRoute exact activePath="/" component={<Home />} />
-            <AppRoute exact activePath="/about" component={<About />} />
-            <AppRoute exact activePath="/login" component={<Login />} />
-            <AppRoute activePath="/curlconverter" render={() => <iframe src="https://curlconverter.com/" />} />
-            <AppRoute activePath="/textdiff" render={() => <iframe src="https://zxkws.nyc.mn/textdiff/" />} />
-            {microApps.map((app) => (
-              <AppRoute key={app.name} {...app} />
-            ))}
-          </AppRouter>
+          <div className="flex flex-1">
+            <AppRouter
+              NotFoundComponent={NotFound}
+              onRouteChange={(pathname) => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('main-route-change', { detail: pathname }));
+                }
+              }}
+            >
+              <AppRoute exact activePath="/" component={<Home />} />
+              <AppRoute exact activePath="/about" component={<About />} />
+              <AppRoute exact activePath="/login" component={<Login />} />
+              {microApps.map((app) => (
+                <AppRoute key={app.name} {...app} {...(app.render ? {} : app)} />
+              ))}
+              {IFRAME_MICRO_APPS.map((app) => (
+                <AppRoute
+                  key={app.name}
+                  name={app.name}
+                  exact
+                  path={app.path}
+                  activePath={[app.path]}
+                  component={<IframeWrapper src={resolveIframeSrc(app)} />}
+                />
+              ))}
+            </AppRouter>
+          </div>
         </PageLoading>
       </BasicLayout>
     </AuthProvider>

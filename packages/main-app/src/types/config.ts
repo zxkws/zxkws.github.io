@@ -18,67 +18,17 @@ export interface MicroAppConfig {
   loadScriptMode?: 'fetch' | 'script' | 'import';
 
   enabled: boolean;
+  renderType?: 'microfront' | 'iframe';
   version?: string;
 
-  menu?: MenuConfig;
-
-  permissions?: string[];
-  roles?: string[];
-
-  icon?: string;
   order?: number;
-  tags?: string[];
 
   createdAt?: Date;
   updatedAt?: Date;
-  iframe?: boolean | string;
-}
-
-export type MenuType = 'group' | 'item' | 'link' | 'external';
-export type MenuSource = 'static' | 'dynamic' | 'micro-app';
-
-export interface MenuConfig {
-  id: string;
-
-  microAppId?: string;
-
-  name: string;
-  path?: string;
-  icon?: string;
-
-  type: MenuType;
-
-  parentId?: string;
-  children?: MenuConfig[];
-
-  visible: boolean;
-  disabled?: boolean;
-
-  permissions?: string[];
-  roles?: string[];
-
-  externalUrl?: string;
-  openInNewTab?: boolean;
-
-  badge?: string;
-  description?: string;
-  order?: number;
-
-  source: MenuSource;
-}
-
-export interface StandaloneMenu extends Omit<MenuConfig, 'microAppId'> {
-  microAppId?: never;
 }
 
 export interface SystemConfig {
   microApps: MicroAppConfig[];
-  standaloneMenus?: StandaloneMenu[];
   version: string;
   updatedAt: Date;
-}
-
-export interface UserPermissions {
-  permissions: string[];
-  roles: string[];
 }

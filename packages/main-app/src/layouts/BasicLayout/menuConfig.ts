@@ -1,58 +1,16 @@
 import type { MenuItem } from '../../types/menu';
-import { getSystemConfig } from '../../core/icestark';
-import { generateMenusFromConfig, mergeMenus } from '../../services/configService';
 
 const headerMenuConfig: MenuItem[] = [];
 
-const staticMenuConfig: MenuItem[] = [
-  {
-    name: 'Home',
-    path: '/',
-    icon: 'chart-pie',
-  },
+const asideMenuConfig: MenuItem[] = [
+  { name: '首页', path: '/' },
+  { name: 'Vue 应用', path: '/v-app' },
+  { name: '文本对比', path: '/textdiff' },
+  { name: 'Curl Converter', path: '/curlconverter' },
+  { name: '配置中心', path: '/config-hub' },
+  { name: '关于', path: '/about' },
 ];
 
-const getMicroAppMenus = (): MenuItem[] => {
-  if (typeof window === 'undefined' || !window.__MICRO_APP_MENUS__) {
-    return [];
-  }
+export const getAsideMenuConfig = (): MenuItem[] => asideMenuConfig;
 
-  return window.__MICRO_APP_MENUS__.map((config) => {
-    const displayName =
-      config.appName === 'v-app' ? 'Vue 应用' : config.appName === 'textdiff' ? '文本对比' : config.appName;
-    return {
-      name: displayName,
-      icon: 'atm',
-      children: config.menus,
-    };
-  });
-};
-
-let cachedMenus: MenuItem[] | null = null;
-
-const getAsideMenuConfig = (): MenuItem[] => {
-  if (cachedMenus) {
-    return cachedMenus;
-  }
-
-  const config = getSystemConfig();
-  if (config) {
-    const configMenus = generateMenusFromConfig(config);
-    const microMenus = getMicroAppMenus();
-    const mergedMenus = mergeMenus(configMenus, microMenus);
-    cachedMenus = [...staticMenuConfig, ...mergedMenus];
-  } else {
-    const microMenus = getMicroAppMenus();
-    cachedMenus = [...staticMenuConfig, ...microMenus];
-  }
-
-  return cachedMenus;
-};
-
-export const refreshMenus = () => {
-  cachedMenus = null;
-};
-
-const asideMenuConfig = getAsideMenuConfig();
-
-export { headerMenuConfig, asideMenuConfig, getAsideMenuConfig };
+export { headerMenuConfig, asideMenuConfig };

@@ -8,16 +8,6 @@ type RuntimeMicroApp = MicroAppConfig & { url?: string | string[] };
 
 let systemConfig: SystemConfig | null = null;
 
-const initializeMicroAppMenus = () => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  if (!window.__MICRO_APP_MENUS__) {
-    window.__MICRO_APP_MENUS__ = [];
-  }
-};
-
 type StartOptions = Parameters<typeof start>[0];
 
 let started = false;
@@ -98,8 +88,6 @@ export const ensureIcestarkStarted = (options?: StartOptions) => {
   if (started) {
     return;
   }
-
-  initializeMicroAppMenus();
 
   const apps = resolveMicroApps();
   const registerable = apps.filter(
