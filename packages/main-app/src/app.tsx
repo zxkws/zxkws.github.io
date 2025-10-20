@@ -11,7 +11,6 @@ import BasicLayout from './layouts/BasicLayout';
 import About from './pages/About';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import IframeWrapper from './microApps/IframeWrapper';
 import appHistory from '@ice/stark/lib/appHistory';
 
 const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
@@ -135,7 +134,15 @@ function App() {
                   exact
                   path={app.path}
                   activePath={[app.path]}
-                  component={<IframeWrapper src={resolveIframeSrc(app)} />}
+                  render={() => (
+                    <iframe
+                      src={resolveIframeSrc(app)}
+                      className="h-full w-full border-0"
+                      loading="lazy"
+                      allow="clipboard-write; clipboard-read"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                    />
+                  )}
                 />
               ))}
             </AppRouter>
