@@ -112,7 +112,7 @@ function App() {
     <AuthProvider>
       <BasicLayout>
         <PageLoading loading={isMicroAppLoading}>
-          <div className="flex flex-1">
+          <div className="app-router-shell flex flex-1 min-h-0 flex-col">
             <AppRouter
               NotFoundComponent={NotFound}
               onRouteChange={(pathname) => {
