@@ -6,7 +6,15 @@ import PageLoading from './components/PageLoading';
 import './global.scss';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
-import { ensureIcestarkStarted, resolveMicroApps, subscribeMicroAppLoading, loadConfig } from './core/icestark';
+import {
+  ensureIcestarkStarted,
+  ensureIcestarkAppsRegistered,
+  resolveMicroApps,
+  subscribeMicroAppLoading,
+  loadConfig,
+  notifyMicroAppLoading,
+  notifyMicroAppMounted,
+} from './core/icestark';
 import BasicLayout from './layouts/BasicLayout';
 import About from './pages/About';
 import Home from './pages/Home';
@@ -63,8 +71,8 @@ function App() {
         setConfigError(null);
         await loadConfig();
         const apps = resolveMicroApps();
+        ensureIcestarkAppsRegistered(apps);
         setMicroApps(apps);
-        ensureIcestarkStarted();
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('config-loaded'));
           const current = window.location.pathname + window.location.search + window.location.hash;
@@ -88,6 +96,19 @@ function App() {
     const unsubscribe = subscribeMicroAppLoading(setIsMicroAppLoading);
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    if (microApps.length > 0) {
+      ensureIcestarkAppsRegistered(microApps);
+    }
+  }, [microApps]);
+
+  useEffect(() => {
+    if (!configLoaded) {
+      return;
+    }
+    ensureIcestarkStarted();
+  }, [configLoaded]);
 
   if (configError) {
     return (
@@ -115,6 +136,8 @@ function App() {
           <div className="app-router-shell flex flex-1 min-h-0 flex-col">
             <AppRouter
               NotFoundComponent={NotFound}
+              onLoadingApp={() => notifyMicroAppLoading(true)}
+              onFinishLoading={() => notifyMicroAppMounted()}
               onRouteChange={(pathname) => {
                 if (typeof window !== 'undefined') {
                   window.dispatchEvent(new CustomEvent('main-route-change', { detail: pathname }));

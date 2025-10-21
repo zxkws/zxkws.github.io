@@ -8,9 +8,23 @@ type RuntimeMicroApp = MicroAppConfig & { url?: string | string[] };
 
 let systemConfig: SystemConfig | null = null;
 
-type StartOptions = Parameters<typeof start>[0];
-
+const registeredAppNames = new Set<string>();
 let started = false;
+
+const hydrateRegisteredNames = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  const existing = (window as typeof window & { microApps?: Array<{ name?: string }> }).microApps;
+  if (!existing || existing.length === 0) {
+    return;
+  }
+  existing.forEach((app) => {
+    if (app?.name) {
+      registeredAppNames.add(app.name);
+    }
+  });
+};
 
 const loadingEventTarget = typeof window !== 'undefined' ? new EventTarget() : undefined;
 
@@ -57,6 +71,13 @@ const emitLoading = (loading: boolean) => {
   loadingEventTarget.dispatchEvent(new CustomEvent('micro-app-loading', { detail: loading }));
 };
 
+const dispatchMicroAppMounted = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  window.dispatchEvent(new CustomEvent('micro-app-mounted'));
+};
+
 export const loadConfig = async (): Promise<SystemConfig> => {
   if (systemConfig) {
     return systemConfig;
@@ -84,31 +105,52 @@ export const resolveMicroApps = (): MicroAppConfig[] => {
   return mergeMicroApps(runtime);
 };
 
-export const ensureIcestarkStarted = (options?: StartOptions) => {
+const ensureAppsRegistered = (apps: MicroAppConfig[]) => {
+  hydrateRegisteredNames();
+  const registerable = apps.filter((app) => {
+    if (!('component' in app) && !('render' in app) && !('iframe' in app && app.iframe)) {
+      if (app.name && !registeredAppNames.has(app.name)) {
+        return true;
+      }
+    }
+    return false;
+  });
+
+  if (registerable.length === 0) {
+    return;
+  }
+  registerMicroApps(registerable as AppConfig[]);
+  registerable.forEach((app) => {
+    if (app.name) {
+      registeredAppNames.add(app.name);
+    }
+  });
+};
+
+export const ensureIcestarkStarted = () => {
+  ensureAppsRegistered(resolveMicroApps());
   if (started) {
     return;
   }
-
-  const apps = resolveMicroApps();
-  const registerable = apps.filter(
-    (app) => !('component' in app) && !('render' in app) && !('iframe' in app && app.iframe),
-  );
-  if (registerable.length > 0) {
-    registerMicroApps(registerable as AppConfig[]);
-  }
-
   start({
     onLoadingApp: () => emitLoading(true),
     onFinishLoading: () => {
       emitLoading(false);
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('micro-app-mounted'));
-      }
+      dispatchMicroAppMounted();
     },
-    ...(options ?? {}),
   });
-
   started = true;
+};
+
+export const ensureIcestarkAppsRegistered = (apps: MicroAppConfig[]) => {
+  ensureAppsRegistered(apps);
+};
+
+export const notifyMicroAppLoading = (loading: boolean) => emitLoading(loading);
+
+export const notifyMicroAppMounted = () => {
+  emitLoading(false);
+  dispatchMicroAppMounted();
 };
 
 export const subscribeMicroAppLoading = (listener: (_loading: boolean) => void): (() => void) => {

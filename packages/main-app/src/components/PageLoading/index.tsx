@@ -5,10 +5,32 @@ type PageLoadingProps = PropsWithChildren<{
 }>;
 
 const PageLoading = ({ children, loading = false }: PageLoadingProps) => {
-  if (loading) {
-    return <div className="flex flex-1 items-center justify-center">loading...</div>;
+  const overlay = loading ? (
+    <div
+      className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="flex flex-col items-center gap-3 rounded-lg bg-[var(--color-bg)] px-6 py-4 text-[var(--color-text)] shadow-lg">
+        <span
+          className="inline-flex h-8 w-8 animate-spin rounded-full border-4 border-white/30 border-t-white"
+          aria-hidden="true"
+        />
+        <span className="text-sm font-medium tracking-wide">Loading...</span>
+      </div>
+    </div>
+  ) : null;
+
+  if (!children) {
+    return overlay;
   }
-  return <>{children}</>;
+
+  return (
+    <>
+      {children}
+      {overlay}
+    </>
+  );
 };
 
 export default PageLoading;
