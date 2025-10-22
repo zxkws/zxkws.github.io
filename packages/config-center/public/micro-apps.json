@@ -12,15 +12,25 @@
       "enabled": true
     },
     {
+      "name": "config-hub",
+      "displayName": "配置中心",
+      "devEntry": "http://localhost:5176",
+      "prodEntry": "https://zxkws.nyc.mn/config-hub/",
+      "entry": "/config-hub/",
+      "activeRule": ["/config-hub"],
+      "sandbox": false,
+      "enabled": true
+    },
+    {
       "name": "pdf-editor-app",
       "displayName": "PDF 编辑器",
       "devEntry": "http://localhost:5177",
-      "prodEntry": "https://zxkws.nyc.mn/pdf-editor/",
-      "entry": "/pdf-editor/",
+      "prodEntry": "https://zxkws.nyc.mn/pdf-editor-app/",
+      "entry": "/pdf-editor-app/",
       "activeRule": ["/pdf-editor"],
       "sandbox": true,
       "enabled": true
     }
   ],
-  "updatedAt": "2025-10-22T00:00:00Z"
+  "updatedAt": "2025-10-22T12:30:00Z"
 }

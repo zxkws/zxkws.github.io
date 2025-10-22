@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     css: {
-      devSourcemap: true,
+      devSourcemap: !isProd,
       preprocessorOptions: {
         less: {
           javascriptEnabled: true,

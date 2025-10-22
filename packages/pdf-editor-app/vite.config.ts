@@ -30,9 +30,9 @@ export default defineConfig(({ mode }) => {
       allowedHosts: ['.gitpod.io'],
     },
     css: {
-      devSourcemap: true,
+      devSourcemap: !isProd,
     },
-    base: isProd ? '/pdf-editor/' : '/',
+    base: isProd ? '/pdf-editor-app/' : '/',
     build: {
       sourcemap: !isProd,
       outDir: 'dist',
