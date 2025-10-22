@@ -2,34 +2,24 @@
   "version": "1.1.0",
   "microApps": [
     {
-      "id": "v-app",
       "name": "v-app",
       "displayName": "Vue 应用",
-      "description": "基于 Vue 3 开发的微应用",
       "devEntry": "http://localhost:5173",
       "prodEntry": "https://zxkws.nyc.mn/v-app/",
       "entry": "/v-app/",
       "activeRule": ["/v-app"],
       "sandbox": false,
-      "loadScriptMode": "import",
-      "enabled": true,
-      "order": 1,
-      "renderType": "microfront"
+      "enabled": true
     },
     {
-      "id": "pdf-editor-app",
       "name": "pdf-editor-app",
       "displayName": "PDF 编辑器",
-      "description": "上传并在线标注 PDF，完成后可下载",
       "devEntry": "http://localhost:5177",
       "prodEntry": "https://zxkws.nyc.mn/pdf-editor/",
       "entry": "/pdf-editor/",
       "activeRule": ["/pdf-editor"],
       "sandbox": true,
-      "loadScriptMode": "import",
-      "enabled": true,
-      "order": 2,
-      "renderType": "microfront"
+      "enabled": true
     }
   ],
   "updatedAt": "2025-10-22T00:00:00Z"
