@@ -3,7 +3,7 @@ import ReactDom from 'react-dom/client';
 import { useEffect, useState } from 'react';
 
 import PageLoading from './components/PageLoading';
-import './global.scss';
+import './global.css';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import {

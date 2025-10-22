@@ -26,10 +26,6 @@ export default defineConfig(({ mode }) => {
         less: {
           javascriptEnabled: true,
         },
-        scss: {
-          charset: false,
-          // additionalData: `@import "./src/style/global.scss";`,
-        },
       },
     },
     esbuild: {

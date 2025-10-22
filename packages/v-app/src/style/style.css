@@ -1,6 +1,6 @@
 @charset "utf-8";
 
-/*全局样式*/
+/* 全局样式 */
 
 html,
 body {
@@ -8,9 +8,8 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  // background-color: #333;
   overflow: hidden;
-  font-family: "HarmonyOS_Regular", sans-serif;
+  font-family: 'HarmonyOS_Regular', sans-serif;
 }
 
 *,
@@ -19,34 +18,30 @@ p {
   margin: 0;
   padding: 0;
   text-decoration: none;
-  // color: #fff;
   box-sizing: border-box;
-
-  &:hover {
-    transition: 0.3s;
-  }
 }
 
-// 链接悬停效果
+*:hover {
+  transition: 0.3s;
+}
+
 a:hover {
   color: rgb(57, 159, 255);
   text-decoration: underline;
 }
 
-// 字体文件
 @font-face {
-  font-family: "Pacifico-Regular";
+  font-family: 'Pacifico-Regular';
   font-display: swap;
-  src: url("/font/Pacifico-Regular.ttf") format("truetype");
+  src: url('/font/Pacifico-Regular.ttf') format('truetype');
 }
 
 @font-face {
-  font-family: "UnidreamLED";
+  font-family: 'UnidreamLED';
   font-display: swap;
-  src: url("/font/UnidreamLED.ttf") format("truetype");
+  src: url('/font/UnidreamLED.ttf') format('truetype');
 }
 
-// 基础样式
 #app {
   position: fixed;
   top: 0;
@@ -56,29 +51,30 @@ a:hover {
   z-index: 0;
 }
 
-// 卡片样式
 .cards {
   border-radius: 6px;
   background-color: #00000040;
   backdrop-filter: blur(10px);
   transform: scale(1);
-  transition: backdrop-filter 0.3s, transform 0.3s;
-  &:hover {
-    transform: scale(1.01);
-  }
-  &:active {
-    transform: scale(0.98);
-  }
+  transition:
+    backdrop-filter 0.3s,
+    transform 0.3s;
 }
 
-// 文字超出
+.cards:hover {
+  transform: scale(1.01);
+}
+
+.cards:active {
+  transform: scale(0.98);
+}
+
 .text-hidden {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-// Transition 动画
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease-in-out;
@@ -89,7 +85,6 @@ a:hover {
   opacity: 0;
 }
 
-// keyframes 动画
 @keyframes fade {
   from {
     opacity: 0;
@@ -119,14 +114,12 @@ a:hover {
   }
 }
 
-// 隐藏元素
 @media (min-width: 910px) and (max-width: 1200px) {
   .sm-hidden {
     display: none;
   }
 }
 
-// 自定义鼠标
 #cursor {
   position: fixed;
   width: 18px;
@@ -138,18 +131,17 @@ a:hover {
   pointer-events: none;
   transition: 0.2s ease-in-out;
   transition-property: background, opacity, transform;
-
-  &.hidden {
-    opacity: 0;
-  }
-
-  &.active {
-    opacity: 0.5;
-    transform: scale(0.5);
-  }
 }
 
-// 滚动条样式
+#cursor.hidden {
+  opacity: 0;
+}
+
+#cursor.active {
+  opacity: 0.5;
+  transform: scale(0.5);
+}
+
 ::-webkit-scrollbar,
 scrollbar {
   width: 6px;

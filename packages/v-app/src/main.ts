@@ -7,7 +7,7 @@ import STable, { setLicenseKey } from '@surely-vue/table';
 
 import App from './App.vue';
 import './style/tailwind.css';
-import './style/style.scss';
+import './style/style.css';
 
 import { createPinia, type Pinia } from 'pinia';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
