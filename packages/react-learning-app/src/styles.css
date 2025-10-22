@@ -1,0 +1,67 @@
+:root {
+  color-scheme: light;
+  font-family:
+    'Inter',
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    sans-serif;
+  background: #f8fafc;
+  color: #111827;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.app-shell {
+  width: min(640px, 100%);
+  background: white;
+  border-radius: 18px;
+  padding: 2.5rem 3rem;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
+  display: grid;
+  gap: 1.5rem;
+}
+
+.app-shell header h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.app-shell header p {
+  margin: 0.5rem 0 0;
+  color: #475569;
+}
+
+.app-shell section {
+  display: grid;
+  gap: 1rem;
+}
+
+.app-shell section div {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.app-shell dt {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.app-shell dd {
+  margin: 0;
+  color: #334155;
+}

@@ -30,7 +30,27 @@
       "activeRule": ["/pdf-editor"],
       "sandbox": true,
       "enabled": true
+    },
+    {
+      "name": "vue-learning-app",
+      "displayName": "Vue 学习微应用",
+      "devEntry": "http://localhost:5178",
+      "prodEntry": "https://zxkws.nyc.mn/vue-learning-app/",
+      "entry": "/vue-learning-app/",
+      "activeRule": ["/vue-learning-app"],
+      "sandbox": true,
+      "enabled": true
+    },
+    {
+      "name": "react-learning-app",
+      "displayName": "React 学习微应用",
+      "devEntry": "http://localhost:5179",
+      "prodEntry": "https://zxkws.nyc.mn/react-learning-app/",
+      "entry": "/react-learning-app/",
+      "activeRule": ["/react-learning-app"],
+      "sandbox": true,
+      "enabled": true
     }
   ],
-  "updatedAt": "2025-10-22T12:30:00Z"
+  "updatedAt": "2025-10-22T20:00:00Z"
 }

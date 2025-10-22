@@ -18,6 +18,8 @@ const asideMenuConfig: MenuItem[] = [
   { name: '文本对比', path: '/textdiff' },
   { name: 'Curl Converter', path: '/curlconverter' },
   { name: '配置中心', path: '/config-hub' },
+  { name: 'Vue 学习', path: '/vue-learning-app' },
+  { name: 'React 学习', path: '/react-learning-app' },
   { name: '关于', path: '/about' },
 ];
 

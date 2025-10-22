@@ -1,0 +1,21 @@
+{
+  "name": "vue-learning-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vue 学习微应用，用于线上调试",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ice/stark-app": "^1.5.0",
+    "vue": "^3.5.22"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10",
+    "vue-tsc": "^3.1.1"
+  }
+}

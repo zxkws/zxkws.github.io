@@ -1,0 +1,18 @@
+:root {
+  color-scheme: light;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+body {
+  margin: 0;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}

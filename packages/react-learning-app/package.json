@@ -1,0 +1,23 @@
+{
+  "name": "react-learning-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "React 学习微应用，用于线上调试",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ice/stark-app": "^1.5.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10"
+  }
+}
