@@ -15,7 +15,22 @@
       "enabled": true,
       "order": 1,
       "renderType": "microfront"
+    },
+    {
+      "id": "pdf-editor-app",
+      "name": "pdf-editor-app",
+      "displayName": "PDF 编辑器",
+      "description": "上传并在线标注 PDF，完成后可下载",
+      "devEntry": "http://localhost:5177",
+      "prodEntry": "https://zxkws.nyc.mn/pdf-editor/",
+      "entry": "/pdf-editor/",
+      "activeRule": ["/pdf-editor"],
+      "sandbox": true,
+      "loadScriptMode": "import",
+      "enabled": true,
+      "order": 2,
+      "renderType": "microfront"
     }
   ],
-  "updatedAt": "2025-10-19T00:00:00Z"
+  "updatedAt": "2025-10-22T00:00:00Z"
 }

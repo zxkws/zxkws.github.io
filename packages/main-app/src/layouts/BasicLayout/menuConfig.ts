@@ -14,6 +14,7 @@ const asideMenuConfig: MenuItem[] = [
       { name: 'LLM 排名', path: '/v-app/llm-ranking' },
     ],
   },
+  { name: 'PDF 编辑器', path: '/pdf-editor' },
   { name: '文本对比', path: '/textdiff' },
   { name: 'Curl Converter', path: '/curlconverter' },
   { name: '配置中心', path: '/config-hub' },
