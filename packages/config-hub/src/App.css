@@ -1,7 +1,7 @@
 .app-shell {
   display: flex;
   min-height: 100vh;
-  color: #e2e8f0;
+  color: var(--config-hub-text);
 }
 
 .workspace {
@@ -12,6 +12,7 @@
 }
 
 .toast-error {
-  background: rgba(248, 113, 113, 0.25);
-  border: 1px solid rgba(248, 113, 113, 0.45);
+  background: var(--config-hub-danger-soft);
+  border: 1px solid var(--config-hub-danger-border);
+  color: var(--config-hub-danger-text);
 }

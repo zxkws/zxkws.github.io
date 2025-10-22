@@ -1,7 +1,7 @@
 .microapps-panel {
-  background: rgba(15, 23, 42, 0.72);
+  background: var(--config-hub-surface);
   border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid var(--config-hub-border);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -23,7 +23,7 @@
 .microapps-panel p {
   margin: 4px 0 0;
   font-size: 0.85rem;
-  color: rgba(226, 232, 240, 0.6);
+  color: var(--config-hub-text-muted);
 }
 
 .microapps-actions {
@@ -34,14 +34,14 @@
 .microapps-actions button {
   padding: 6px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  background: rgba(15, 23, 42, 0.6);
-  color: #93c5fd;
+  border: 1px solid var(--config-hub-border);
+  background: var(--config-hub-surface-muted);
+  color: var(--config-hub-primary);
   cursor: pointer;
 }
 
 .microapps-actions button:hover {
-  background: rgba(96, 165, 250, 0.15);
+  background: var(--config-hub-primary-soft);
 }
 
 .microapps-content {
@@ -65,11 +65,11 @@
 .microapps-content li {
   border-radius: 10px;
   border: 1px solid transparent;
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--config-hub-surface-muted);
 }
 
 .microapps-content li.active {
-  border-color: rgba(96, 165, 250, 0.45);
+  border-color: var(--config-hub-border-strong);
 }
 
 .microapps-content li button {
@@ -91,13 +91,13 @@
 
 .microapps-content li .subtitle {
   font-size: 0.75rem;
-  color: rgba(226, 232, 240, 0.6);
+  color: var(--config-hub-text-muted);
 }
 
 .microapps-content li.empty {
   padding: 12px;
   text-align: center;
-  color: rgba(226, 232, 240, 0.6);
+  color: var(--config-hub-text-muted);
 }
 
 .microapps-form {
@@ -123,11 +123,11 @@
 textarea,
 input,
 select {
-  background: rgba(30, 41, 59, 0.6);
-  border: 1px solid rgba(100, 116, 139, 0.35);
+  background: var(--config-hub-input-bg);
+  border: 1px solid var(--config-hub-input-border);
   border-radius: 10px;
   padding: 10px 12px;
-  color: #e2e8f0;
+  color: var(--config-hub-text);
 }
 
 .microapps-form .checkbox {
@@ -141,7 +141,7 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(226, 232, 240, 0.6);
-  border: 1px dashed rgba(148, 163, 184, 0.35);
+  color: var(--config-hub-text-muted);
+  border: 1px dashed var(--config-hub-border);
   border-radius: 12px;
 }

@@ -1,7 +1,7 @@
 .json-panel {
-  background: rgba(15, 23, 42, 0.72);
+  background: var(--config-hub-surface);
   border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid var(--config-hub-border);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -20,7 +20,7 @@
 
 .json-panel header p {
   margin: 4px 0 0;
-  color: rgba(226, 232, 240, 0.6);
+  color: var(--config-hub-text-muted);
   font-size: 0.85rem;
 }
 
@@ -30,9 +30,9 @@
 }
 
 .json-panel-actions button {
-  background: rgba(96, 165, 250, 0.2);
-  border: 1px solid rgba(96, 165, 250, 0.35);
-  color: #60a5fa;
+  background: var(--config-hub-primary-soft);
+  border: 1px solid var(--config-hub-primary-border);
+  color: var(--config-hub-primary);
   padding: 6px 12px;
   border-radius: 8px;
   cursor: pointer;
@@ -42,10 +42,10 @@
   margin: 0;
   max-height: 320px;
   overflow: auto;
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--config-hub-surface-subtle);
   border-radius: 12px;
   padding: 14px;
   font-size: 0.85rem;
   line-height: 1.5;
-  color: #cbd5f5;
+  color: var(--config-hub-text-secondary);
 }
