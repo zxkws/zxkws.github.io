@@ -82,6 +82,8 @@ const staticNavItems: NavItem[] = [
   { name: 'music', url: 'https://y.wjhe.top/' },
   { name: '中国科学技术大学测速网站', url: 'https://test.ustc.edu.cn/' },
   { name: 'fast', url: 'https://fast.com/' },
+  { name: 'localsend', url: 'https://localsend.org/' },
+  
 ].map((item, index) => ({ ...item, id: index + 1 }));
 
 const storedItems = ref<NavItem[]>([]);

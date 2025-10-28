@@ -1,12 +1,19 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import htmlPlugin from 'vite-plugin-index-html';
 import { resolve } from 'path';
 
 export default defineConfig(({ mode }) => {
   const isProd = mode === 'production';
 
   return {
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      htmlPlugin({
+        input: './src/main.ts',
+        preserveEntrySignatures: 'exports-only',
+      }),
+    ],
     base: isProd ? '/vue-learning-app/' : '/',
     resolve: {
       alias: {
@@ -32,6 +39,9 @@ export default defineConfig(({ mode }) => {
       sourcemap: true,
       outDir: 'dist',
       target: 'esnext',
+      rollupOptions: {
+        preserveEntrySignatures: 'exports-only',
+      },
     },
   };
 });

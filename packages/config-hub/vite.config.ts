@@ -1,12 +1,19 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import htmlPlugin from 'vite-plugin-index-html';
 import { resolve } from 'path';
 
 export default defineConfig(({ mode }) => {
   const isProd = mode === 'production';
 
   return {
-    plugins: [react()],
+    plugins: [
+      react(),
+      htmlPlugin({
+        input: './src/main.tsx',
+        preserveEntrySignatures: 'exports-only',
+      }),
+    ],
     server: {
       port: 5176,
       open: false,
@@ -22,6 +29,9 @@ export default defineConfig(({ mode }) => {
     build: {
       sourcemap: !isProd,
       outDir: 'dist',
+      rollupOptions: {
+        preserveEntrySignatures: 'exports-only',
+      },
     },
     base: isProd ? '/config-hub/' : '/',
   };
