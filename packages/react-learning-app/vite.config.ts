@@ -41,6 +41,11 @@ export default defineConfig(({ mode }) => {
       target: 'esnext',
       rollupOptions: {
         preserveEntrySignatures: 'exports-only',
+        output: {
+          entryFileNames: 'entry.js',
+          chunkFileNames: 'chunks/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash][extname]',
+        },
       },
     },
   };

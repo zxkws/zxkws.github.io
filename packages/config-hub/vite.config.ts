@@ -31,6 +31,11 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       rollupOptions: {
         preserveEntrySignatures: 'exports-only',
+        output: {
+          entryFileNames: 'entry.js',
+          chunkFileNames: 'chunks/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash][extname]',
+        },
       },
     },
     base: isProd ? '/config-hub/' : '/',

@@ -38,6 +38,9 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       rollupOptions: {
         output: {
+          entryFileNames: 'entry.js',
+          chunkFileNames: 'chunks/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash][extname]',
           manualChunks(id) {
             if (id.includes('node_modules')) {
               return 'vendor';
