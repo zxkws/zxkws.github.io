@@ -16,7 +16,7 @@
       "displayName": "配置中心",
       "devEntry": "http://localhost:5176",
       "prodEntry": "https://zxkws.nyc.mn/config-hub/",
-      "entry": "/app/config-hub/",
+      "entry": "/config-hub/",
       "activeRule": ["/app/config-hub"],
       "sandbox": false,
       "enabled": true
@@ -26,7 +26,7 @@
       "displayName": "PDF 编辑器",
       "devEntry": "http://localhost:5177",
       "prodEntry": "https://zxkws.nyc.mn/pdf-editor-app/",
-      "entry": "/app/pdf-editor/",
+      "entry": "/pdf-editor-app/",
       "activeRule": ["/app/pdf-editor"],
       "sandbox": true,
       "enabled": true
@@ -36,7 +36,7 @@
       "displayName": "Vue 学习微应用",
       "devEntry": "http://localhost:5178",
       "prodEntry": "https://zxkws.nyc.mn/vue-learning-app/",
-      "entry": "/app/vue-learning/",
+      "entry": "/vue-learning-app/",
       "activeRule": ["/app/vue-learning"],
       "sandbox": true,
       "enabled": true
@@ -46,7 +46,7 @@
       "displayName": "React 学习微应用",
       "devEntry": "http://localhost:5179",
       "prodEntry": "https://zxkws.nyc.mn/react-learning-app/",
-      "entry": "/app/react-learning/",
+      "entry": "/react-learning-app/",
       "activeRule": ["/app/react-learning"],
       "sandbox": true,
       "enabled": true
