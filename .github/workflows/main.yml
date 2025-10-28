@@ -47,6 +47,15 @@ jobs:
       - name: Build v-app
         run: pnpm --filter v-app build
 
+      - name: Build vue-learning-app
+        run: pnpm --filter vue-learning-app build
+
+      - name: Build react-learning-app
+        run: pnpm --filter react-learning-app build
+
+      - name: Build pdf-editor-app
+        run: pnpm --filter pdf-editor-app build
+
       - name: Build textDifference
         run: pnpm --filter textdifference build
 
@@ -58,6 +67,9 @@ jobs:
           mkdir -p deploy
           cp -r packages/main-app/dist/* deploy/
           cp -r packages/v-app/dist deploy/v-app
+          cp -r packages/vue-learning-app/dist deploy/vue-learning-app
+          cp -r packages/react-learning-app/dist deploy/react-learning-app
+          cp -r packages/pdf-editor-app/dist deploy/pdf-editor-app
           cp -r packages/textDifference/dist deploy/textdiff
           cp -r packages/config-center/dist deploy/config-center
 
