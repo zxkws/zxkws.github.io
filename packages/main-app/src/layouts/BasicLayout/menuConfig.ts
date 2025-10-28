@@ -14,12 +14,12 @@ const asideMenuConfig: MenuItem[] = [
       { name: 'LLM 排名', path: '/v-app/llm-ranking' },
     ],
   },
-  { name: 'PDF 编辑器', path: '/pdf-editor' },
+  { name: 'PDF 编辑器', path: '/app/pdf-editor' },
   { name: '文本对比', path: '/textdiff' },
   { name: 'Curl Converter', path: '/curlconverter' },
-  { name: '配置中心', path: '/config-hub' },
-  { name: 'Vue 学习', path: '/vue-learning-app' },
-  { name: 'React 学习', path: '/react-learning-app' },
+  { name: '配置中心', path: '/app/config-hub' },
+  { name: 'Vue 学习', path: '/app/vue-learning' },
+  { name: 'React 学习', path: '/app/react-learning' },
   { name: '关于', path: '/about' },
 ];
 
