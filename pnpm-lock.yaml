@@ -156,6 +156,9 @@ importers:
       vite:
         specifier: ^7.1.10
         version: 7.1.10(@types/node@24.8.1)(less@4.4.2)
+      vite-plugin-index-html:
+        specifier: ^2.0.2
+        version: 2.0.2
 
   packages/main-app:
     dependencies:
@@ -252,6 +255,9 @@ importers:
       vite:
         specifier: ^7.1.10
         version: 7.1.10(@types/node@24.8.1)(less@4.4.2)
+      vite-plugin-index-html:
+        specifier: ^2.0.2
+        version: 2.0.2
 
   packages/textDifference: {}
 
@@ -331,6 +337,9 @@ importers:
       vite:
         specifier: ^7.1.10
         version: 7.1.10(@types/node@24.8.1)(less@4.4.2)
+      vite-plugin-index-html:
+        specifier: ^2.0.2
+        version: 2.0.2
       vue-tsc:
         specifier: ^3.1.1
         version: 3.1.1(typescript@5.9.3)
