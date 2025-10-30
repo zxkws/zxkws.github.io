@@ -8,9 +8,49 @@ on:
       - README.md
 
 jobs:
-  deploy:
-    name: Deploy to GitHub Pages
+  build:
+    name: Build ${{ matrix.app.name }}
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - name: main-app
+            filter: main-app
+            dist_path: packages/main-app/dist
+            deploy_subdir: ''
+          - name: v-app
+            filter: v-app
+            dist_path: packages/v-app/dist
+            deploy_subdir: 'v-app'
+          - name: vue-learning-app
+            filter: vue-learning-app
+            dist_path: packages/vue-learning-app/dist
+            deploy_subdir: 'vue-learning-app'
+          - name: react-learning-app
+            filter: react-learning-app
+            dist_path: packages/react-learning-app/dist
+            deploy_subdir: 'react-learning-app'
+          - name: pdf-editor-app
+            filter: pdf-editor-app
+            dist_path: packages/pdf-editor-app/dist
+            deploy_subdir: 'pdf-editor-app'
+          - name: textdifference
+            filter: textdifference
+            dist_path: packages/textDifference/dist
+            deploy_subdir: 'textdiff'
+          - name: config-center
+            filter: config-center
+            dist_path: packages/config-center/dist
+            deploy_subdir: 'config-center'
+          - name: codex-chat-app
+            filter: codex-chat-app
+            dist_path: packages/codex-chat-app/dist
+            deploy_subdir: 'codex-chat-app'
+          - name: knowledge-hub-app
+            filter: knowledge-hub-app
+            dist_path: packages/knowledge-hub-app/dist
+            deploy_subdir: 'knowledge-hub-app'
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +68,7 @@ jobs:
         id: pnpm-cache
         shell: bash
         run: |
-            echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - uses: actions/cache@v3
         name: Setup pnpm cache
@@ -38,62 +78,57 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: pnpm install
 
-      - name: Build Main App
-        run: pnpm --filter main-app build
+      - name: Build package
+        run: pnpm --filter ${{ matrix.app.filter }} build
 
-      - name: Build v-app
-        run: pnpm --filter v-app build
-
-      - name: Build vue-learning-app
-        run: pnpm --filter vue-learning-app build
-
-      - name: Build react-learning-app
-        run: pnpm --filter react-learning-app build
-
-      - name: Build pdf-editor-app
-        run: pnpm --filter pdf-editor-app build
-
-      - name: Build textDifference
-        run: pnpm --filter textdifference build
-
-      - name: Build config-center
-        run: pnpm --filter config-center build
-
-      - name: Build codex-chat-app
-        run: pnpm --filter codex-chat-app build
-
-      - name: Build knowledge-hub-app
-        run: pnpm --filter knowledge-hub-app build
-
-      - name: Prepare Deployment
+      - name: Prepare artifact
         run: |
-          mkdir -p deploy
-          cp -r packages/main-app/dist/* deploy/
-          cp -r packages/v-app/dist deploy/v-app
-          cp -r packages/vue-learning-app/dist deploy/vue-learning-app
-          cp -r packages/react-learning-app/dist deploy/react-learning-app
-          cp -r packages/pdf-editor-app/dist deploy/pdf-editor-app
-          cp -r packages/textDifference/dist deploy/textdiff
-          cp -r packages/config-center/dist deploy/config-center
-          cp -r packages/codex-chat-app/dist deploy/codex-chat-app
-          cp -r packages/knowledge-hub-app/dist deploy/knowledge-hub-app
+          rm -rf upload
+          mkdir -p upload
+          if [ -z "${{ matrix.app.deploy_subdir }}" ]; then
+            cp -a ${{ matrix.app.dist_path }}/. upload/
+          else
+            mkdir -p "upload/${{ matrix.app.deploy_subdir }}"
+            cp -a ${{ matrix.app.dist_path }}/. "upload/${{ matrix.app.deploy_subdir }}/"
+          fi
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.app.name }}
+          path: upload/**
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          merge-multiple: true
+          path: deploy
 
       - name: Deploy to GitHub Pages
         env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-            git config --global user.name "${{ github.actor }}"
-            git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-            git checkout --orphan gh-pages
-            git rm -rf .
-            mv deploy/* .
-            rm -rf node_modules packages deploy
-            cp index.html 404.html
-            echo "zxkws.nyc.mn" > CNAME
-            touch .nojekyll
-            git add .
-            git commit -m "Deploy all apps to GitHub Pages"
-            git push -f origin gh-pages
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git checkout --orphan gh-pages
+          git rm -rf .
+          mv deploy/* .
+          rm -rf deploy
+          cp index.html 404.html
+          echo "zxkws.nyc.mn" > CNAME
+          touch .nojekyll
+          git add .
+          git commit -m "Deploy all apps to GitHub Pages"
+          git push -f origin gh-pages
