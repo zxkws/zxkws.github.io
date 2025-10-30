@@ -16,6 +16,7 @@ const asideMenuConfig: MenuItem[] = [
   },
   { name: '知识中台', path: '/app/knowledge-hub' },
   { name: 'PDF 编辑器', path: '/app/pdf-editor' },
+  { name: '模型对话', path: '/app/codex-chat' },
   { name: '文本对比', path: '/textdiff' },
   { name: 'Curl Converter', path: '/curlconverter' },
   { name: '配置中心', path: '/app/config-hub' },
