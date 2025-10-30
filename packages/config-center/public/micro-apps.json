@@ -32,6 +32,16 @@
       "enabled": true
     },
     {
+      "name": "codex-chat-app",
+      "displayName": "Codex 模型对话",
+      "devEntry": "http://localhost:5180",
+      "prodEntry": "https://zxkws.nyc.mn/codex-chat-app/",
+      "entry": "/codex-chat-app/",
+      "activeRule": ["/app/codex-chat"],
+      "sandbox": true,
+      "enabled": true
+    },
+    {
       "name": "vue-learning-app",
       "displayName": "Vue 学习微应用",
       "devEntry": "http://localhost:5178",
