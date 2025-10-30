@@ -62,6 +62,12 @@ jobs:
       - name: Build config-center
         run: pnpm --filter config-center build
 
+      - name: Build codex-chat-app
+        run: pnpm --filter codex-chat-app build
+
+      - name: Build knowledge-hub-app
+        run: pnpm --filter knowledge-hub-app build
+
       - name: Prepare Deployment
         run: |
           mkdir -p deploy
@@ -72,6 +78,8 @@ jobs:
           cp -r packages/pdf-editor-app/dist deploy/pdf-editor-app
           cp -r packages/textDifference/dist deploy/textdiff
           cp -r packages/config-center/dist deploy/config-center
+          cp -r packages/codex-chat-app/dist deploy/codex-chat-app
+          cp -r packages/knowledge-hub-app/dist deploy/knowledge-hub-app
 
       - name: Deploy to GitHub Pages
         env:

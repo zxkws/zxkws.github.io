@@ -19,7 +19,7 @@
     "build": "pnpm run build:all",
     "build:all": "pnpm --filter main-app build && pnpm --filter v-app build && pnpm --filter textdifference build && pnpm --filter config-center build && pnpm --filter config-hub build && pnpm --filter pdf-editor-app build && pnpm --filter vue-learning-app build && pnpm --filter react-learning-app build && pnpm --filter knowledge-hub-app build",
     "postinstall": "pnpm i @google/gemini-cli @anthropic-ai/claude-code -g || true",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "imports": {
     "#*": "./*"
