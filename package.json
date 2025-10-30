@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "npx rimraf node_modules packages/**/node_modules packages/**/**/node_modules pnpm-lock.yaml .ice packages/**/.ice",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently -n \"main,v-app,pdf,textdiff,config,confighub,vue-learn,react-learn\" -c \"bgBlue.bold,bgMagenta.bold,bgRed.bold,bgGreen.bold,bgCyan.bold,bgYellow.bold,bgBlue.bold,bgMagenta.bold\" \"pnpm dev:main\" \"pnpm dev:v-app\" \"pnpm dev:pdf-editor\" \"pnpm dev:textdiff\" \"pnpm dev:config\" \"pnpm dev:config-hub\" \"pnpm dev:vue-learning\" \"pnpm dev:react-learning\"",
+    "dev": "concurrently -n \"main,v-app,pdf,textdiff,config,confighub,vue-learn,react-learn,knowledge\" -c \"bgBlue.bold,bgMagenta.bold,bgRed.bold,bgGreen.bold,bgCyan.bold,bgYellow.bold,bgBlue.bold,bgMagenta.bold,bgBlue.bold\" \"pnpm dev:main\" \"pnpm dev:v-app\" \"pnpm dev:pdf-editor\" \"pnpm dev:textdiff\" \"pnpm dev:config\" \"pnpm dev:config-hub\" \"pnpm dev:vue-learning\" \"pnpm dev:react-learning\" \"pnpm dev:knowledge-hub\"",
     "dev:main": "pnpm --filter main-app dev",
     "dev:v-app": "pnpm --filter v-app vite",
     "dev:textdiff": "pnpm --filter textdifference dev",
@@ -15,8 +15,9 @@
     "dev:pdf-editor": "pnpm --filter pdf-editor-app dev",
     "dev:vue-learning": "pnpm --filter vue-learning-app dev",
     "dev:react-learning": "pnpm --filter react-learning-app dev",
+    "dev:knowledge-hub": "pnpm --filter knowledge-hub-app dev",
     "build": "pnpm run build:all",
-    "build:all": "pnpm --filter main-app build && pnpm --filter v-app build && pnpm --filter textdifference build && pnpm --filter config-center build && pnpm --filter config-hub build && pnpm --filter pdf-editor-app build && pnpm --filter vue-learning-app build && pnpm --filter react-learning-app build",
+    "build:all": "pnpm --filter main-app build && pnpm --filter v-app build && pnpm --filter textdifference build && pnpm --filter config-center build && pnpm --filter config-hub build && pnpm --filter pdf-editor-app build && pnpm --filter vue-learning-app build && pnpm --filter react-learning-app build && pnpm --filter knowledge-hub-app build",
     "postinstall": "pnpm i @google/gemini-cli @anthropic-ai/claude-code -g || true",
     "prepare": "husky install"
   },

@@ -50,7 +50,17 @@
       "activeRule": ["/app/react-learning"],
       "sandbox": true,
       "enabled": true
+    },
+    {
+      "name": "knowledge-hub-app",
+      "displayName": "知识中台",
+      "devEntry": "http://localhost:5180",
+      "prodEntry": "https://zxkws.nyc.mn/knowledge-hub-app/",
+      "entry": "/knowledge-hub-app/",
+      "activeRule": ["/app/knowledge-hub"],
+      "sandbox": true,
+      "enabled": true
     }
   ],
-  "updatedAt": "2025-10-22T20:00:00Z"
+  "updatedAt": "2025-01-17T08:30:00Z"
 }
