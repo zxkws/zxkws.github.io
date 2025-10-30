@@ -43,7 +43,7 @@
   padding: 10px 18px;
   border-radius: 999px;
   border: 1px solid var(--kh-border-strong);
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(236, 72, 153, 0.35));
+  background: var(--kh-primary-gradient);
   color: var(--kh-text-strong);
   font-weight: 600;
   cursor: pointer;
@@ -54,14 +54,14 @@
 
 .primaryButton:hover {
   transform: translateY(-1px);
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.45), rgba(236, 72, 153, 0.45));
+  background: var(--kh-primary-gradient-hover);
 }
 
 .secondaryButton {
   padding: 10px 16px;
   border-radius: 999px;
   border: 1px solid var(--kh-border);
-  background: rgba(15, 23, 42, 0.55);
+  background: var(--kh-secondary-bg);
   color: var(--kh-text);
   font-weight: 500;
   cursor: pointer;
@@ -72,7 +72,7 @@
 
 .secondaryButton:hover {
   border-color: var(--kh-border-strong);
-  background: rgba(30, 41, 59, 0.65);
+  background: var(--kh-secondary-bg-hover);
 }
 
 .tabBar {
@@ -80,8 +80,8 @@
   gap: 12px;
   padding: 12px;
   border-radius: 20px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(96, 165, 250, 0.15);
+  background: var(--kh-tabbar-bg);
+  border: 1px solid var(--kh-tabbar-border);
   backdrop-filter: blur(20px);
   position: sticky;
   top: 16px;
@@ -104,9 +104,9 @@
 
 .tabButtonActive {
   color: var(--kh-text-strong);
-  background: rgba(96, 165, 250, 0.2);
-  border: 1px solid rgba(96, 165, 250, 0.35);
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.22);
+  background: var(--kh-tab-active-bg);
+  border: 1px solid var(--kh-tab-active-border);
+  box-shadow: var(--kh-tab-active-shadow);
 }
 
 .content {
@@ -124,9 +124,9 @@
   gap: 16px;
   background: var(--kh-surface);
   border-radius: 24px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid var(--kh-section-border);
   padding: 24px;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.45);
+  box-shadow: var(--kh-section-shadow);
 }
 
 .sectionHeader {
@@ -159,9 +159,9 @@
 }
 
 .card {
-  background: rgba(15, 23, 42, 0.65);
+  background: var(--kh-card-bg);
   border-radius: 20px;
-  border: 1px solid rgba(96, 165, 250, 0.14);
+  border: 1px solid var(--kh-card-border);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -174,7 +174,7 @@
   content: '';
   position: absolute;
   inset: -40% 30% 30% -40%;
-  background: radial-gradient(circle, rgba(96, 165, 250, 0.18), transparent 65%);
+  background: var(--kh-card-glow);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -192,8 +192,8 @@
 .tag {
   padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.32);
-  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid var(--kh-tag-border);
+  background: var(--kh-tag-bg);
   font-size: 12px;
   color: var(--kh-text-muted);
 }
@@ -209,12 +209,12 @@
   padding: 12px 10px;
   color: var(--kh-text-muted);
   font-weight: 500;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  border-bottom: 1px solid var(--kh-divider-strong);
 }
 
 .table tbody td {
   padding: 12px 10px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  border-bottom: 1px solid var(--kh-divider-soft);
 }
 
 .statusBadge {
@@ -228,18 +228,18 @@
 }
 
 .statusActive {
-  background: rgba(59, 130, 246, 0.18);
-  color: #bfdbfe;
+  background: var(--kh-status-active-bg);
+  color: var(--kh-status-active-color);
 }
 
 .statusSyncing {
-  background: rgba(250, 204, 21, 0.18);
-  color: #facc15;
+  background: var(--kh-status-sync-bg);
+  color: var(--kh-status-sync-color);
 }
 
 .statusPaused {
-  background: rgba(248, 113, 113, 0.18);
-  color: #fca5a5;
+  background: var(--kh-status-paused-bg);
+  color: var(--kh-status-paused-color);
 }
 
 .metricValue {
@@ -263,8 +263,8 @@
   display: grid;
   grid-template-columns: 180px minmax(0, 1fr);
   gap: 14px;
-  background: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(96, 165, 250, 0.14);
+  background: var(--kh-pipeline-bg);
+  border: 1px solid var(--kh-pipeline-border);
   border-radius: 16px;
   padding: 14px 18px;
 }
@@ -280,8 +280,8 @@
   gap: 6px;
   padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(96, 165, 250, 0.22);
-  background: rgba(96, 165, 250, 0.16);
+  border: 1px solid var(--kh-badge-border);
+  background: var(--kh-badge-bg);
   font-size: 12px;
 }
 
@@ -294,8 +294,8 @@
 .timelineItem {
   padding: 12px 14px;
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.55);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: var(--kh-timeline-bg);
+  border: 1px solid var(--kh-timeline-border);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -307,8 +307,8 @@
 }
 
 .codeBlock {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(96, 165, 250, 0.18);
+  background: var(--kh-code-bg);
+  border: 1px solid var(--kh-code-border);
   border-radius: 14px;
   padding: 16px;
   font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
@@ -330,15 +330,15 @@
 }
 
 .severityHigh {
-  color: #fecaca;
+  color: var(--kh-severity-high);
 }
 
 .severityMedium {
-  color: #fde68a;
+  color: var(--kh-severity-medium);
 }
 
 .severityLow {
-  color: #bbf7d0;
+  color: var(--kh-severity-low);
 }
 
 @media (max-width: 960px) {

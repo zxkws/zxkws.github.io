@@ -34,6 +34,14 @@ const bytesToSize = (bytes: number) => {
   return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
 };
 
+const readCssVariable = (name: string, fallback: string) => {
+  if (typeof window === 'undefined') {
+    return fallback;
+  }
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+};
+
 const hexToRgb = (hex: string) => {
   const trimmed = hex.replace('#', '');
   if (trimmed.length !== 6) {
@@ -125,7 +133,7 @@ const PdfEditorApp = (_props: PdfEditorAppProps) => {
       y,
       text: '新的批注',
       fontSize: 16,
-      color: '#1f2937',
+      color: readCssVariable('--pe-annotation-text', '#1f2937'),
     };
     setAnnotations((prev) => [...prev, annotation]);
     setSelectedAnnotationId(annotation.id);
@@ -142,7 +150,7 @@ const PdfEditorApp = (_props: PdfEditorAppProps) => {
         y,
         width,
         height,
-        color: '#fde68a',
+        color: readCssVariable('--pe-highlight-color', '#fde68a'),
         opacity: 0.45,
       };
       setAnnotations((prev) => [...prev, annotation]);

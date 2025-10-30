@@ -1,12 +1,31 @@
 :root {
   color-scheme: light;
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-  background-color: #f8fafc;
-  color: #0f172a;
+  --vl-bg: #f8fafc;
+  --vl-text: #0f172a;
+  --vl-surface: #ffffff;
+  --vl-text-muted: #475569;
+  --vl-text-strong: #1f2937;
+  --vl-text-secondary: #334155;
+  --vl-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --vl-bg: #0f172a;
+  --vl-text: #e2e8f0;
+  --vl-surface: rgba(15, 23, 42, 0.88);
+  --vl-text-muted: #94a3b8;
+  --vl-text-strong: #f8fafc;
+  --vl-text-secondary: #cbd5f5;
+  --vl-shadow: 0 20px 45px rgba(2, 6, 23, 0.6);
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
+  background: var(--vl-bg);
+  color: var(--vl-text);
 }
 
 #app {

@@ -8,13 +8,31 @@
     BlinkMacSystemFont,
     'Helvetica Neue',
     sans-serif;
-  background: #f8fafc;
-  color: #111827;
+  --rl-bg: #f8fafc;
+  --rl-text: #111827;
+  --rl-text-muted: #475569;
+  --rl-text-strong: #1f2937;
+  --rl-text-secondary: #334155;
+  --rl-surface: #ffffff;
+  --rl-shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --rl-bg: #0f172a;
+  --rl-text: #e2e8f0;
+  --rl-text-muted: #94a3b8;
+  --rl-text-strong: #f8fafc;
+  --rl-text-secondary: #cbd5f5;
+  --rl-surface: rgba(15, 23, 42, 0.88);
+  --rl-shadow: 0 24px 48px rgba(2, 6, 23, 0.6);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
+  background: var(--rl-bg);
+  color: var(--rl-text);
 }
 
 #root {
@@ -27,10 +45,10 @@ body {
 
 .app-shell {
   width: min(640px, 100%);
-  background: white;
+  background: var(--rl-surface);
   border-radius: 18px;
   padding: 2.5rem 3rem;
-  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--rl-shadow);
   display: grid;
   gap: 1.5rem;
 }
@@ -43,7 +61,7 @@ body {
 
 .app-shell header p {
   margin: 0.5rem 0 0;
-  color: #475569;
+  color: var(--rl-text-muted);
 }
 
 .app-shell section {
@@ -58,10 +76,10 @@ body {
 
 .app-shell dt {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--rl-text-strong);
 }
 
 .app-shell dd {
   margin: 0;
-  color: #334155;
+  color: var(--rl-text-secondary);
 }

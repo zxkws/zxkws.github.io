@@ -26,8 +26,8 @@
 .pageWrapper {
   position: relative;
   margin: 0 auto 2rem;
-  background: #ffffff;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+  background: var(--pe-surface-page);
+  box-shadow: var(--pe-page-shadow);
   border-radius: 0.85rem;
   overflow: hidden;
 }
@@ -49,8 +49,8 @@
   min-height: 24px;
   padding: 2px 4px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.15);
+  background: var(--pe-annotation-bg);
+  box-shadow: var(--pe-annotation-shadow);
   cursor: pointer;
   white-space: pre-wrap;
   user-select: none;
@@ -111,8 +111,8 @@
   min-width: 92px;
   padding: 0.45rem 0.9rem;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.48);
-  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--pe-tool-border);
+  background: var(--pe-tool-bg);
   color: inherit;
   font-size: 0.875rem;
   cursor: pointer;
@@ -120,9 +120,9 @@
 }
 
 .toolButtonActive {
-  background: rgba(37, 99, 235, 0.16);
+  background: var(--pe-tool-active-bg);
   border-color: var(--border-strong);
-  color: #2563eb;
+  color: var(--pe-accent);
 }
 
 .fileInputLabel {
@@ -133,7 +133,7 @@
   gap: 0.5rem;
   padding: 0.6rem 1rem;
   border-radius: 0.75rem;
-  border: 1px dashed rgba(148, 163, 184, 0.6);
+  border: 1px dashed var(--pe-empty-border);
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 500;
@@ -141,7 +141,7 @@
 
 .fileInputLabel:hover {
   border-color: var(--border-strong);
-  color: #2563eb;
+  color: var(--pe-accent);
 }
 
 .hiddenInput {
@@ -153,7 +153,7 @@
 
 .fileMeta {
   font-size: 0.85rem;
-  color: rgba(15, 23, 42, 0.7);
+  color: var(--pe-empty-text);
 }
 
 .controlsRow {
@@ -167,7 +167,7 @@
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.82rem;
-  color: rgba(15, 23, 42, 0.7);
+  color: var(--pe-hint-text);
 }
 
 .textInput,
@@ -175,9 +175,9 @@
 .selectInput {
   font: inherit;
   border-radius: 0.6rem;
-  border: 1px solid rgba(148, 163, 184, 0.6);
+  border: 1px solid var(--pe-tool-border);
   padding: 0.5rem 0.75rem;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--pe-input-bg);
   color: inherit;
 }
 
@@ -185,7 +185,7 @@
   width: 44px;
   height: 34px;
   padding: 0;
-  border: 1px solid rgba(148, 163, 184, 0.55);
+  border: 1px solid var(--pe-tool-border);
   border-radius: 0.65rem;
   background: transparent;
 }
@@ -209,7 +209,7 @@
   padding: 0.95rem;
   border-radius: 0.95rem;
   background: var(--surface-strong);
-  border: 1px solid rgba(148, 163, 184, 0.28);
+  border: 1px solid var(--pe-tool-border);
 }
 
 .annotationHeader {
@@ -231,9 +231,9 @@
   justify-content: center;
   padding: 0.6rem 0.9rem;
   border-radius: 0.75rem;
-  background: rgba(248, 113, 113, 0.16);
-  border: 1px solid rgba(248, 113, 113, 0.35);
-  color: #b91c1c;
+  background: var(--pe-danger-bg);
+  border: 1px solid var(--pe-danger-border);
+  color: var(--pe-danger-text);
   font-weight: 600;
 }
 
@@ -243,9 +243,9 @@
   justify-content: center;
   padding: 0.45rem 0.75rem;
   border-radius: 0.65rem;
-  border: 1px solid rgba(248, 113, 113, 0.35);
-  background: rgba(248, 113, 113, 0.12);
-  color: #b91c1c;
+  border: 1px solid var(--pe-danger-border);
+  background: var(--pe-danger-soft-bg);
+  color: var(--pe-danger-text);
   cursor: pointer;
 }
 
@@ -259,8 +259,8 @@
   border-radius: 0.9rem;
   border: none;
   cursor: pointer;
-  background: #2563eb;
-  color: #f8fafc;
+  background: var(--pe-accent);
+  color: var(--pe-accent-contrast);
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease;
@@ -275,7 +275,7 @@
 
 .downloadButton:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+  box-shadow: var(--pe-accent-hover-shadow);
 }
 
 .emptyState {
@@ -288,14 +288,14 @@
   padding: 2rem;
   text-align: center;
   border-radius: 1.25rem;
-  border: 1px dashed rgba(148, 163, 184, 0.55);
-  background: rgba(148, 163, 184, 0.12);
-  color: rgba(15, 23, 42, 0.7);
+  border: 1px dashed var(--pe-empty-border);
+  background: var(--pe-empty-bg);
+  color: var(--pe-empty-text);
 }
 
 .hint {
   font-size: 0.85rem;
-  color: rgba(71, 85, 105, 0.85);
+  color: var(--pe-hint-text);
 }
 
 .zoomControl {
@@ -314,13 +314,13 @@
   gap: 0.35rem;
   padding: 0.25rem 0.65rem;
   border-radius: 999px;
-  background: rgba(37, 99, 235, 0.15);
-  color: #2563eb;
+  background: var(--pe-accent-soft-bg);
+  color: var(--pe-accent);
   font-size: 0.75rem;
   font-weight: 600;
 }
 
 .annotationMeta {
   font-size: 0.8rem;
-  color: rgba(71, 85, 105, 0.9);
+  color: var(--pe-meta-text);
 }

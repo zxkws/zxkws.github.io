@@ -35,10 +35,10 @@ const base = computed(() => props.base ?? import.meta.env.BASE_URL ?? '/');
 .container {
   max-width: 640px;
   width: 100%;
-  background: white;
+  background: var(--vl-surface);
   border-radius: 16px;
   padding: 2.5rem;
-  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--vl-shadow);
   display: grid;
   gap: 1.5rem;
 }
@@ -51,7 +51,7 @@ header h1 {
 
 header p {
   margin: 0.5rem 0 0;
-  color: #475569;
+  color: var(--vl-text-muted);
 }
 
 section dl {
@@ -61,11 +61,11 @@ section dl {
 
 section dt {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--vl-text-strong);
 }
 
 section dd {
   margin: 0.25rem 0 0;
-  color: #334155;
+  color: var(--vl-text-secondary);
 }
 </style>
