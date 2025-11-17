@@ -83,6 +83,7 @@ const staticNavItems: NavItem[] = [
   { name: '中国科学技术大学测速网站', url: 'https://test.ustc.edu.cn/' },
   { name: 'fast', url: 'https://fast.com/' },
   { name: 'localsend', url: 'https://localsend.org/' },
+  { name: '系统设计', url: 'https://learning-guide.gitbook.io/system-design-interview/xi-tong-she-ji-mian-shi-nei-mu-zhi-nan-di-yi-juan/chapter-01-scale-from-zero-to-millions-of-users'},
   
 ].map((item, index) => ({ ...item, id: index + 1 }));
 
