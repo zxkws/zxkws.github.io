@@ -293,6 +293,37 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2
 
+  packages/person-resume-app:
+    dependencies:
+      '@ice/stark-app':
+        specifier: ^1.5.0
+        version: 1.5.0
+      react:
+        specifier: ^19.2.0
+        version: 19.2.0
+      react-dom:
+        specifier: ^19.2.0
+        version: 19.2.0(react@19.2.0)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.2
+        version: 19.2.2
+      '@types/react-dom':
+        specifier: ^19.2.2
+        version: 19.2.2(@types/react@19.2.2)
+      '@vitejs/plugin-react':
+        specifier: ^4.3.4
+        version: 4.7.0(vite@7.1.10)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vite:
+        specifier: ^7.1.10
+        version: 7.1.10(@types/node@24.8.1)(less@4.4.2)
+      vite-plugin-index-html:
+        specifier: ^2.0.2
+        version: 2.0.2
+
   packages/react-learning-app:
     dependencies:
       '@ice/stark-app':
