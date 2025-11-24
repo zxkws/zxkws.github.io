@@ -70,7 +70,17 @@
       "activeRule": ["/app/knowledge-hub"],
       "sandbox": true,
       "enabled": true
+    },
+    {
+      "name": "person-resume-app",
+      "displayName": "个人简历",
+      "devEntry": "http://localhost:5181",
+      "prodEntry": "https://zxkws.nyc.mn/person-resume-app/",
+      "entry": "/person-resume-app/",
+      "activeRule": ["/app/person-resume"],
+      "sandbox": true,
+      "enabled": true
     }
   ],
-  "updatedAt": "2025-01-17T08:30:00Z"
+  "updatedAt": "2025-11-24T00:00:00Z"
 }

@@ -63,6 +63,7 @@ pnpm dev
 - vue-learning-app 微应用：`http://localhost:5178`
 - react-learning-app 微应用：`http://localhost:5179`
 - knowledge-hub-app 微应用：`http://localhost:5180`
+- person-resume-app 微应用：`http://localhost:5181`
 
 主应用会自动加载本地开发中的微应用，实现实时热更新。
 
@@ -82,6 +83,9 @@ pnpm dev:pdf-editor
 
 # 只开发 textDifference 微应用
 pnpm dev:textdiff
+
+# 只开发 person-resume-app 微应用
+pnpm dev:resume
 ```
 
 ### 端口说明
@@ -97,6 +101,7 @@ pnpm dev:textdiff
 | vue-learning-app   | 5178     | http://localhost:5178 |
 | react-learning-app | 5179     | http://localhost:5179 |
 | knowledge-hub-app  | 5180     | http://localhost:5180 |
+| person-resume-app  | 5181     | http://localhost:5181 |
 
 > 生产预览（构建后的静态产物）默认跑在 `417x` 端口，例如 `pnpm preview:pdf-editor` 后访问 `http://localhost:4177/pdf-editor-app/`。
 
@@ -121,6 +126,7 @@ pnpm --filter v-app build
 pnpm --filter pdf-editor-app build
 pnpm --filter textdifference build
 pnpm --filter config-center build
+pnpm --filter person-resume-app build
 pnpm --filter vue-learning-app build
 pnpm --filter react-learning-app build
 
