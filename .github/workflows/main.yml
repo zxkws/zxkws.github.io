@@ -35,6 +35,10 @@ jobs:
             filter: pdf-editor-app
             dist_path: packages/pdf-editor-app/dist
             deploy_subdir: 'pdf-editor-app'
+          - name: person-resume-app
+            filter: person-resume-app
+            dist_path: packages/person-resume-app/dist
+            deploy_subdir: 'person-resume-app'
           - name: textdifference
             filter: textdifference
             dist_path: packages/textDifference/dist
