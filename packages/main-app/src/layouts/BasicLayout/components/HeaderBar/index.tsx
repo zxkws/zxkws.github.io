@@ -71,9 +71,17 @@ type HeaderBarProps = {
   isMobile?: boolean;
   isNavOpen?: boolean;
   onMenuToggle?: () => void;
+  onDesktopNavToggle?: () => void;
+  isNavCollapsed?: boolean;
 };
 
-const HeaderBar = ({ isMobile = false, isNavOpen = false, onMenuToggle }: HeaderBarProps) => {
+const HeaderBar = ({
+  isMobile = false,
+  isNavOpen = false,
+  onMenuToggle,
+  onDesktopNavToggle,
+  isNavCollapsed = false,
+}: HeaderBarProps) => {
   const [theme, setTheme] = useState<Theme>(() => resolveInitialTheme());
   const [hasManualOverride, setHasManualOverride] = useState<boolean>(() => readStoredTheme() !== null);
 
@@ -137,6 +145,19 @@ const HeaderBar = ({ isMobile = false, isNavOpen = false, onMenuToggle }: Header
         </div>
       </div>
       <div className={styles.actions}>
+        {!isMobile && (
+          <button
+            type="button"
+            onClick={onDesktopNavToggle}
+            className={styles.collapseBtn}
+            aria-label={isNavCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={isNavCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            data-collapsed={isNavCollapsed || undefined}
+          >
+            <span className={styles.collapseIcon} aria-hidden="true" />
+            <span className={styles.collapseText}>{isNavCollapsed ? 'Expand' : 'Collapse'}</span>
+          </button>
+        )}
         <button
           type="button"
           onClick={toggleTheme}

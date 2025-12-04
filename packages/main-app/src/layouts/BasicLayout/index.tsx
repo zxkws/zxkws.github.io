@@ -10,6 +10,7 @@ type BasicLayoutProps = {
 export default function BasicLayout({ children }: BasicLayoutProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const [isNavCollapsed, setIsNavCollapsed] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) {
@@ -19,7 +20,11 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
     const media = window.matchMedia('(max-width: 900px)');
     const apply = (matches: boolean) => {
       setIsMobile(matches);
-      if (!matches) {
+      if (matches) {
+        // 移动端不使用折叠，保持侧栏可见，由抽屉开合控制
+        setIsNavCollapsed(false);
+      } else {
+        // 桌面关闭抽屉态
         setIsNavOpen(false);
       }
     };
@@ -45,12 +50,21 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
 
   const toggleNav = () => setIsNavOpen((open) => !open);
   const closeNav = () => setIsNavOpen(false);
+  const toggleDesktopNav = () => setIsNavCollapsed((prev) => !prev);
+
+  const shouldShowNav = isMobile || !isNavCollapsed;
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-[var(--color-bg)] text-[var(--color-text)] transition-colors duration-300">
-      <HeaderBar isMobile={isMobile} isNavOpen={isNavOpen} onMenuToggle={toggleNav} />
+      <HeaderBar
+        isMobile={isMobile}
+        isNavOpen={isNavOpen}
+        onMenuToggle={toggleNav}
+        onDesktopNavToggle={toggleDesktopNav}
+        isNavCollapsed={isNavCollapsed}
+      />
       <div className="flex flex-1 overflow-hidden">
-        <PageNav isMobile={isMobile} isOpen={isNavOpen} onClose={closeNav} />
+        {shouldShowNav && <PageNav isMobile={isMobile} isOpen={isNavOpen} onClose={closeNav} />}
         <main className="flex flex-1 min-h-0 flex-col overflow-hidden px-8 py-10" aria-hidden={isMobile && isNavOpen}>
           {children}
         </main>
