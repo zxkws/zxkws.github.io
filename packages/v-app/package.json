@@ -10,8 +10,6 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.23",
     "@ice/stark-app": "^1.5.0",
-    "@opentiny/next-remoter": "0.0.3",
-    "@opentiny/next-sdk": "^0.1.10",
     "@surely-vue/table": "^5.0.9",
     "@tailwindcss/forms": "^0.5.10",
     "cssnano": "^7.1.1",

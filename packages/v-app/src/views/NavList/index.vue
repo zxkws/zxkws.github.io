@@ -17,17 +17,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, ref } from 'vue';
-import { WebMcpServer, z } from '@opentiny/next-sdk';
-import type { MessageChannelTransport } from '@opentiny/next';
+import { computed, onMounted, ref } from 'vue';
 
 type NavItem = {
   id: number;
   name: string;
   url: string;
 };
-
-const serverTransport = inject<MessageChannelTransport | undefined>('serverTransport');
 
 const staticNavItems: NavItem[] = [
   { name: 'todo', url: 'https://zxkws.nyc.mn/todo' },
@@ -83,14 +79,14 @@ const staticNavItems: NavItem[] = [
   { name: '中国科学技术大学测速网站', url: 'https://test.ustc.edu.cn/' },
   { name: 'fast', url: 'https://fast.com/' },
   { name: 'localsend', url: 'https://localsend.org/' },
-  { name: '系统设计', url: 'https://learning-guide.gitbook.io/system-design-interview/xi-tong-she-ji-mian-shi-nei-mu-zhi-nan-di-yi-juan/chapter-01-scale-from-zero-to-millions-of-users'},
-  
+  {
+    name: '系统设计',
+    url: 'https://learning-guide.gitbook.io/system-design-interview/xi-tong-she-ji-mian-shi-nei-mu-zhi-nan-di-yi-juan/chapter-01-scale-from-zero-to-millions-of-users',
+  },
 ].map((item, index) => ({ ...item, id: index + 1 }));
 
 const storedItems = ref<NavItem[]>([]);
 const navItems = computed(() => [...staticNavItems, ...storedItems.value]);
-
-const server = new WebMcpServer({ name: 'v-app-nav-server', version: '1.0.0' });
 
 const loadStoredItems = (): NavItem[] => {
   if (typeof window === 'undefined') {
@@ -122,39 +118,7 @@ const persistStoredItems = (items: NavItem[]) => {
   localStorage.setItem('navList', JSON.stringify(items.map(({ id, ...rest }) => ({ ...rest, id }))));
 };
 
-server.registerTool(
-  'add-nav',
-  {
-    description: '添加菜单',
-    inputSchema: {
-      name: z.string().describe('菜单名称'),
-      url: z.string().describe('菜单地址'),
-    },
-  },
-  async (payload: { name: string; url: string }) => {
-    const nextItem: NavItem = {
-      id: Date.now(),
-      name: payload.name,
-      url: payload.url,
-    };
-    const nextItems = [...storedItems.value, nextItem];
-    storedItems.value = nextItems;
-    persistStoredItems(nextItems);
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify(nextItems),
-        },
-      ],
-    };
-  },
-);
-
 onMounted(async () => {
   storedItems.value = loadStoredItems();
-  if (serverTransport) {
-    await server.connect(serverTransport);
-  }
 });
 </script>
