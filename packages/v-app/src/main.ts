@@ -76,11 +76,15 @@ const renderApp = ({ container, basename }: RenderOptions) => {
 
   router.beforeEach((_to, _from, next) => {
     store.isLoading = true;
+    // 展示全局 loading 遮罩，避免首屏页面停留在默认 true 状态
+    store.setLoading(true);
     next();
   });
 
   router.afterEach(() => {
+    // 路由就绪后统一关闭 loading
     store.isLoading = false;
+    store.setLoading(false);
   });
 
   appInstance.mount(container);
