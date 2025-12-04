@@ -174,3 +174,34 @@ pnpm preview:pdf-editor  # 打开 http://localhost:4177/pdf-editor-app/
 - [Tailwind CSS](https://tailwindui.starxg.com/components)
 - [shadcn-vue](https://www.shadcn-vue.com/docs/introduction.html)
 - [Tailwind Generator](https://tailwind-generator.com/generators)
+
+## 待办：依赖集中管理改造（保持 pnpm 8 兼容）
+
+> 背景：各子应用存在大量重复依赖（如 `@ice/stark-app`、`vite-plugin-index-html`、`vite`、`typescript`、`react`、`react-dom`、`@types/react`、`@types/react-dom` 等），但当前本地环境有项目依赖 pnpm 8.x，暂不升级到 9/10。
+
+改造目标：在不升级 pnpm 的前提下，尽量做到“版本只改一处”，后续若升级到 pnpm ≥9.5 可切换 Catalogs。
+
+计划步骤
+
+- **阶段 1（pnpm 8 继续使用）**
+  - 在根 `package.json` 的 `pnpm.overrides` 中统一上述重复依赖的版本；子包保留声明以满足 pnpm 8 的严格解析，但实际安装版本以 overrides 为准。
+  - 在 `pnpm-lock.yaml` 已存在的情况下，执行 `pnpm install` 使锁文件对齐；观察是否有 breaking changes。
+  - 为避免疏漏，写一个脚本列出重复依赖（示例：`node scripts/dup-deps.js`，逻辑等同于当前一次性统计脚本）。
+  - 记录约定：新增子包/依赖时先改 overrides，再在子包声明同版本，确保一致性。
+
+- **阶段 2（未来可升级到 pnpm ≥9.5 后执行）**
+  - 在根 `package.json` 写入 `"packageManager": "pnpm@<version>"`，提升到支持 Catalogs 的版本。
+  - 在 `pnpm-workspace.yaml` 添加 `catalog:`，集中写公共依赖版本；子包将重复依赖版本号改为 `"catalog:"` 前缀形式（如 `"vite": "catalog:"`）。
+  - 删除不再需要的根 overrides，`pnpm install` 更新锁文件，验证各子应用启动/构建。
+
+验证清单
+
+- `pnpm install` 成功且无 hoist/strict 解析报错。
+- `pnpm dev` 可正常并行启动所有微应用；抽样检查 2~3 个子应用构建（`pnpm --filter <app> build`）。
+- 锁文件和根 overrides/Catalogs 变更提交前，确认无额外多余依赖被升级（对比 `pnpm list --depth 0`）。
+
+风险/注意事项
+
+- pnpm 8 不支持“仅根依赖可被子包自动消费”，子包必须保留各自依赖声明，否则运行时会报模块缺失。
+- overrides 统一版本可能放大发布范围，升级前需看变更日志；如需回滚可在 overrides 单独 pin 旧版。
+- 如果某子应用需要与全局不同版本（例如实验性包），需在该子包 `package.json` 中用 `pnpm.overrides` 局部覆盖，并在 README 记录原因。
