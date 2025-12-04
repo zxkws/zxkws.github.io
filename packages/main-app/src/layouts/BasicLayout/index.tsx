@@ -7,10 +7,82 @@ type BasicLayoutProps = {
   pathname?: string;
 };
 
+const NAV_STORAGE_KEY = 'main-app-nav-collapsed';
+const NAV_URL_PARAM = 'nav';
+
+const parseNavParam = (value: string | null): boolean | null => {
+  if (!value) return null;
+  const lowered = value.toLowerCase();
+  if (['1', 'true', 'collapsed', 'close', 'hide'].includes(lowered)) return true;
+  if (['0', 'false', 'expanded', 'open', 'show'].includes(lowered)) return false;
+  return null;
+};
+
+const readNavFromStorage = (): boolean | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = window.localStorage.getItem(NAV_STORAGE_KEY);
+    return parseNavParam(stored);
+  } catch {
+    return null;
+  }
+};
+
+const writeNavToStorage = (collapsed: boolean) => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(NAV_STORAGE_KEY, collapsed ? '1' : '0');
+  } catch {
+    // ignore
+  }
+};
+
+const readNavFromUrl = (): boolean | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const url = new URL(window.location.href);
+    return parseNavParam(url.searchParams.get(NAV_URL_PARAM));
+  } catch {
+    return null;
+  }
+};
+
+const writeNavToUrl = (collapsed: boolean) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set(NAV_URL_PARAM, collapsed ? 'collapsed' : 'expanded');
+    window.history.replaceState({}, '', url.toString());
+  } catch {
+    // ignore URL update failures
+  }
+};
+
+const resolveInitialNavState = (): boolean => {
+  const fromUrl = readNavFromUrl();
+  if (fromUrl !== null) return fromUrl;
+  const fromStorage = readNavFromStorage();
+  if (fromStorage !== null) return fromStorage;
+  return false;
+};
+
 export default function BasicLayout({ children }: BasicLayoutProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const [isNavCollapsed, setIsNavCollapsed] = useState(false);
+  const [isNavCollapsed, setIsNavCollapsed] = useState<boolean>(() => resolveInitialNavState());
+
+  // 当 URL 发生前进/后退时，根据 nav 参数同步折叠状态
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const handler = () => {
+      const next = readNavFromUrl();
+      if (next === null) return;
+      setIsNavCollapsed(next);
+      writeNavToStorage(next);
+    };
+    window.addEventListener('popstate', handler);
+    return () => window.removeEventListener('popstate', handler);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) {
@@ -20,10 +92,7 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
     const media = window.matchMedia('(max-width: 900px)');
     const apply = (matches: boolean) => {
       setIsMobile(matches);
-      if (matches) {
-        // 移动端不使用折叠，保持侧栏可见，由抽屉开合控制
-        setIsNavCollapsed(false);
-      } else {
+      if (!matches) {
         // 桌面关闭抽屉态
         setIsNavOpen(false);
       }
@@ -50,7 +119,20 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
 
   const toggleNav = () => setIsNavOpen((open) => !open);
   const closeNav = () => setIsNavOpen(false);
-  const toggleDesktopNav = () => setIsNavCollapsed((prev) => !prev);
+  const toggleDesktopNav = () => {
+    if (isMobile) return; // 移动端不做折叠
+    setIsNavCollapsed((prev) => {
+      const next = !prev;
+      writeNavToStorage(next);
+      writeNavToUrl(next);
+      return next;
+    });
+  };
+
+  // 初始同步一次 URL（如果来自 storage），保持可分享性
+  useEffect(() => {
+    writeNavToUrl(isNavCollapsed);
+  }, [isNavCollapsed]);
 
   const shouldShowNav = isMobile || !isNavCollapsed;
 
