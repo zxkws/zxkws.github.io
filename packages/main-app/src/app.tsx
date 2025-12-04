@@ -79,7 +79,8 @@ function App() {
         setMicroApps(apps);
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('config-loaded'));
-          const current = window.location.pathname + window.location.search + window.location.hash;
+          const current =
+            (window.location?.pathname ?? '') + (window.location?.search ?? '') + (window.location?.hash ?? '');
           setTimeout(() => {
             appHistory.replace(current || '/');
           }, 0);
@@ -177,9 +178,10 @@ function App() {
       onLoadingApp={() => notifyMicroAppLoading(true)}
       onFinishLoading={() => notifyMicroAppMounted()}
       onRouteChange={(pathname) => {
-        setPathname(pathname);
+        const nextPath = pathname || (typeof window !== 'undefined' ? window.location.pathname : '/');
+        setPathname(nextPath);
         if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('main-route-change', { detail: pathname }));
+          window.dispatchEvent(new CustomEvent('main-route-change', { detail: nextPath }));
         }
       }}
     >
