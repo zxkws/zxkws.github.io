@@ -5,6 +5,8 @@ import { resolve } from 'path';
 
 export default defineConfig(({ mode }) => {
   const isProd = mode === 'production';
+  // Vue 学习项目同样使用源码/开发态依赖，便于调试和阅读
+  const useSourceBundle = true;
 
   return {
     plugins: [
@@ -15,11 +17,28 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     base: isProd ? '/vue-learning-app/' : '/',
+    define: useSourceBundle
+      ? {
+          'process.env.NODE_ENV': JSON.stringify('development'),
+          __DEV__: JSON.stringify(true),
+          __VUE_OPTIONS_API__: JSON.stringify(true),
+          __VUE_PROD_DEVTOOLS__: JSON.stringify(true),
+        }
+      : {},
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
       },
     },
+    optimizeDeps: useSourceBundle
+      ? {
+          esbuildOptions: {
+            define: {
+              'process.env.NODE_ENV': '"development"',
+            },
+          },
+        }
+      : undefined,
     server: {
       port: 5178,
       cors: true,
@@ -34,9 +53,18 @@ export default defineConfig(({ mode }) => {
     },
     esbuild: {
       sourcemap: true,
+      ...(useSourceBundle
+        ? {
+            define: {
+              'process.env.NODE_ENV': '"development"',
+            },
+          }
+        : {}),
     },
     build: {
       sourcemap: true,
+      // 暴露源码结构，方便线上学习与断点调试
+      minify: useSourceBundle ? false : 'esbuild',
       outDir: 'dist',
       target: 'esnext',
       rollupOptions: {
