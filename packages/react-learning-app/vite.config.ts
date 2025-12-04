@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
         preserveEntrySignatures: 'exports-only',
       }),
     ],
-    base: isProd ? '/react-learning-app/' : '/',
+    base: isProd ? '/react/' : '/',
     define: useSourceBundle
       ? {
           'process.env.NODE_ENV': JSON.stringify('development'),

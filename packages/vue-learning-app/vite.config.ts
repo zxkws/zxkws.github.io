@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
         preserveEntrySignatures: 'exports-only',
       }),
     ],
-    base: isProd ? '/vue-learning-app/' : '/',
+    base: isProd ? '/vue/' : '/',
     define: useSourceBundle
       ? {
           'process.env.NODE_ENV': JSON.stringify('development'),

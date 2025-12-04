@@ -26,11 +26,11 @@ jobs:
           - name: vue-learning-app
             filter: vue-learning-app
             dist_path: packages/vue-learning-app/dist
-            deploy_subdir: 'vue-learning-app'
+            deploy_subdir: 'vue'
           - name: react-learning-app
             filter: react-learning-app
             dist_path: packages/react-learning-app/dist
-            deploy_subdir: 'react-learning-app'
+            deploy_subdir: 'react'
           - name: pdf-editor-app
             filter: pdf-editor-app
             dist_path: packages/pdf-editor-app/dist
@@ -47,6 +47,10 @@ jobs:
             filter: config-center
             dist_path: packages/config-center/dist
             deploy_subdir: 'config-center'
+          - name: config-hub
+            filter: config-hub
+            dist_path: packages/config-hub/dist
+            deploy_subdir: 'config-hub'
           - name: codex-chat-app
             filter: codex-chat-app
             dist_path: packages/codex-chat-app/dist

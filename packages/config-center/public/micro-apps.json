@@ -42,26 +42,6 @@
       "enabled": true
     },
     {
-      "name": "vue-learning-app",
-      "displayName": "Vue 学习微应用",
-      "devEntry": "http://localhost:5178",
-      "prodEntry": "https://zxkws.nyc.mn/vue-learning-app/",
-      "entry": "/vue-learning-app/",
-      "activeRule": ["/app/vue-learning"],
-      "sandbox": true,
-      "enabled": true
-    },
-    {
-      "name": "react-learning-app",
-      "displayName": "React 学习微应用",
-      "devEntry": "http://localhost:5179",
-      "prodEntry": "https://zxkws.nyc.mn/react-learning-app/",
-      "entry": "/react-learning-app/",
-      "activeRule": ["/app/react-learning"],
-      "sandbox": true,
-      "enabled": true
-    },
-    {
       "name": "knowledge-hub-app",
       "displayName": "知识中台",
       "devEntry": "http://localhost:5180",
@@ -82,5 +62,5 @@
       "enabled": true
     }
   ],
-  "updatedAt": "2025-11-24T00:00:00Z"
+  "updatedAt": "2025-12-04T00:00:00Z"
 }

@@ -26,15 +26,17 @@ packages/
 - **pdf-editor-app**: 部署到子路径 `/pdf-editor-app/`
 - **textDifference**: 部署到子路径 `/textdiff/`
 - **config-center**: 部署到子路径 `/config-center/`
-- **vue-learning-app**: 部署到子路径 `/vue-learning-app/`
-- **react-learning-app**: 部署到子路径 `/react-learning-app/`
+- **vue-learning-app**: 独立部署到子路径 `/vue/`
+- **react-learning-app**: 独立部署到子路径 `/react/`
 - **codex-chat-app**: 部署到子路径 `/codex-chat-app/`
 - **knowledge-hub-app**: 部署到子路径 `/knowledge-hub-app/`
 - **person-resume-app**: 部署到子路径 `/person-resume-app/`
 
 所有上述应用通过 GitHub Actions 自动构建并部署到 GitHub Pages。
 
-> 说明：`config-hub` 仍未加入自动部署矩阵，如需发布请在 `.github/workflows/main.yml` 中补充。
+> 说明：Vue/React 学习示例已改为独立站点，不再出现在主应用菜单或微应用配置中，直接通过 `/vue/`、`/react/` 访问。
+
+> 说明：`config-hub` 已加入自动部署矩阵，推送到 `development` 分支会自动发布。
 
 ## 本地开发
 
