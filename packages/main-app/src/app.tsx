@@ -97,6 +97,40 @@ function App() {
     return unsubscribe;
   }, []);
 
+  // 安全兜底：若微应用在 3 秒内未完成加载（或入口 404/未启动），强制关闭全局 loading，防止遮罩卡死
+  useEffect(() => {
+    if (!isMicroAppLoading) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      console.warn('[MainApp] micro app load timeout, closing loading overlay');
+      notifyMicroAppLoading(false);
+    }, 3000);
+    return () => window.clearTimeout(timer);
+  }, [isMicroAppLoading]);
+
+  // 当微应用加载失败（例如 dev server 未启动或网络错误）时，确保关闭全局 Loading，避免界面被遮罩锁死。
+  useEffect(() => {
+    const handleLoadError = (event: PromiseRejectionEvent | ErrorEvent) => {
+      const detail =
+        'reason' in event
+          ? (event as PromiseRejectionEvent).reason
+          : 'error' in event
+            ? (event as ErrorEvent).error
+            : event;
+      console.error('[MainApp] micro app load failed', detail);
+      notifyMicroAppLoading(false);
+    };
+
+    window.addEventListener('unhandledrejection', handleLoadError);
+    window.addEventListener('error', handleLoadError);
+
+    return () => {
+      window.removeEventListener('unhandledrejection', handleLoadError);
+      window.removeEventListener('error', handleLoadError);
+    };
+  }, []);
+
   useEffect(() => {
     if (microApps.length > 0) {
       ensureIcestarkAppsRegistered(microApps);

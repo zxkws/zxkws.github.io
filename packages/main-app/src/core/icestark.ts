@@ -138,6 +138,10 @@ export const ensureIcestarkStarted = () => {
       emitLoading(false);
       dispatchMicroAppMounted();
     },
+    onError: (error) => {
+      console.error('[MainApp] micro app load error', error);
+      emitLoading(false);
+    },
   });
   started = true;
 };

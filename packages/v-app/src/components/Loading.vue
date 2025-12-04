@@ -25,6 +25,7 @@ const store = mainStore();
   width: 100%;
   height: 100%;
   z-index: 999;
+  pointer-events: none;
 }
 
 #loader-wrapper .loader {

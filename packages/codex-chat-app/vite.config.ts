@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      port: 5180,
+      port: 5182,
       cors: true,
       headers: {
         'Access-Control-Allow-Origin': '*',
