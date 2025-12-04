@@ -180,7 +180,13 @@ const useMenuState = () => {
   return { activePath, menuConfig, expandedGroups, toggleGroup };
 };
 
-const PageNav = () => {
+type PageNavProps = {
+  isMobile: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+const PageNav = ({ isMobile, isOpen, onClose }: PageNavProps) => {
   const { activePath, menuConfig, expandedGroups, toggleGroup } = useMenuState();
 
   const renderMenuItems = useCallback(
@@ -231,12 +237,19 @@ const PageNav = () => {
           return null;
         }
 
+        const handleLinkClick = () => {
+          if (isMobile) {
+            onClose();
+          }
+        };
+
         return (
           <SafeAppLink
             key={key}
             to={item.path}
             className={CX(styles.navLink, active && styles.navLinkActive)}
             title={item.name}
+            onClick={handleLinkClick}
           >
             <span className={styles.linkContent}>
               <span className={styles.emblem} aria-hidden="true">
@@ -248,15 +261,39 @@ const PageNav = () => {
           </SafeAppLink>
         );
       }),
-    [activePath, expandedGroups, toggleGroup],
+    [activePath, expandedGroups, toggleGroup, isMobile, onClose],
   );
 
   const menuContent = useMemo(() => renderMenuItems(menuConfig), [renderMenuItems, menuConfig]);
 
-  return (
-    <nav className={styles.navContainer} aria-label="主导航">
+  const navClassName = CX(
+    styles.navContainer,
+    isMobile && styles.navContainerMobile,
+    isMobile && isOpen && styles.navContainerMobileOpen,
+  );
+
+  const overlayClassName = CX(styles.mobileOverlay, isOpen && styles.mobileOverlayVisible);
+
+  const nav = (
+    <nav className={navClassName} aria-label="主导航" aria-hidden={isMobile && !isOpen}>
       <div className={styles.navInner}>{menuContent}</div>
+      {isMobile && (
+        <button type="button" className={styles.mobileClose} onClick={onClose}>
+          关闭
+        </button>
+      )}
     </nav>
+  );
+
+  if (!isMobile) {
+    return nav;
+  }
+
+  return (
+    <>
+      <div className={overlayClassName} onClick={onClose} aria-hidden={!isOpen} />
+      {nav}
+    </>
   );
 };
 

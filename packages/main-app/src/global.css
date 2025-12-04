@@ -28,11 +28,26 @@
   --focus-ring: 0 0 0 3px rgba(56, 189, 248, 0.35);
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  min-height: 100svh;
+  width: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
 html,
 body,
 #main-app-container {
   margin: 0;
-  height: 100%;
+  min-height: 100%;
+  min-height: 100svh;
+  width: 100%;
   display: flex;
   flex-direction: column;
   background: var(--color-bg);

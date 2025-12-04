@@ -18,6 +18,12 @@
     box-shadow 0.4s ease;
 }
 
+.brandArea {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .brand {
   display: flex;
   flex-direction: column;
@@ -122,4 +128,115 @@
   border-radius: 50%;
   background: var(--color-muted);
   opacity: 0.6;
+}
+
+.menuButton {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--header-border);
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--color-text);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+[data-theme='dark'] .menuButton {
+  background: rgba(15, 23, 42, 0.75);
+}
+
+.menuButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.35);
+}
+
+.menuIcon,
+.menuIcon::before,
+.menuIcon::after {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  position: relative;
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.menuIcon::before,
+.menuIcon::after {
+  content: '';
+  position: absolute;
+  left: 0;
+}
+
+.menuIcon::before {
+  top: -6px;
+}
+
+.menuIcon::after {
+  top: 6px;
+}
+
+.menuButton[data-open='true'] .menuIcon {
+  background: transparent;
+}
+
+.menuButton[data-open='true'] .menuIcon::before {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.menuButton[data-open='true'] .menuIcon::after {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+@media (max-width: 900px) {
+  .headerBar {
+    height: 56px;
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .brandArea {
+    gap: 10px;
+  }
+
+  .brand {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brandMark {
+    font-size: 18px;
+    letter-spacing: 0.3em;
+  }
+
+  .brandTagline {
+    display: none;
+  }
+
+  .actions {
+    gap: 8px;
+  }
+
+  .themeToggle {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .themeText {
+    display: none;
+  }
+
+  .menuButton {
+    display: inline-flex;
+  }
 }

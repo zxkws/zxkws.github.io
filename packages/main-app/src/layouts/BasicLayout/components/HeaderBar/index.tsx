@@ -67,7 +67,13 @@ const MoonIcon = () => (
   </svg>
 );
 
-const HeaderBar = () => {
+type HeaderBarProps = {
+  isMobile?: boolean;
+  isNavOpen?: boolean;
+  onMenuToggle?: () => void;
+};
+
+const HeaderBar = ({ isMobile = false, isNavOpen = false, onMenuToggle }: HeaderBarProps) => {
   const [theme, setTheme] = useState<Theme>(() => resolveInitialTheme());
   const [hasManualOverride, setHasManualOverride] = useState<boolean>(() => readStoredTheme() !== null);
 
@@ -112,9 +118,23 @@ const HeaderBar = () => {
 
   return (
     <header className={styles.headerBar}>
-      <div className={styles.brand} aria-label="ZXKWS 主应用">
-        <span className={styles.brandMark}>ZXKWS</span>
-        <span className={styles.brandTagline}>A Hub</span>
+      <div className={styles.brandArea}>
+        {isMobile && (
+          <button
+            type="button"
+            className={styles.menuButton}
+            aria-label={isNavOpen ? '关闭导航' : '打开导航'}
+            aria-expanded={isNavOpen}
+            data-open={isNavOpen || undefined}
+            onClick={onMenuToggle}
+          >
+            <span className={styles.menuIcon} aria-hidden="true" />
+          </button>
+        )}
+        <div className={styles.brand} aria-label="ZXKWS 主应用">
+          <span className={styles.brandMark}>ZXKWS</span>
+          <span className={styles.brandTagline}>A Hub</span>
+        </div>
       </div>
       <div className={styles.actions}>
         <button
