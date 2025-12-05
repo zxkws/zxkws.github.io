@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import * as styles from './index.module.css';
 import { createFetchClient } from '@zxkws/shared-fetch';
 import { clearAuthArtifacts } from '../../../../utils/authCleanup';
+import { fetchCurrentUser, clearCachedUser } from '../../../../services/userService';
 
 type Theme = 'light' | 'dark';
 
@@ -129,14 +130,8 @@ const HeaderBar = ({
   const ThemeIcon = theme === 'dark' ? SunIcon : MoonIcon;
 
   useEffect(() => {
-    const client = createFetchClient({
-      baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
-      getToken: () => (typeof window === 'undefined' ? null : localStorage.getItem('auth_token')),
-      credentials: 'include',
-    });
-    client('/v1/user', undefined, { method: 'GET' })
-      .then((res: any) => {
-        const data = res?.data ?? res;
+    fetchCurrentUser()
+      .then((data) => {
         if (data?.username) {
           setProfile({ username: data.username });
         }
@@ -163,6 +158,7 @@ const HeaderBar = ({
     client('/auth/logout', {}, { method: 'POST' }).catch(() => undefined);
 
     clearAuthArtifacts();
+    clearCachedUser();
     setProfile({});
     setMenuOpen(false);
     window.dispatchEvent(new CustomEvent('main-logout'));

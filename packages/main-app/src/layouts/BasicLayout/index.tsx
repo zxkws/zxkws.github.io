@@ -3,8 +3,8 @@ import HeaderBar from './components/HeaderBar';
 import PageNav from './components/PageNav';
 import { builtInAsideMenus } from './menuConfig';
 import { fetchRemoteMenus } from '../../services/menuService';
-import { createFetchClient } from '@zxkws/shared-fetch';
 import { clearAuthArtifacts } from '../../utils/authCleanup';
+import { fetchCurrentUser } from '../../services/userService';
 
 type BasicLayoutProps = {
   children: ReactNode;
@@ -167,16 +167,8 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
   }, [isNavCollapsed]);
 
   useEffect(() => {
-    const client = createFetchClient({
-      baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
-      getToken: () => (typeof window === 'undefined' ? null : localStorage.getItem('auth_token')),
-      credentials: 'include',
-    });
-    client('/v1/user', undefined, { method: 'GET' })
-      .then((res: any) => {
-        const data = res?.data ?? res;
-        setIsAdmin(data?.role === 'admin');
-      })
+    fetchCurrentUser()
+      .then((profile) => setIsAdmin(profile?.role === 'admin'))
       .catch(() => setIsAdmin(false));
   }, []);
 
