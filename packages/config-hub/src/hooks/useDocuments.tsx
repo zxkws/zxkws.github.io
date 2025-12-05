@@ -2,43 +2,46 @@ import { useCallback, useEffect, useState } from 'react';
 import { ConfigDocument, SystemConfigDoc } from '../types';
 import { createInitialDocument, isSystemConfigDoc } from '../data/defaultDocument';
 import { cloneDeep, createId, formatDateTime } from '../utils';
-
-const STORAGE_KEY = 'config-hub:documents:v1';
+import { fetchConfig, saveConfig } from '../services/configApi';
 
 type Updater = (_doc: SystemConfigDoc) => SystemConfigDoc;
 
-const readFromStorage = (): ConfigDocument[] => {
-  if (typeof window === 'undefined') {
-    return [createInitialDocument()];
-  }
-
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return [createInitialDocument()];
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as ConfigDocument[];
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
-    }
-  } catch (error) {
-    console.warn('[ConfigHub] Failed to parse stored documents', error);
-  }
-
-  return [createInitialDocument()];
-};
-
 export const useDocuments = () => {
-  const [documents, setDocuments] = useState<ConfigDocument[]>(() => readFromStorage());
-  const [activeId, setActiveId] = useState<string>(() => documents[0]?.id ?? createInitialDocument().id);
+  const [documents, setDocuments] = useState<ConfigDocument[]>([]);
+  const [activeId, setActiveId] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(documents));
-  }, [documents]);
+    const load = async () => {
+      try {
+        setError(null);
+        const data = await fetchConfig();
+        const now = formatDateTime();
+        const doc: ConfigDocument = {
+          id: 'remote-config',
+          name: 'System Config',
+          description: '远程微应用配置',
+          createdAt: now,
+          updatedAt: data.updatedAt ?? now,
+          data,
+        };
+        setDocuments([doc]);
+        setActiveId(doc.id);
+      } catch (err) {
+        console.error(err);
+        const fallback = createInitialDocument();
+        setDocuments([fallback]);
+        setActiveId(fallback.id);
+        setError(err instanceof Error ? err.message : '加载配置失败');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const selectDocument = useCallback((id: string) => {
     setActiveId(id);
@@ -60,6 +63,7 @@ export const useDocuments = () => {
           return doc;
         }
         const nextData = updater(cloneDeep(doc.data));
+        setDirty(true);
         return {
           ...doc,
           updatedAt: formatDateTime(),
@@ -81,6 +85,7 @@ export const useDocuments = () => {
           : doc,
       ),
     );
+    setDirty(true);
   }, []);
 
   const duplicateDocument = useCallback((id: string) => {
@@ -98,6 +103,7 @@ export const useDocuments = () => {
       };
       return [...prev, cloned];
     });
+    setDirty(true);
   }, []);
 
   const removeDocument = useCallback(
@@ -133,6 +139,7 @@ export const useDocuments = () => {
     };
     setDocuments((prev) => [...prev, newDoc]);
     setActiveId(docId);
+    setDirty(true);
   }, []);
 
   const exportDocument = useCallback(
@@ -146,6 +153,24 @@ export const useDocuments = () => {
     [documents],
   );
 
+  const saveActive = useCallback(async () => {
+    const doc = documents.find((d) => d.id === activeId);
+    if (!doc) return;
+    if (!isSystemConfigDoc(doc.data)) {
+      throw new Error('当前文档不是有效的系统配置 JSON');
+    }
+    setSaving(true);
+    try {
+      await saveConfig(doc.data);
+      setDirty(false);
+      setDocuments((prev) =>
+        prev.map((item) => (item.id === doc.id ? { ...item, updatedAt: formatDateTime() } : item)),
+      );
+    } finally {
+      setSaving(false);
+    }
+  }, [documents, activeId]);
+
   useEffect(() => {
     if (documents.length > 0 && !documents.some((doc) => doc.id === activeId)) {
       setActiveId(documents[0].id);
@@ -158,6 +183,10 @@ export const useDocuments = () => {
     documents,
     activeDocument,
     activeId,
+    loading,
+    saving,
+    error,
+    dirty,
     selectDocument,
     addDocument,
     updateDocument,
@@ -166,5 +195,6 @@ export const useDocuments = () => {
     removeDocument,
     importDocument,
     exportDocument,
+    saveActive,
   };
 };

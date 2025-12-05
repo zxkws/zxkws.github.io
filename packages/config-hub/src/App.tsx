@@ -14,6 +14,10 @@ const App = () => {
     documents,
     activeDocument,
     activeId,
+    loading,
+    saving,
+    error,
+    dirty,
     selectDocument,
     addDocument,
     updateDocument,
@@ -22,6 +26,7 @@ const App = () => {
     removeDocument,
     importDocument,
     exportDocument,
+    saveActive,
   } = useDocuments();
 
   const [importError, setImportError] = useState<string | null>(null);
@@ -70,6 +75,10 @@ const App = () => {
     };
   }, [activeDocument, updateDocument]);
 
+  if (loading) {
+    return <div className="app-shell app-root">加载配置中...</div>;
+  }
+
   return (
     <div className="app-shell app-root">
       <Sidebar
@@ -84,6 +93,17 @@ const App = () => {
         onExport={handleExport}
       />
       <main className="workspace">
+        <div className="toolbar">
+          <div className="toolbar-left">
+            <h2>微应用配置中心</h2>
+            {error && <span className="error">{error}</span>}
+          </div>
+          <div className="toolbar-right">
+            <button onClick={() => saveActive()} disabled={saving || !dirty}>
+              {saving ? '保存中...' : dirty ? '保存配置' : '已保存'}
+            </button>
+          </div>
+        </div>
         {!workspaceProps ? (
           <div className="workspace-empty">
             <h2>选择或创建一个配置工作区</h2>
