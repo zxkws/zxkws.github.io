@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { getAsideMenuConfig } from '../../menuConfig';
 import type { MenuItem } from '../../../../types/menu';
 import * as styles from './index.module.css';
 import SafeAppLink from '../../../../components/SafeAppLink';
@@ -117,9 +116,9 @@ const registerMenuEvents = (onPathChange: () => void) => {
   };
 };
 
-const useMenuState = () => {
+const useMenuState = (menus: MenuItem[]) => {
   const [activePath, setActivePath] = useState(getCurrentPath());
-  const menuConfig = useMemo(() => getAsideMenuConfig(), []);
+  const menuConfig = useMemo(() => menus, [menus]);
   const [expandedGroups, setExpandedGroups] = useState<MenuGroupState>(
     () => new Set(collectExpandedKeys(menuConfig, getCurrentPath())),
   );
@@ -178,10 +177,11 @@ type PageNavProps = {
   isMobile: boolean;
   isOpen: boolean;
   onClose: () => void;
+  menus: MenuItem[];
 };
 
-const PageNav = ({ isMobile, isOpen, onClose }: PageNavProps) => {
-  const { activePath, menuConfig, expandedGroups, toggleGroup } = useMenuState();
+const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
+  const { activePath, menuConfig, expandedGroups, toggleGroup } = useMenuState(menus);
 
   const renderMenuItems = useCallback(
     (items: MenuItem[], parentKey = 'root'): ReactNode =>

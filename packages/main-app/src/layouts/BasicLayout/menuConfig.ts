@@ -1,8 +1,7 @@
 import type { MenuItem } from '../../types/menu';
 
-const headerMenuConfig: MenuItem[] = [];
-
-const asideMenuConfig: MenuItem[] = [
+// 前端内置公共菜单
+export const builtInAsideMenus: MenuItem[] = [
   { name: '首页', path: '/' },
   {
     name: 'Vue 应用',
@@ -24,6 +23,4 @@ const asideMenuConfig: MenuItem[] = [
   { name: '数据库管控', path: '/app/db-ops' },
 ];
 
-export const getAsideMenuConfig = (): MenuItem[] => asideMenuConfig;
-
-export { headerMenuConfig, asideMenuConfig };
+export const headerMenuConfig: MenuItem[] = [];

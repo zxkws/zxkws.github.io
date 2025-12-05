@@ -1,6 +1,8 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import HeaderBar from './components/HeaderBar';
 import PageNav from './components/PageNav';
+import { builtInAsideMenus } from './menuConfig';
+import { fetchRemoteMenus } from '../../services/menuService';
 
 type BasicLayoutProps = {
   children: ReactNode;
@@ -70,6 +72,7 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isNavCollapsed, setIsNavCollapsed] = useState<boolean>(() => resolveInitialNavState());
+  const [remoteMenus, setRemoteMenus] = useState(builtInAsideMenus);
 
   // 当 URL 发生前进/后退时，根据 nav 参数同步折叠状态
   useEffect(() => {
@@ -134,6 +137,26 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
     writeNavToUrl(isNavCollapsed);
   }, [isNavCollapsed]);
 
+  useEffect(() => {
+    let mounted = true;
+    fetchRemoteMenus()
+      .then((res) => {
+        if (!mounted) return;
+        const merged = [...builtInAsideMenus, ...res]
+          .filter((item) => item.visible !== false)
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        setRemoteMenus(merged);
+      })
+      .catch(() => {
+        setRemoteMenus(builtInAsideMenus);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const menus = useMemo(() => remoteMenus, [remoteMenus]);
+
   const shouldShowNav = isMobile || !isNavCollapsed;
 
   return (
@@ -146,7 +169,7 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
         isNavCollapsed={isNavCollapsed}
       />
       <div className="flex flex-1 overflow-hidden">
-        {shouldShowNav && <PageNav isMobile={isMobile} isOpen={isNavOpen} onClose={closeNav} />}
+        {shouldShowNav && <PageNav isMobile={isMobile} isOpen={isNavOpen} onClose={closeNav} menus={menus} />}
         <main className="flex flex-1 min-h-0 flex-col overflow-hidden px-8 py-10" aria-hidden={isMobile && isNavOpen}>
           {children}
         </main>
