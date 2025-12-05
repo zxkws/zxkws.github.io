@@ -99,8 +99,7 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
       }
       const message =
         (isJson && payload && typeof payload === 'object'
-          ? // @ts-expect-error best effort
-            (payload as any).message || (payload as any).error || (payload as any).msg
+          ? (payload as any).message || (payload as any).error || (payload as any).msg
           : undefined) ?? `请求失败，状态码 ${response.status}`;
       throw new Error(message);
     }

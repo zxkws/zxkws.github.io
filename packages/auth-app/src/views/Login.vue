@@ -27,7 +27,7 @@ const redirectTo = () => {
 
 const onGithubLogin = () => {
   const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : 'https://zxkws.nyc.mn/';
-  const target = `${apiBase.replace(/\\/api$/, '')}/auth/github?redirect=${encodeURIComponent(redirect)}`;
+  const target = `${apiBase.replace(/\/api$/, '')}/auth/github?redirect=${encodeURIComponent(redirect)}`;
   window.location.href = target;
 };
 

@@ -1,6 +1,7 @@
 import { createFetchClient } from '@zxkws/shared-fetch';
 import type { UserProfile } from './userService';
-import type { UserStatus } from '../../../monorepo-server-admin/packages/nest-admin/src/user/entities/user.entity'; // rely on string literal union
+// 简化类型定义，避免跨仓库依赖
+export type UserStatus = 'active' | 'frozen' | 'banned';
 
 const client = createFetchClient({
   baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
