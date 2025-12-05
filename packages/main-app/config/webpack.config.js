@@ -72,13 +72,15 @@ module.exports = {
     headers: {
       'Access-Control-Allow-Origin': '*',
     },
-    proxy: {
-      '/api': {
+    // webpack-dev-server@5 expects proxy to be an array; the old object shape triggers a schema error
+    proxy: [
+      {
+        context: ['/api'],
         target: 'https://zxkws.nyc.mn',
         changeOrigin: true,
         secure: false,
       },
-    },
+    ],
   },
   output: {
     path: resolve(__dirname, '../dist'),
