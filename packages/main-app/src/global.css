@@ -11,6 +11,8 @@
   --accent-soft: rgba(37, 99, 235, 0.1);
   --card-bg: rgba(255, 255, 255, 0.6);
   --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+  --spinner-track: rgba(148, 163, 184, 0.55);
+  --spinner-head: #2563eb;
 }
 
 [data-theme='dark'] {
@@ -26,6 +28,8 @@
   --accent-soft: rgba(56, 189, 248, 0.12);
   --card-bg: rgba(15, 23, 42, 0.55);
   --focus-ring: 0 0 0 3px rgba(56, 189, 248, 0.35);
+  --spinner-track: rgba(148, 163, 184, 0.35);
+  --spinner-head: #38bdf8;
 }
 
 *,
