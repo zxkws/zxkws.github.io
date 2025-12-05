@@ -31,7 +31,10 @@ export function convertToIceStarkApps(config: SystemConfig) {
   return config.microApps
     .filter((app) => app.enabled)
     .map((app) => {
-      const renderType = app.renderType || ((app as unknown as { iframe?: boolean }).iframe ? 'iframe' : 'microfront');
+      const forceIframe = app.name === 'auth-app';
+      const renderType =
+        app.renderType ||
+        (forceIframe ? 'iframe' : (app as unknown as { iframe?: boolean }).iframe ? 'iframe' : 'microfront');
       return {
         name: app.name,
         title: app.displayName,
@@ -41,6 +44,7 @@ export function convertToIceStarkApps(config: SystemConfig) {
         sandbox: app.sandbox ?? true,
         loadScriptMode: app.loadScriptMode || 'import',
         renderType,
+        iframe: renderType === 'iframe',
       };
     });
 }
