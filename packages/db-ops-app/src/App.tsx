@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createFetchClient } from '@zxkws/shared-fetch';
 
 const BASE_URL = import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api';
@@ -116,6 +116,7 @@ export default function App({ basename }: { basename?: string }) {
   const [checkingId, setCheckingId] = useState<string | null>(null);
   const [checkingAll, setCheckingAll] = useState(false);
   const [secretVisible, setSecretVisible] = useState<Record<string, boolean>>({});
+  const hasRedirectedRef = useRef(false);
 
   const client = useMemo(
     () =>
@@ -289,21 +290,21 @@ export default function App({ basename }: { basename?: string }) {
     window.location.href = `/auth/login?redirect=${encodeURIComponent(redirect)}`;
   };
 
+  // 一旦发现未登录，立即跳转登录，避免用户留在受限页面
+  useEffect(() => {
+    if (authState === 'need-login' && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
+      goLogin();
+    }
+  }, [authState]);
+
   const renderContent = () => {
     if (authState === 'pending') {
       return <div className="panel muted">正在校验权限...</div>;
     }
 
     if (authState === 'need-login') {
-      return (
-        <div className="panel muted">
-          <h3>需要登录</h3>
-          <p>请先登录后再访问数据库管控台。</p>
-          <button className="btn primary" onClick={goLogin}>
-            去登录
-          </button>
-        </div>
-      );
+      return <div className="panel muted">正在跳转到登录页...</div>;
     }
 
     if (authState === 'forbidden') {
