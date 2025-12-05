@@ -58,5 +58,3 @@ export const clearCachedUser = () => {
   cachedProfile = null;
   inFlight = null;
 };
-
-export default fetchCurrentUser;

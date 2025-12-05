@@ -82,8 +82,3 @@ export type ChatResponse = {
   latencyMs?: number;
   cached?: boolean;
 };
-
-export type DraftState = {
-  input: string;
-  attachments: ComposerAttachment[];
-};

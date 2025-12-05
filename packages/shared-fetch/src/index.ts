@@ -106,5 +106,3 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
     return payload as T;
   };
 };
-
-export default createFetchClient;

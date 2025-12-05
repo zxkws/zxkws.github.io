@@ -68,5 +68,3 @@ export const clearAuthArtifacts = () => {
     });
   });
 };
-
-export default clearAuthArtifacts;

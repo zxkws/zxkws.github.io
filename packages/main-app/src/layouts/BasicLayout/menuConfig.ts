@@ -21,5 +21,3 @@ export const builtInAsideMenus: MenuItem[] = [
   { name: '配置中心', path: '/app/config-hub', adminOnly: true },
   { name: '数据库管控', path: '/app/db-ops', adminOnly: true },
 ];
-
-export const headerMenuConfig: MenuItem[] = [];

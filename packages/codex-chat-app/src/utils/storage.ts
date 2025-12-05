@@ -35,13 +35,6 @@ export const persistSnapshot = (snapshot: ChatStateSnapshot) => {
   }
 };
 
-export const clearSnapshot = () => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  window.localStorage.removeItem(STORAGE_KEY);
-};
-
 export const createId = (prefix: string) => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return `${prefix}_${crypto.randomUUID()}`;

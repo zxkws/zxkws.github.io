@@ -86,10 +86,6 @@ export const loadConfig = async (): Promise<SystemConfig> => {
   return systemConfig;
 };
 
-export const getSystemConfig = (): SystemConfig | null => {
-  return systemConfig;
-};
-
 export const resolveMicroApps = (): MicroAppConfig[] => {
   if (typeof window === 'undefined') {
     return mergeMicroApps();
