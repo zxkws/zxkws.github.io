@@ -10,15 +10,22 @@ const error = ref('');
 const showPassword = ref(false);
 const toast = ref<{ text: string; type: 'error' | 'success' } | null>(null);
 let timer: number | null = null;
+const apiBase = import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api';
 
 const client = createFetchClient({
-  baseURL: import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
+  baseURL: apiBase,
   persistToken: (token) => localStorage.setItem('auth_token', token),
 });
 
 const redirectTo = () => {
   const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/v-app/navList';
   window.location.href = redirect;
+};
+
+const onGithubLogin = () => {
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : 'https://zxkws.nyc.mn/';
+  const target = `${apiBase.replace(/\\/api$/, '')}/auth/github?redirect=${encodeURIComponent(redirect)}`;
+  window.location.href = target;
 };
 
 const showMessage = (text: string, type: 'error' | 'success' = 'error') => {
@@ -35,6 +42,15 @@ const onSubmit = async () => {
   error.value = '';
   loading.value = true;
   try {
+    if (!form.value.username || form.value.username.length < 3) {
+      throw new Error('用户名至少 3 位');
+    }
+    if (!form.value.email || !/.+@.+\\..+/.test(form.value.email)) {
+      throw new Error('请输入有效邮箱');
+    }
+    if (!form.value.password || form.value.password.length < 6) {
+      throw new Error('密码至少 6 位');
+    }
     await client<string>('/v1/user/register', form.value);
     showMessage('注册成功，正在跳转...', 'success');
     redirectTo();
@@ -83,6 +99,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <button class="btn" :disabled="loading" @click="onSubmit">{{ loading ? '注册中...' : '注册并登录' }}</button>
+      <button class="btn ghost" type="button" @click="onGithubLogin">使用 GitHub 登录</button>
       <div class="link-row">
         <router-link class="link" to="/login" :query="route.query">返回登录</router-link>
         <span></span>

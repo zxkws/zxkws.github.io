@@ -10,9 +10,10 @@ const form = ref({ email: '', password: '' });
 const loading = ref(false);
 const error = ref('');
 const showPassword = ref(false);
+const apiBase = import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api';
 
 const client = createFetchClient({
-  baseURL: import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
+  baseURL: apiBase,
   persistToken: (token) => localStorage.setItem('auth_token', token),
   onUnauthorized: () => {},
 });
@@ -22,10 +23,22 @@ const redirectTo = () => {
   window.location.href = redirect;
 };
 
+const onGithubLogin = () => {
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : 'https://zxkws.nyc.mn/';
+  const target = `${apiBase.replace(/\\/api$/, '')}/auth/github?redirect=${encodeURIComponent(redirect)}`;
+  window.location.href = target;
+};
+
 const onSubmit = async () => {
   error.value = '';
   loading.value = true;
   try {
+    if (!form.value.email || !/.+@.+\\..+/.test(form.value.email)) {
+      throw new Error('请输入有效邮箱');
+    }
+    if (!form.value.password || form.value.password.length < 6) {
+      throw new Error('密码至少 6 位');
+    }
     await client<string>('/v1/user/login', form.value);
     redirectTo();
   } catch (err) {
@@ -61,6 +74,7 @@ const onSubmit = async () => {
         </div>
       </div>
       <button class="btn" :disabled="loading" @click="onSubmit">{{ loading ? '登录中...' : '登录' }}</button>
+      <button class="btn ghost" type="button" @click="onGithubLogin">使用 GitHub 登录</button>
       <div class="link-row">
         <span></span>
         <router-link class="link" to="/register" :query="route.query">去注册</router-link>
