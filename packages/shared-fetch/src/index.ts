@@ -89,20 +89,26 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
       persistToken(headerToken);
     }
 
+    const contentType = response.headers.get('Content-Type') ?? '';
+    const isJson = contentType.includes('application/json');
+    const payload = (await (isJson ? response.json() : response.text())) as unknown;
+
     if (!response.ok) {
       if (response.status === 401 && onUnauthorized) {
         onUnauthorized();
       }
-      throw new Error(`Request failed with status ${response.status}`);
+      const message =
+        (isJson && payload && typeof payload === 'object'
+          ? // @ts-expect-error best effort
+            (payload as any).message || (payload as any).error || (payload as any).msg
+          : undefined) ?? `请求失败，状态码 ${response.status}`;
+      throw new Error(message);
     }
 
     if (raw) {
       return response as unknown as T;
     }
 
-    const contentType = response.headers.get('Content-Type') ?? '';
-    const isJson = contentType.includes('application/json');
-    const payload = (await (isJson ? response.json() : response.text())) as unknown;
     return payload as T;
   };
 };

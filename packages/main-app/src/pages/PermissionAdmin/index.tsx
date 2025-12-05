@@ -40,7 +40,7 @@ export default function PermissionAdmin() {
       setUsers(userList ?? []);
       setPerms(permList ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '加载失败');
+      setError(err instanceof Error ? err.message : '加载失败，请稍后再试');
     } finally {
       setLoading(false);
     }
@@ -73,6 +73,8 @@ export default function PermissionAdmin() {
     try {
       await client('/v1/rbac/users/' + userId + '/role', { role }, { method: 'PATCH' });
       await fetchAll();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '更新角色失败');
     } finally {
       setSavingId(null);
     }
@@ -84,6 +86,8 @@ export default function PermissionAdmin() {
       const ids = togglePerm(user, permId);
       await client('/v1/rbac/users/' + user.userId + '/permissions', { permissionIds: ids }, { method: 'PATCH' });
       await fetchAll();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '更新权限失败');
     } finally {
       setSavingId(null);
     }
