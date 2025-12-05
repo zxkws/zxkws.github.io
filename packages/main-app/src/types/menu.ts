@@ -7,6 +7,7 @@ export interface MenuItem {
   visible?: boolean;
   external?: boolean;
   adminOnly?: boolean;
+  requiresAuth?: boolean;
 }
 
 export {};

@@ -70,11 +70,12 @@ const resolveInitialNavState = (): boolean => {
   return false;
 };
 
-const filterMenusByRole = (items: any[], isAdmin: boolean): any[] => {
+const filterMenusByRole = (items: any[], isAuthenticated: boolean, isAdmin: boolean): any[] => {
   return items
     .map((item) => {
       if (item.adminOnly && !isAdmin) return null;
-      const children = item.children ? filterMenusByRole(item.children, isAdmin) : undefined;
+      if (item.requiresAuth && !isAuthenticated) return null;
+      const children = item.children ? filterMenusByRole(item.children, isAuthenticated, isAdmin) : undefined;
       return { ...item, children };
     })
     .filter(Boolean);
@@ -86,12 +87,14 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
   const [isNavCollapsed, setIsNavCollapsed] = useState<boolean>(() => resolveInitialNavState());
   const [remoteMenus, setRemoteMenus] = useState(builtInAsideMenus);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // 全局登出事件，HeaderBar 会 dispatch
   useEffect(() => {
     const handler = () => {
       clearAuthArtifacts();
       setIsAdmin(false);
+      setIsAuthenticated(false);
     };
     if (typeof window !== 'undefined') {
       window.addEventListener('main-logout', handler);
@@ -168,8 +171,14 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
 
   useEffect(() => {
     fetchCurrentUser()
-      .then((profile) => setIsAdmin(profile?.role === 'admin'))
-      .catch(() => setIsAdmin(false));
+      .then((profile) => {
+        setIsAuthenticated(!!profile);
+        setIsAdmin(profile?.role === 'admin');
+      })
+      .catch(() => {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -200,7 +209,10 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
     };
   }, []);
 
-  const menus = useMemo(() => filterMenusByRole(remoteMenus, isAdmin), [remoteMenus, isAdmin]);
+  const menus = useMemo(
+    () => filterMenusByRole(remoteMenus, isAuthenticated, isAdmin),
+    [remoteMenus, isAuthenticated, isAdmin],
+  );
 
   const shouldShowNav = isMobile || !isNavCollapsed;
 
