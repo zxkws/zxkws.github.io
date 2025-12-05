@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { createFetchClient } from '@zxkws/shared-fetch';
 
@@ -10,6 +10,8 @@ const form = ref({ email: '', password: '' });
 const loading = ref(false);
 const error = ref('');
 const showPassword = ref(false);
+const toast = ref<{ text: string; type: 'error' | 'success' } | null>(null);
+let timer: number | null = null;
 const apiBase = import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api';
 
 const client = createFetchClient({
@@ -40,13 +42,27 @@ const onSubmit = async () => {
       throw new Error('密码至少 6 位');
     }
     await client<string>('/v1/user/login', form.value);
+    showMessage('登录成功，正在跳转...', 'success');
     redirectTo();
   } catch (err) {
     error.value = err instanceof Error ? err.message : '登录失败';
+    showMessage(error.value, 'error');
   } finally {
     loading.value = false;
   }
 };
+
+const showMessage = (text: string, type: 'error' | 'success' = 'error') => {
+  toast.value = { text, type };
+  if (timer) window.clearTimeout(timer);
+  timer = window.setTimeout(() => {
+    toast.value = null;
+  }, 3200);
+};
+
+onBeforeUnmount(() => {
+  if (timer) window.clearTimeout(timer);
+});
 </script>
 
 <template>
@@ -80,5 +96,10 @@ const onSubmit = async () => {
         <router-link class="link" to="/register" :query="route.query">去注册</router-link>
       </div>
     </div>
+    <transition name="fade">
+      <div v-if="toast" class="toast" :data-type="toast.type">
+        {{ toast.text }}
+      </div>
+    </transition>
   </div>
 </template>
