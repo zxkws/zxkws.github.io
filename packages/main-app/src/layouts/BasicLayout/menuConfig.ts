@@ -12,4 +12,5 @@ export const builtInAsideMenus: MenuItem[] = [
   { name: '模型对话', path: '/app/codex-chat', adminOnly: true },
   { name: '配置中心', path: '/app/config-hub', adminOnly: true },
   { name: '数据库管控', path: '/app/db-ops', adminOnly: true },
+  { name: '权限管理', path: '/app/permission-admin', adminOnly: true },
 ];
