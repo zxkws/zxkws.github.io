@@ -6,9 +6,10 @@
   "scripts": {
     "clean": "npx rimraf node_modules packages/**/node_modules packages/**/**/node_modules pnpm-lock.yaml .ice packages/**/.ice",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently -n \"main,v-app,pdf,textdiff,config,confighub,vue-learn,react-learn,knowledge,resume,codex\" -c \"bgBlue.bold,bgMagenta.bold,bgRed.bold,bgGreen.bold,bgCyan.bold,bgYellow.bold,bgBlue.bold,bgMagenta.bold,bgBlue.bold,bgBlack.bold,bgGreen.bold\" \"pnpm dev:main\" \"pnpm dev:v-app\" \"pnpm dev:pdf-editor\" \"pnpm dev:textdiff\" \"pnpm dev:config\" \"pnpm dev:config-hub\" \"pnpm dev:vue-learning\" \"pnpm dev:react-learning\" \"pnpm dev:knowledge-hub\" \"pnpm dev:resume\" \"pnpm dev:codex-chat\"",
+    "dev": "concurrently -n \"main,v-app,auth,pdf,textdiff,config,confighub,vue-learn,react-learn,knowledge,resume,codex\" -c \"bgBlue.bold,bgMagenta.bold,bgGreen.bold,bgRed.bold,bgGreen.bold,bgCyan.bold,bgYellow.bold,bgBlue.bold,bgMagenta.bold,bgBlue.bold,bgBlack.bold,bgGreen.bold\" \"pnpm dev:main\" \"pnpm dev:v-app\" \"pnpm dev:auth\" \"pnpm dev:pdf-editor\" \"pnpm dev:textdiff\" \"pnpm dev:config\" \"pnpm dev:config-hub\" \"pnpm dev:vue-learning\" \"pnpm dev:react-learning\" \"pnpm dev:knowledge-hub\" \"pnpm dev:resume\" \"pnpm dev:codex-chat\"",
     "dev:main": "pnpm --filter main-app dev",
     "dev:v-app": "pnpm --filter v-app vite",
+    "dev:auth": "pnpm --filter auth-app dev",
     "dev:textdiff": "pnpm --filter textdifference dev",
     "dev:config": "pnpm --filter config-center dev",
     "dev:config-hub": "pnpm --filter config-hub dev",

@@ -60,6 +60,16 @@
       "activeRule": ["/app/person-resume"],
       "sandbox": true,
       "enabled": true
+    },
+    {
+      "name": "auth-app",
+      "displayName": "认证中心",
+      "devEntry": "http://localhost:5183",
+      "prodEntry": "https://zxkws.nyc.mn/auth-app/",
+      "entry": "/auth-app/",
+      "activeRule": ["/auth"],
+      "sandbox": false,
+      "enabled": true
     }
   ],
   "updatedAt": "2025-12-04T00:00:00Z"

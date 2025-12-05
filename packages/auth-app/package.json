@@ -1,0 +1,21 @@
+{
+  "name": "auth-app",
+  "version": "0.1.0",
+  "description": "Auth micro-frontend for login/register",
+  "scripts": {
+    "dev": "vite --host --port 5183",
+    "build": "vite build",
+    "preview": "vite preview --host --port 5183"
+  },
+  "dependencies": {
+    "@zxkws/shared-fetch": "workspace:*",
+    "vue": "^3.5.22",
+    "vue-router": "^4.6.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10",
+    "vue-tsc": "^3.1.1"
+  }
+}

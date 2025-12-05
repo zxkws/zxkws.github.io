@@ -16,7 +16,6 @@ import {
   notifyMicroAppMounted,
 } from './core/icestark';
 import BasicLayout from './layouts/BasicLayout';
-import About from './pages/About';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import appHistory from '@ice/stark/lib/appHistory';
@@ -186,7 +185,6 @@ function App() {
       }}
     >
       <AppRoute exact activePath="/" component={<Home />} />
-      <AppRoute exact activePath="/about" component={<About />} />
       <AppRoute exact activePath="/login" component={<Login />} />
       {microApps.map((app) => (
         <AppRoute key={app.name} {...app} {...(app.render ? {} : app)} />

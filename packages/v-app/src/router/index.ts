@@ -34,16 +34,6 @@ export const routes = [
     ],
   },
   {
-    name: 'login',
-    path: '/login',
-    component: () => import('../views/Login/index.vue'),
-  },
-  {
-    name: 'register',
-    path: '/register',
-    component: () => import('../views/Register/index.vue'),
-  },
-  {
     path: '/:pathMatch(.*)',
     component: NotFound,
   },

@@ -8,6 +8,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "@zxkws/shared-fetch": "workspace:*",
     "@headlessui/vue": "^1.7.23",
     "@ice/stark-app": "^1.5.0",
     "@surely-vue/table": "^5.0.9",
