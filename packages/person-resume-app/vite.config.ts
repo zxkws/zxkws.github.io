@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
         preserveEntrySignatures: 'exports-only',
       }),
     ],
-    base: isProd ? '/person-resume-app/' : '/',
+    base: isProd ? '/resume/' : '/',
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
