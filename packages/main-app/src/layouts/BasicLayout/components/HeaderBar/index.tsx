@@ -154,8 +154,14 @@ const HeaderBar = ({
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
+      const client = createFetchClient({
+        baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
+        credentials: 'include',
+      });
+      client('/auth/logout', {}, { method: 'POST' }).catch(() => undefined);
       localStorage.removeItem('auth_token');
       document.cookie = 'jwt=; Max-Age=0; path=/; domain=.zxkws.nyc.mn';
+      document.cookie = 'connect.sid=; Max-Age=0; path=/; domain=.zxkws.nyc.mn';
       setProfile({});
       setMenuOpen(false);
       goLogin();
