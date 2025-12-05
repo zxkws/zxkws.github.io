@@ -1,0 +1,25 @@
+{
+  "name": "db-ops-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "数据库服务监控与配置微应用",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ice/stark-app": "^1.5.0",
+    "@zxkws/shared-fetch": "workspace:*",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10",
+    "vite-plugin-index-html": "^2.0.2"
+  }
+}

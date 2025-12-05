@@ -21,6 +21,7 @@ const asideMenuConfig: MenuItem[] = [
   { name: '文本对比', path: '/textdiff' },
   { name: 'Curl Converter', path: '/curlconverter' },
   { name: '配置中心', path: '/app/config-hub' },
+  { name: '数据库管控', path: '/app/db-ops' },
 ];
 
 export const getAsideMenuConfig = (): MenuItem[] => asideMenuConfig;
