@@ -154,17 +154,34 @@ const HeaderBar = ({
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
+      const clearCookie = (name: string) => {
+        const domains = ['', '.zxkws.nyc.mn'];
+        const paths = ['/', '/auth-app', '/app'];
+        domains.forEach((d) => {
+          paths.forEach((p) => {
+            document.cookie = `${name}=; Max-Age=0; path=${p};${d ? ` domain=${d};` : ''} SameSite=None; Secure`;
+          });
+        });
+      };
       const client = createFetchClient({
         baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
         credentials: 'include',
       });
       client('/auth/logout', {}, { method: 'POST' }).catch(() => undefined);
-      localStorage.removeItem('auth_token');
-      document.cookie = 'jwt=; Max-Age=0; path=/; domain=.zxkws.nyc.mn';
-      document.cookie = 'connect.sid=; Max-Age=0; path=/; domain=.zxkws.nyc.mn';
+      ['auth_token', 'token', 'jwt'].forEach((k) => localStorage.removeItem(k));
+      sessionStorage.clear();
+      ['jwt', 'connect.sid'].forEach(clearCookie);
       setProfile({});
       setMenuOpen(false);
-      goLogin();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('main-logout'));
+      }
+      const current = window.location.href.split('#')[0];
+      const loginUrl =
+        process.env.NODE_ENV === 'development'
+          ? `http://localhost:5183/#/login?redirect=${encodeURIComponent(current)}`
+          : `https://zxkws.nyc.mn/auth-app/#/login?redirect=${encodeURIComponent(current)}`;
+      window.location.replace(loginUrl);
     }
   };
 

@@ -86,6 +86,19 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
   const [remoteMenus, setRemoteMenus] = useState(builtInAsideMenus);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // 全局登出事件，HeaderBar 会 dispatch
+  useEffect(() => {
+    const handler = () => setIsAdmin(false);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('main-logout', handler);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('main-logout', handler);
+      }
+    };
+  }, []);
+
   // 当 URL 发生前进/后退时，根据 nav 参数同步折叠状态
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -164,13 +177,23 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
   }, []);
 
   useEffect(() => {
+    const dedupeByPath = (list: any[]) => {
+      const seen = new Map<string, any>();
+      list.forEach((item) => {
+        const key = item.path || item.name;
+        if (!seen.has(key)) {
+          seen.set(key, item);
+        }
+      });
+      return Array.from(seen.values());
+    };
+
     let mounted = true;
     fetchRemoteMenus()
       .then((res) => {
         if (!mounted) return;
-        const merged = [...builtInAsideMenus, ...res]
-          .filter((item) => item.visible !== false)
-          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        const base = (res && res.length ? res : builtInAsideMenus).filter((item) => item.visible !== false);
+        const merged = dedupeByPath([...base, ...builtInAsideMenus]).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         setRemoteMenus(merged);
       })
       .catch(() => {
