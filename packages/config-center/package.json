@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Micro-app Configuration Center",
   "scripts": {
-    "dev": "npx http-server public -p 5175 --cors -c-1",
-    "build": "mkdir -p dist && cp -r public/* dist/"
+    "dev": "npx http-server dist -p 5175 --cors -c-1",
+    "build": "mkdir -p dist && echo '{}' > dist/.keep"
   },
   "license": "MIT"
 }
