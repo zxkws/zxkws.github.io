@@ -295,6 +295,9 @@ importers:
       '@ice/stark':
         specifier: ^2.8.4
         version: 2.8.4(react@19.2.0)
+      '@zxkws/shared-fetch':
+        specifier: workspace:*
+        version: link:../shared-fetch
       history:
         specifier: ^5.3.0
         version: 5.3.0

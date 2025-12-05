@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as styles from './index.module.css';
+import { createFetchClient } from '@zxkws/shared-fetch';
 
 type Theme = 'light' | 'dark';
 
@@ -84,6 +85,8 @@ const HeaderBar = ({
 }: HeaderBarProps) => {
   const [theme, setTheme] = useState<Theme>(() => resolveInitialTheme());
   const [hasManualOverride, setHasManualOverride] = useState<boolean>(() => readStoredTheme() !== null);
+  const [profile, setProfile] = useState<{ username?: string }>({});
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     applyTheme(theme);
@@ -123,6 +126,41 @@ const HeaderBar = ({
 
   const nextThemeLabel = useMemo(() => (theme === 'dark' ? '切换至亮色' : '切换至暗色'), [theme]);
   const ThemeIcon = theme === 'dark' ? SunIcon : MoonIcon;
+
+  useEffect(() => {
+    const client = createFetchClient({
+      baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
+      getToken: () => (typeof window === 'undefined' ? null : localStorage.getItem('auth_token')),
+      credentials: 'include',
+    });
+    client('/v1/user', undefined, { method: 'GET' })
+      .then((res: any) => {
+        const data = res?.data ?? res;
+        if (data?.username) {
+          setProfile({ username: data.username });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const goLogin = () => {
+    const current = typeof window === 'undefined' ? '/' : window.location.href;
+    const url =
+      process.env.NODE_ENV === 'development'
+        ? `http://localhost:5183/#/login?redirect=${encodeURIComponent(current)}`
+        : `https://zxkws.nyc.mn/auth-app/#/login?redirect=${encodeURIComponent(current)}`;
+    window.location.href = url;
+  };
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      document.cookie = 'jwt=; Max-Age=0; path=/; domain=.zxkws.nyc.mn';
+      setProfile({});
+      setMenuOpen(false);
+      goLogin();
+    }
+  };
 
   return (
     <header className={styles.headerBar}>
@@ -170,6 +208,34 @@ const HeaderBar = ({
           </span>
           <span className={styles.themeText}>{theme === 'dark' ? '暗色模式' : '亮色模式'}</span>
         </button>
+        <div className={styles.avatarBox}>
+          {profile?.username ? (
+            <div className={styles.avatarWrapper}>
+              <button className={styles.avatarBtn} onClick={() => setMenuOpen((v) => !v)}>
+                <img
+                  className={styles.avatarImg}
+                  src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=120&h=120&fit=crop&auto=format"
+                  alt="avatar"
+                />
+                <span className={styles.avatarName}>{profile.username}</span>
+              </button>
+              {menuOpen && (
+                <div className={styles.avatarMenu}>
+                  <a className={styles.menuItem} href="/app/config-hub" onClick={() => setMenuOpen(false)}>
+                    菜单管理
+                  </a>
+                  <button className={styles.menuItem} onClick={handleLogout}>
+                    退出登录
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button className={styles.loginBtn} onClick={goLogin}>
+              登录
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );

@@ -20,6 +20,13 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5183,
+      proxy: {
+        '^/api': {
+          target: 'https://zxkws.nyc.mn',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
     base: isProd ? '/auth-app/' : '/',
     build: {

@@ -28,6 +28,13 @@ export default defineConfig(({ mode }) => {
         'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
       },
       allowedHosts: ['.gitpod.io'],
+      proxy: {
+        '^/api': {
+          target: 'https://zxkws.nyc.mn',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
     css: {
       devSourcemap: !isProd,

@@ -17,6 +17,13 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 5176,
       open: false,
+      proxy: {
+        '^/api': {
+          target: 'https://zxkws.nyc.mn',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
     resolve: {
       alias: {
