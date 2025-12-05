@@ -97,8 +97,7 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
     }
 
     if (raw) {
-      // @ts-expect-error raw consumer responsible to read body
-      return response as T;
+      return response as unknown as T;
     }
 
     const contentType = response.headers.get('Content-Type') ?? '';

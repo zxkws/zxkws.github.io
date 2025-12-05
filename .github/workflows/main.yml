@@ -23,7 +23,11 @@ jobs:
           const packagesDir = path.join(process.cwd(), 'packages');
           const overrides = {
             'main-app': { deploy_subdir: '' },
-            'textDifference': { deploy_subdir: 'textdiff', dist_path: 'packages/textDifference/dist' },
+            'textDifference': {
+              deploy_subdir: 'textdiff',
+              dist_path: 'packages/textDifference/dist',
+              filter: 'textdifference', // pnpm uses package name (lowercase)
+            },
           };
 
           const entries = fs.readdirSync(packagesDir).filter((name) =>
