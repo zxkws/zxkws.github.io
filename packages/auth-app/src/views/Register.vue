@@ -45,7 +45,8 @@ const onSubmit = async () => {
     if (!form.value.username || form.value.username.length < 3) {
       throw new Error('用户名至少 3 位');
     }
-    if (!form.value.email || !/.+@.+\\..+/.test(form.value.email)) {
+    // basic email format check; avoid over-escaping which was rejecting valid addresses
+    if (!form.value.email || !/.+@.+\..+/.test(form.value.email)) {
       throw new Error('请输入有效邮箱');
     }
     if (!form.value.password || form.value.password.length < 6) {
