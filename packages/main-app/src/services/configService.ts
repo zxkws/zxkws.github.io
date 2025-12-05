@@ -29,7 +29,7 @@ export function convertToIceStarkApps(config: SystemConfig) {
     isDevelopment ? app.devEntry || app.entry : app.prodEntry || app.entry;
 
   return config.microApps
-    .filter((app) => app.enabled && app.name !== 'auth-app') // 登录页改为独立跳转，不再作为微应用加载
+    .filter((app) => app.enabled && app.name !== 'auth-app' && app.name !== 'person-resume-app') // 登录与简历独立访问
     .map((app) => {
       const renderType = app.renderType || ((app as unknown as { iframe?: boolean }).iframe ? 'iframe' : 'microfront');
       return {
