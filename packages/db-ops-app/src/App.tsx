@@ -286,8 +286,12 @@ export default function App({ basename }: { basename?: string }) {
 
   const goLogin = () => {
     if (typeof window === 'undefined') return;
-    const redirect = `${window.location.origin}${basename ?? ''}${window.location.pathname}${window.location.search}`;
-    window.location.href = `/auth/login?redirect=${encodeURIComponent(redirect)}`;
+    const current = window.location.href;
+    const authUrl =
+      import.meta.env.MODE === 'development'
+        ? `http://localhost:5183/#/login?redirect=${encodeURIComponent(current)}`
+        : `https://zxkws.nyc.mn/auth-app/#/login?redirect=${encodeURIComponent(current)}`;
+    window.location.href = authUrl;
   };
 
   // 一旦发现未登录，立即跳转登录，避免用户留在受限页面

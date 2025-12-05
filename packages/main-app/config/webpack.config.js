@@ -72,6 +72,13 @@ module.exports = {
     headers: {
       'Access-Control-Allow-Origin': '*',
     },
+    proxy: {
+      '/api': {
+        target: 'https://zxkws.nyc.mn',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   output: {
     path: resolve(__dirname, '../dist'),

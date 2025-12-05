@@ -4,7 +4,11 @@ const BASE_URL = process.env.NODE_ENV === 'development' ? '/api' : 'https://api.
 
 const getRedirectLogin = () => {
   const current = typeof window === 'undefined' ? '/' : window.location.href;
-  return `/auth/login?redirect=${encodeURIComponent(current)}`;
+  const authUrl =
+    process.env.NODE_ENV === 'development'
+      ? `http://localhost:5183/#/login?redirect=${encodeURIComponent(current)}`
+      : `https://zxkws.nyc.mn/auth-app/#/login?redirect=${encodeURIComponent(current)}`;
+  return authUrl;
 };
 
 const client = createFetchClient({
