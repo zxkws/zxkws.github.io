@@ -4,6 +4,7 @@ import router from './router';
 import isInIcestark from '@ice/stark-app/lib/isInIcestark';
 import getBasename from '@ice/stark-app/lib/getBasename';
 import setLibraryName from '@ice/stark-app/lib/setLibraryName';
+import './style.css';
 
 setLibraryName('auth-app');
 

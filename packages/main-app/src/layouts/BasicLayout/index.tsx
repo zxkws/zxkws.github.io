@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import HeaderBar from './components/HeaderBar';
 import PageNav from './components/PageNav';
 import { builtInAsideMenus } from './menuConfig';
+import type { MenuItem } from '../../types/menu';
 import { fetchRemoteMenus } from '../../services/menuService';
 import { clearAuthArtifacts } from '../../utils/authCleanup';
 import { fetchCurrentUser } from '../../services/userService';
@@ -85,7 +86,7 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isNavCollapsed, setIsNavCollapsed] = useState<boolean>(() => resolveInitialNavState());
-  const [remoteMenus, setRemoteMenus] = useState(builtInAsideMenus);
+  const [remoteMenus, setRemoteMenus] = useState<MenuItem[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -182,24 +183,14 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
   }, []);
 
   useEffect(() => {
-    const dedupeByPath = (list: any[]) => {
-      const seen = new Map<string, any>();
-      list.forEach((item) => {
-        const key = item.path || item.name;
-        if (!seen.has(key)) {
-          seen.set(key, item);
-        }
-      });
-      return Array.from(seen.values());
-    };
-
     let mounted = true;
     fetchRemoteMenus()
       .then((res) => {
         if (!mounted) return;
-        const base = (res && res.length ? res : builtInAsideMenus).filter((item) => item.visible !== false);
-        const merged = dedupeByPath([...base, ...builtInAsideMenus]).sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        setRemoteMenus(merged);
+        const normalized = (res ?? [])
+          .filter((item) => item.visible !== false)
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        setRemoteMenus(normalized.length ? normalized : builtInAsideMenus);
       })
       .catch(() => {
         setRemoteMenus(builtInAsideMenus);
