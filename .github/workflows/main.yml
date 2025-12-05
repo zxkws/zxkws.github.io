@@ -3,66 +3,62 @@ name: deploy_gh_pages
 on:
   push:
     branches:
-    - development
+      - development
     paths-ignore:
       - README.md
 
 jobs:
+  generate-matrix:
+    name: Discover packages
+    runs-on: ubuntu-22.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-matrix
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const packagesDir = path.join(process.cwd(), 'packages');
+          const overrides = {
+            'main-app': { deploy_subdir: '' },
+            'textDifference': { deploy_subdir: 'textdiff', dist_path: 'packages/textDifference/dist' },
+          };
+
+          const entries = fs.readdirSync(packagesDir).filter((name) =>
+            fs.statSync(path.join(packagesDir, name)).isDirectory()
+          );
+
+          const apps = [];
+          for (const name of entries) {
+            const pkgPath = path.join(packagesDir, name, 'package.json');
+            if (!fs.existsSync(pkgPath)) continue;
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+            if (!pkg.scripts || !pkg.scripts.build) continue;
+            const override = overrides[name] || {};
+            apps.push({
+              name,
+              filter: override.filter || name,
+              dist_path: override.dist_path || `packages/${name}/dist`,
+              deploy_subdir:
+                override.deploy_subdir !== undefined ? override.deploy_subdir : name,
+            });
+          }
+
+          if (!apps.length) throw new Error('No buildable packages found');
+          const matrix = { app: apps };
+          console.log('Resolved matrix:', JSON.stringify(matrix, null, 2));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify(matrix)}\n`);
+          NODE
+
   build:
     name: Build ${{ matrix.app.name }}
     runs-on: ubuntu-22.04
+    needs: generate-matrix
     strategy:
       fail-fast: false
-      matrix:
-        app:
-          - name: main-app
-            filter: main-app
-            dist_path: packages/main-app/dist
-            deploy_subdir: ''
-          - name: v-app
-            filter: v-app
-            dist_path: packages/v-app/dist
-            deploy_subdir: 'v-app'
-          - name: vue-learning-app
-            filter: vue-learning-app
-            dist_path: packages/vue-learning-app/dist
-            deploy_subdir: 'vue'
-          - name: react-learning-app
-            filter: react-learning-app
-            dist_path: packages/react-learning-app/dist
-            deploy_subdir: 'react'
-          - name: pdf-editor-app
-            filter: pdf-editor-app
-            dist_path: packages/pdf-editor-app/dist
-            deploy_subdir: 'pdf-editor-app'
-          - name: person-resume-app
-            filter: person-resume-app
-            dist_path: packages/person-resume-app/dist
-            deploy_subdir: 'person-resume-app'
-          - name: textdifference
-            filter: textdifference
-            dist_path: packages/textDifference/dist
-            deploy_subdir: 'textdiff'
-          - name: config-center
-            filter: config-center
-            dist_path: packages/config-center/dist
-            deploy_subdir: 'config-center'
-          - name: config-hub
-            filter: config-hub
-            dist_path: packages/config-hub/dist
-            deploy_subdir: 'config-hub'
-          - name: codex-chat-app
-            filter: codex-chat-app
-            dist_path: packages/codex-chat-app/dist
-            deploy_subdir: 'codex-chat-app'
-          - name: knowledge-hub-app
-            filter: knowledge-hub-app
-            dist_path: packages/knowledge-hub-app/dist
-            deploy_subdir: 'knowledge-hub-app'
-          - name: auth-app
-            filter: auth-app
-            dist_path: packages/auth-app/dist
-            deploy_subdir: 'auth-app'
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
 
