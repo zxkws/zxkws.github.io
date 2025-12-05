@@ -4,6 +4,7 @@ import PageNav from './components/PageNav';
 import { builtInAsideMenus } from './menuConfig';
 import { fetchRemoteMenus } from '../../services/menuService';
 import { createFetchClient } from '@zxkws/shared-fetch';
+import { clearAuthArtifacts } from '../../utils/authCleanup';
 
 type BasicLayoutProps = {
   children: ReactNode;
@@ -88,7 +89,10 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
 
   // 全局登出事件，HeaderBar 会 dispatch
   useEffect(() => {
-    const handler = () => setIsAdmin(false);
+    const handler = () => {
+      clearAuthArtifacts();
+      setIsAdmin(false);
+    };
     if (typeof window !== 'undefined') {
       window.addEventListener('main-logout', handler);
     }
