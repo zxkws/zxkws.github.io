@@ -230,6 +230,9 @@ const HeaderBar = ({
               </button>
               {menuOpen && (
                 <div className={styles.avatarMenu}>
+                  <a className={styles.menuItem} href="/profile" onClick={() => setMenuOpen(false)}>
+                    个人资料
+                  </a>
                   <a className={styles.menuItem} href="/app/user-admin" onClick={() => setMenuOpen(false)}>
                     用户管理
                   </a>

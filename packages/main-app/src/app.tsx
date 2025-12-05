@@ -20,6 +20,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import PermissionAdmin from './pages/PermissionAdmin';
 import UserAdmin from './pages/UserAdmin';
+import Profile from './pages/Profile';
 import appHistory from '@ice/stark/lib/appHistory';
 
 const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
@@ -190,6 +191,7 @@ function App() {
       <AppRoute exact activePath="/login" component={<Login />} />
       <AppRoute exact activePath="/app/permission-admin" component={<PermissionAdmin />} />
       <AppRoute exact activePath="/app/user-admin" component={<UserAdmin />} />
+      <AppRoute exact activePath="/profile" component={<Profile />} />
       {microApps.map((app) => (
         <AppRoute key={app.name} {...app} {...(app.render ? {} : app)} />
       ))}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createFetchClient } from '@zxkws/shared-fetch';
+import { message } from 'antd';
 
 type Role = 'user' | 'admin';
 
@@ -41,6 +42,7 @@ export default function PermissionAdmin() {
       setPerms(permList ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载失败，请稍后再试');
+      message.error(err instanceof Error ? err.message : '加载失败');
     } finally {
       setLoading(false);
     }
@@ -75,6 +77,7 @@ export default function PermissionAdmin() {
       await fetchAll();
     } catch (err) {
       setError(err instanceof Error ? err.message : '更新角色失败');
+      message.error(err instanceof Error ? err.message : '更新角色失败');
     } finally {
       setSavingId(null);
     }
@@ -88,6 +91,7 @@ export default function PermissionAdmin() {
       await fetchAll();
     } catch (err) {
       setError(err instanceof Error ? err.message : '更新权限失败');
+      message.error(err instanceof Error ? err.message : '更新权限失败');
     } finally {
       setSavingId(null);
     }

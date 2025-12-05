@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Input, Modal, Table, Tag, message, Popconfirm, Select, Space } from 'antd';
+import { Button, Input, Modal, Table, Tag, message, Popconfirm, Select, Space, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { fetchUsers, updateStatus, updateUser, deleteUser } from '../../services/adminUserService';
 import type { UserProfile } from '../../services/userService';
@@ -46,6 +46,13 @@ export default function UserAdmin() {
   };
 
   const handleDelete = async (record: AdminUser) => {
+    const confirmName = window.prompt(
+      `确认删除用户 ${record.username} ?\n删除将清空其数据且不可恢复。请输入用户名以确认：`,
+    );
+    if (confirmName !== record.username) {
+      message.info('已取消删除');
+      return;
+    }
     await deleteUser(String(record.id || record.username || ''));
     message.success('用户已删除，相关数据将不可恢复');
     load();
@@ -62,7 +69,17 @@ export default function UserAdmin() {
         key: 'status',
         render: (status: UserStatus = 'active', record) => (
           <Space>
-            <Tag color={statusColor[status]}>{status}</Tag>
+            <Tooltip
+              title={
+                status === 'active'
+                  ? '正常可登录'
+                  : status === 'frozen'
+                    ? '冻结：不可登录，可由管理员解冻'
+                    : '封禁：不可登录，需要管理员解除'
+              }
+            >
+              <Tag color={statusColor[status]}>{status}</Tag>
+            </Tooltip>
             <Select<UserStatus>
               size="small"
               value={status}

@@ -97,11 +97,11 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
       if (response.status === 401 && onUnauthorized) {
         onUnauthorized();
       }
-      const message =
+      const messageText =
         (isJson && payload && typeof payload === 'object'
           ? (payload as any).message || (payload as any).error || (payload as any).msg
           : undefined) ?? `请求失败，状态码 ${response.status}`;
-      throw new Error(message);
+      throw new Error(messageText);
     }
 
     if (raw) {
