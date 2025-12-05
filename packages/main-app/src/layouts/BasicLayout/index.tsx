@@ -3,6 +3,7 @@ import HeaderBar from './components/HeaderBar';
 import PageNav from './components/PageNav';
 import { builtInAsideMenus } from './menuConfig';
 import { fetchRemoteMenus } from '../../services/menuService';
+import { createFetchClient } from '@zxkws/shared-fetch';
 
 type BasicLayoutProps = {
   children: ReactNode;
@@ -68,11 +69,22 @@ const resolveInitialNavState = (): boolean => {
   return false;
 };
 
+const filterMenusByRole = (items: any[], isAdmin: boolean): any[] => {
+  return items
+    .map((item) => {
+      if (item.adminOnly && !isAdmin) return null;
+      const children = item.children ? filterMenusByRole(item.children, isAdmin) : undefined;
+      return { ...item, children };
+    })
+    .filter(Boolean);
+};
+
 export default function BasicLayout({ children }: BasicLayoutProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [isNavCollapsed, setIsNavCollapsed] = useState<boolean>(() => resolveInitialNavState());
   const [remoteMenus, setRemoteMenus] = useState(builtInAsideMenus);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // 当 URL 发生前进/后退时，根据 nav 参数同步折叠状态
   useEffect(() => {
@@ -138,6 +150,20 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
   }, [isNavCollapsed]);
 
   useEffect(() => {
+    const client = createFetchClient({
+      baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
+      getToken: () => (typeof window === 'undefined' ? null : localStorage.getItem('auth_token')),
+      credentials: 'include',
+    });
+    client('/v1/user', undefined, { method: 'GET' })
+      .then((res: any) => {
+        const data = res?.data ?? res;
+        setIsAdmin(data?.role === 'admin');
+      })
+      .catch(() => setIsAdmin(false));
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
     fetchRemoteMenus()
       .then((res) => {
@@ -155,7 +181,7 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
     };
   }, []);
 
-  const menus = useMemo(() => remoteMenus, [remoteMenus]);
+  const menus = useMemo(() => filterMenusByRole(remoteMenus, isAdmin), [remoteMenus, isAdmin]);
 
   const shouldShowNav = isMobile || !isNavCollapsed;
 

@@ -6,6 +6,7 @@ export interface MenuItem {
   order?: number;
   visible?: boolean;
   external?: boolean;
+  adminOnly?: boolean;
 }
 
 export {};
