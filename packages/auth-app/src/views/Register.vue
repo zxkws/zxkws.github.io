@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onBeforeUnmount, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { createFetchClient } from '@zxkws/shared-fetch';
 
@@ -8,6 +8,8 @@ const form = ref({ username: '', email: '', password: '' });
 const loading = ref(false);
 const error = ref('');
 const showPassword = ref(false);
+const toast = ref<{ text: string; type: 'error' | 'success' } | null>(null);
+let timer: number | null = null;
 
 const client = createFetchClient({
   baseURL: import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
@@ -19,18 +21,37 @@ const redirectTo = () => {
   window.location.href = redirect;
 };
 
+const showMessage = (text: string, type: 'error' | 'success' = 'error') => {
+  toast.value = { text, type };
+  if (timer) {
+    clearTimeout(timer);
+  }
+  timer = window.setTimeout(() => {
+    toast.value = null;
+  }, 3200);
+};
+
 const onSubmit = async () => {
   error.value = '';
   loading.value = true;
   try {
     await client<string>('/v1/user/register', form.value);
+    showMessage('注册成功，正在跳转...', 'success');
     redirectTo();
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '注册失败';
+    const msg = err instanceof Error ? err.message : '注册失败';
+    error.value = msg;
+    showMessage(msg, 'error');
   } finally {
     loading.value = false;
   }
 };
+
+onBeforeUnmount(() => {
+  if (timer) {
+    clearTimeout(timer);
+  }
+});
 </script>
 
 <template>
@@ -67,5 +88,10 @@ const onSubmit = async () => {
         <span></span>
       </div>
     </div>
+    <transition name="fade">
+      <div v-if="toast" class="toast" :data-type="toast.type">
+        {{ toast.text }}
+      </div>
+    </transition>
   </div>
 </template>

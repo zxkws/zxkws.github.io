@@ -144,3 +144,35 @@ input:focus {
   color: #f87171;
   font-size: 13px;
 }
+
+.toast {
+  position: fixed;
+  right: 18px;
+  top: 18px;
+  min-width: 220px;
+  max-width: 360px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  color: #0f172a;
+  font-weight: 600;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(135deg, #fecaca, #fca5a5);
+  z-index: 999;
+}
+
+.toast[data-type='success'] {
+  background: linear-gradient(135deg, #bbf7d0, #86efac);
+  color: #064e3b;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
