@@ -23,7 +23,7 @@
     "dev:knowledge-hub": "pnpm --filter knowledge-hub-app dev",
     "dev:codex-chat": "pnpm --filter codex-chat-app dev",
     "build": "pnpm run build:all",
-    "build:all": "pnpm --filter main-app build && pnpm --filter v-app build && pnpm --filter textdifference build && pnpm --filter config-center build && pnpm --filter config-hub build && pnpm --filter pdf-editor-app build && pnpm --filter person-resume-app build && pnpm --filter vue-learning-app build && pnpm --filter react-learning-app build && pnpm --filter knowledge-hub-app build",
+    "build:all": "pnpm --filter main-app build && pnpm --filter v-app build && pnpm --filter auth-app build && pnpm --filter textdifference build && pnpm --filter config-center build && pnpm --filter config-hub build && pnpm --filter pdf-editor-app build && pnpm --filter person-resume-app build && pnpm --filter vue-learning-app build && pnpm --filter react-learning-app build && pnpm --filter knowledge-hub-app build",
     "postinstall": "pnpm i @google/gemini-cli @anthropic-ai/claude-code -g || true",
     "prepare": "husky"
   },

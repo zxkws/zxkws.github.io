@@ -59,6 +59,10 @@ jobs:
             filter: knowledge-hub-app
             dist_path: packages/knowledge-hub-app/dist
             deploy_subdir: 'knowledge-hub-app'
+          - name: auth-app
+            filter: auth-app
+            dist_path: packages/auth-app/dist
+            deploy_subdir: 'auth-app'
     steps:
       - uses: actions/checkout@v4
 
