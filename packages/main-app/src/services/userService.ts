@@ -4,7 +4,9 @@ export type UserProfile = {
   id?: string | number;
   username?: string;
   email?: string;
-  role?: string;
+  role?: string; // 兼容旧字段
+  roles?: string[];
+  permissions?: string[];
 };
 
 let cachedProfile: UserProfile | null = null;
@@ -13,12 +15,14 @@ const USER_CACHE_KEY = 'main-app:user';
 
 const sanitizeUser = (raw: unknown): UserProfile => {
   if (!raw || typeof raw !== 'object') return {};
-  const { username, email, role, id } = raw as Record<string, unknown>;
+  const { username, email, role, roles, permissions, id } = raw as Record<string, unknown>;
   return {
     id: typeof id === 'string' || typeof id === 'number' ? id : undefined,
     username: typeof username === 'string' ? username : undefined,
     email: typeof email === 'string' ? email : undefined,
     role: typeof role === 'string' ? role : undefined,
+    roles: Array.isArray(roles) ? roles.filter((r) => typeof r === 'string') : undefined,
+    permissions: Array.isArray(permissions) ? permissions.filter((p) => typeof p === 'string') : undefined,
   };
 };
 

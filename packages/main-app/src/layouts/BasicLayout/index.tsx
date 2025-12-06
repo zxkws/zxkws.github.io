@@ -72,6 +72,7 @@ const resolveInitialNavState = (): boolean => {
 };
 
 const filterMenusByRole = (items: any[], isAuthenticated: boolean, isAdmin: boolean): any[] => {
+  // 后端已做权限过滤；这里仅处理 requiresAuth/adminOnly 兼容老数据的兜底逻辑
   return items
     .map((item) => {
       if (item.adminOnly && !isAdmin) return null;
@@ -174,12 +175,13 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
 
   useEffect(() => {
     setIsAuthenticated(!!user);
-    setIsAdmin(user?.role === 'admin');
+    const roles = user?.roles || (user?.role ? [user.role] : []);
+    setIsAdmin(roles.includes('admin'));
   }, [user]);
 
   useEffect(() => {
     let mounted = true;
-    fetchRemoteMenus()
+    fetchRemoteMenus(!!user)
       .then((res) => {
         if (!mounted) return;
         const normalized = (res ?? [])
@@ -193,7 +195,7 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [user]);
 
   const menus = useMemo(
     () => filterMenusByRole(remoteMenus, isAuthenticated, isAdmin),

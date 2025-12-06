@@ -2,16 +2,21 @@ import type { MenuItem } from '../../types/menu';
 
 // 前端内置公共菜单
 // 未登录可见：主页、文本对比、Curl Converter
-// 登录且管理员可见：其余业务菜单
+// 登录后：后端返回为准；此处作为兜底
 export const builtInAsideMenus: MenuItem[] = [
   { name: '首页', path: '/' },
   { name: '文本对比', path: '/textdiff' },
   { name: 'Curl Converter', path: '/curlconverter' },
-  { name: '知识中台', path: '/app/knowledge-hub', adminOnly: true },
-  { name: 'PDF 编辑器', path: '/app/pdf-editor', adminOnly: true },
-  { name: '模型对话', path: '/app/codex-chat', adminOnly: true },
-  { name: '配置中心', path: '/app/config-hub', adminOnly: true },
-  { name: '数据库管控', path: '/app/db-ops', adminOnly: true },
-  { name: '权限管理', path: '/app/permission-admin', adminOnly: true },
-  { name: '用户管理', path: '/app/user-admin', adminOnly: true },
+  // 业务菜单仅为兜底；实际显示以后端返回为准
+  { name: '知识中台', path: '/app/knowledge-hub' },
+  { name: 'PDF 编辑器', path: '/app/pdf-editor' },
+  { name: '模型对话', path: '/app/codex-chat' },
+  { name: '配置中心', path: '/app/config-hub' },
+  { name: '数据库管控', path: '/app/db-ops' },
+  { name: '权限管理', path: '/app/permission-admin' },
+  { name: '用户管理', path: '/app/user-admin' },
+  { name: '导航列表', path: '/v-app/navList' },
+  { name: '代办', path: '/v-app/todo' },
+  { name: '账号管理', path: '/v-app/account' },
+  { name: 'LLM 排行', path: '/v-app/llm-ranking' },
 ];

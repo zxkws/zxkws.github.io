@@ -8,6 +8,7 @@ export interface MenuItem {
   external?: boolean;
   adminOnly?: boolean;
   requiresAuth?: boolean;
+  permission?: string | null;
 }
 
 export {};
