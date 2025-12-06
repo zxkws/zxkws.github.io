@@ -17,7 +17,6 @@ import {
 } from './core/icestark';
 import BasicLayout from './layouts/BasicLayout';
 import Home from './pages/Home';
-import Login from './pages/Login';
 import PermissionAdmin from './pages/PermissionAdmin';
 import UserAdmin from './pages/UserAdmin';
 import Profile from './pages/Profile';
@@ -66,10 +65,6 @@ function App() {
   const [configLoaded, setConfigLoaded] = useState(false);
   const [microApps, setMicroApps] = useState<ReturnType<typeof resolveMicroApps>>([]);
   const [configError, setConfigError] = useState<string | null>(null);
-  const [pathname, setPathname] = useState<string>(() => {
-    if (typeof window === 'undefined') return '/';
-    return window.location.pathname;
-  });
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -170,10 +165,6 @@ function App() {
     return <PageLoading loading />;
   }
 
-  const isAuthPage = ['/login', '/register', '/v-app/login', '/v-app/register'].some((path) =>
-    pathname.startsWith(path),
-  );
-
   const routerContent = (
     <AppRouter
       NotFoundComponent={NotFound}
@@ -181,14 +172,12 @@ function App() {
       onFinishLoading={() => notifyMicroAppMounted()}
       onRouteChange={(pathname) => {
         const nextPath = pathname || (typeof window !== 'undefined' ? window.location.pathname : '/');
-        setPathname(nextPath);
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('main-route-change', { detail: nextPath }));
         }
       }}
     >
       <AppRoute exact activePath="/" component={<Home />} />
-      <AppRoute exact activePath="/login" component={<Login />} />
       <AppRoute exact activePath="/app/permission-admin" component={<PermissionAdmin />} />
       <AppRoute exact activePath="/app/user-admin" component={<UserAdmin />} />
       <AppRoute exact activePath="/profile" component={<Profile />} />
@@ -218,19 +207,11 @@ function App() {
 
   return (
     <AuthProvider>
-      {isAuthPage ? (
-        <div className="flex min-h-screen flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
-          <PageLoading loading={isMicroAppLoading}>
-            <div className="flex flex-1 min-h-0 flex-col">{routerContent}</div>
-          </PageLoading>
-        </div>
-      ) : (
-        <BasicLayout>
-          <PageLoading loading={isMicroAppLoading}>
-            <div className="app-router-shell flex flex-1 min-h-0 flex-col">{routerContent}</div>
-          </PageLoading>
-        </BasicLayout>
-      )}
+      <BasicLayout>
+        <PageLoading loading={isMicroAppLoading}>
+          <div className="app-router-shell flex flex-1 min-h-0 flex-col">{routerContent}</div>
+        </PageLoading>
+      </BasicLayout>
     </AuthProvider>
   );
 }
