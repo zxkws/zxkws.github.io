@@ -138,14 +138,14 @@ const HeaderBar = ({
     window.location.href = url;
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (typeof window === 'undefined') return;
 
     const client = createFetchClient({
       baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
       credentials: 'include',
     });
-    client('/auth/logout', {}, { method: 'POST' }).catch(() => undefined);
+    await client('/auth/logout', {}, { method: 'POST' });
 
     clearAuthArtifacts();
     clearUser();
