@@ -6,6 +6,7 @@ import PageLoading from './components/PageLoading';
 import './global.css';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
+import { UserProvider } from './context/UserContext';
 import {
   ensureIcestarkStarted,
   ensureIcestarkAppsRegistered,
@@ -209,11 +210,13 @@ function App() {
 
   return (
     <AuthProvider>
-      <BasicLayout>
-        <PageLoading loading={isMicroAppLoading}>
-          <div className="app-router-shell flex flex-1 min-h-0 flex-col">{routerContent}</div>
-        </PageLoading>
-      </BasicLayout>
+      <UserProvider>
+        <BasicLayout>
+          <PageLoading loading={isMicroAppLoading}>
+            <div className="app-router-shell flex flex-1 min-h-0 flex-col">{routerContent}</div>
+          </PageLoading>
+        </BasicLayout>
+      </UserProvider>
     </AuthProvider>
   );
 }

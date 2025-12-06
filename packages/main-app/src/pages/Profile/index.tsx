@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { createFetchClient } from '@zxkws/shared-fetch';
+import { useUser } from '../../context/UserContext';
+import { isValidEmail } from '../../utils/validators';
 
 type Me = {
   userId: string;
@@ -8,43 +9,46 @@ type Me = {
   role?: string;
 };
 
-const client = createFetchClient({
-  baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
-  credentials: 'include',
-});
-
 export default function Profile() {
-  const [me, setMe] = useState<Me | null>(null);
+  const { user, refreshUser, saveUser } = useUser();
+  const [me, setMe] = useState<Me | null>(() => (user as Me | null) ?? null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  const load = async () => {
-    try {
-      const res = await client<Me>('/v1/user', {}, { method: 'GET' });
-      setMe(res);
-      setEmail(res?.email ?? '');
-    } catch (err) {
-      setMsg(err instanceof Error ? err.message : '加载失败');
-    }
-  };
-
   useEffect(() => {
-    load();
-  }, []);
+    let mounted = true;
+    const sync = async () => {
+      if (user) {
+        setMe(user as Me);
+        setEmail(user.email ?? '');
+        return;
+      }
+      const next = await refreshUser().catch(() => null);
+      if (mounted && next) {
+        setMe(next as Me);
+        setEmail(next.email ?? '');
+      }
+    };
+    sync();
+    return () => {
+      mounted = false;
+    };
+  }, [user, refreshUser]);
 
   const save = async () => {
     setLoading(true);
     setMsg(null);
     try {
-      if (email && !/.+@.+\..+/.test(email)) {
-        throw new Error('请输入有效邮箱');
+      if (!isValidEmail(email)) {
+        throw new Error('请输入有效邮箱地址，例如 name@example.com');
       }
-      await client('/v1/user', { email, password }, { method: 'PATCH' });
-      setMsg('更新成功');
+      const updated = await saveUser({ email: email || undefined, password: password || undefined });
+      setMe((updated as Me) ?? null);
+      setEmail(updated?.email ?? '');
       setPassword('');
-      load();
+      setMsg('更新成功');
     } catch (err) {
       setMsg(err instanceof Error ? err.message : '更新失败');
     } finally {

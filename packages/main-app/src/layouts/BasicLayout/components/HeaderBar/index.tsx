@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import * as styles from './index.module.css';
 import { createFetchClient } from '@zxkws/shared-fetch';
 import { clearAuthArtifacts } from '../../../../utils/authCleanup';
-import { fetchCurrentUser, clearCachedUser } from '../../../../services/userService';
+import { useUser } from '../../../../context/UserContext';
 
 type Theme = 'light' | 'dark';
 
@@ -87,8 +87,8 @@ const HeaderBar = ({
 }: HeaderBarProps) => {
   const [theme, setTheme] = useState<Theme>(() => resolveInitialTheme());
   const [hasManualOverride, setHasManualOverride] = useState<boolean>(() => readStoredTheme() !== null);
-  const [profile, setProfile] = useState<{ username?: string }>({});
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, clearUser } = useUser();
 
   useEffect(() => {
     applyTheme(theme);
@@ -129,16 +129,6 @@ const HeaderBar = ({
   const nextThemeLabel = useMemo(() => (theme === 'dark' ? '切换至亮色' : '切换至暗色'), [theme]);
   const ThemeIcon = theme === 'dark' ? SunIcon : MoonIcon;
 
-  useEffect(() => {
-    fetchCurrentUser()
-      .then((data) => {
-        if (data?.username) {
-          setProfile({ username: data.username });
-        }
-      })
-      .catch(() => {});
-  }, []);
-
   const goLogin = () => {
     const current = typeof window === 'undefined' ? '/' : window.location.href;
     const url =
@@ -158,8 +148,7 @@ const HeaderBar = ({
     client('/auth/logout', {}, { method: 'POST' }).catch(() => undefined);
 
     clearAuthArtifacts();
-    clearCachedUser();
-    setProfile({});
+    clearUser();
     setMenuOpen(false);
     window.dispatchEvent(new CustomEvent('main-logout'));
 
@@ -218,7 +207,7 @@ const HeaderBar = ({
           <span className={styles.themeText}>{theme === 'dark' ? '暗色模式' : '亮色模式'}</span>
         </button>
         <div className={styles.avatarBox}>
-          {profile?.username ? (
+          {user?.username ? (
             <div className={styles.avatarWrapper}>
               <button className={styles.avatarBtn} onClick={() => setMenuOpen((v) => !v)}>
                 <img
@@ -226,7 +215,7 @@ const HeaderBar = ({
                   src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=120&h=120&fit=crop&auto=format"
                   alt="avatar"
                 />
-                <span className={styles.avatarName}>{profile.username}</span>
+                <span className={styles.avatarName}>{user.username}</span>
               </button>
               {menuOpen && (
                 <div className={styles.avatarMenu}>

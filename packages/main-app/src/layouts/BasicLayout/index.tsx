@@ -5,7 +5,7 @@ import { builtInAsideMenus } from './menuConfig';
 import type { MenuItem } from '../../types/menu';
 import { fetchRemoteMenus } from '../../services/menuService';
 import { clearAuthArtifacts } from '../../utils/authCleanup';
-import { fetchCurrentUser } from '../../services/userService';
+import { useUser } from '../../context/UserContext';
 
 type BasicLayoutProps = {
   children: ReactNode;
@@ -89,6 +89,7 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
   const [remoteMenus, setRemoteMenus] = useState<MenuItem[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, clearUser } = useUser();
 
   // 全局登出事件，HeaderBar 会 dispatch
   useEffect(() => {
@@ -96,6 +97,7 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
       clearAuthArtifacts();
       setIsAdmin(false);
       setIsAuthenticated(false);
+      clearUser();
     };
     if (typeof window !== 'undefined') {
       window.addEventListener('main-logout', handler);
@@ -171,16 +173,9 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
   }, [isNavCollapsed]);
 
   useEffect(() => {
-    fetchCurrentUser()
-      .then((profile) => {
-        setIsAuthenticated(!!profile);
-        setIsAdmin(profile?.role === 'admin');
-      })
-      .catch(() => {
-        setIsAuthenticated(false);
-        setIsAdmin(false);
-      });
-  }, []);
+    setIsAuthenticated(!!user);
+    setIsAdmin(user?.role === 'admin');
+  }, [user]);
 
   useEffect(() => {
     let mounted = true;
