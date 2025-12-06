@@ -35,7 +35,7 @@ const onSubmit = async () => {
   error.value = '';
   loading.value = true;
   try {
-    if (!form.value.email || !/.+@.+\\..+/.test(form.value.email)) {
+    if (!form.value.email || !/.+@.+\..+/.test(form.value.email)) {
       throw new Error('请输入有效邮箱');
     }
     if (!form.value.password || form.value.password.length < 6) {
