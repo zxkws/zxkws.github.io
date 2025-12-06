@@ -1,9 +1,0 @@
-{
-  "name": "resume-redirect",
-  "version": "0.0.1",
-  "private": true,
-  "description": "Static redirect for /resume to person-resume-app",
-  "scripts": {
-    "build": "mkdir -p dist/resume && node build.js"
-  }
-}
