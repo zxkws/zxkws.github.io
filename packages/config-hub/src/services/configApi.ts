@@ -1,5 +1,3 @@
-import { SystemConfigDoc } from '../types';
-
 const API_BASE = import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api';
 
 const withAuthHeaders = () => {
@@ -20,21 +18,15 @@ const unwrap = async (res: Response) => {
   return 'data' in data ? data.data : data;
 };
 
-export const fetchConfig = async (): Promise<SystemConfigDoc> => {
+export const fetchConfig = async (): Promise<Record<string, unknown>> => {
   const res = await fetch(`${API_BASE}/config-center/micro-apps`, {
     credentials: 'include',
   });
   const payload = await unwrap(res);
-  return {
-    microApps: payload.microApps ?? [],
-    standaloneMenus: payload.standaloneMenus ?? [],
-    version: payload.version ?? '1.0.0',
-    metadata: payload.metadata ?? {},
-    updatedAt: payload.uts ?? payload.updatedAt ?? new Date().toISOString(),
-  };
+  return payload as Record<string, unknown>;
 };
 
-export const saveConfig = async (doc: SystemConfigDoc) => {
+export const saveConfig = async (doc: Record<string, unknown>) => {
   const res = await fetch(`${API_BASE}/config-center/micro-apps`, {
     method: 'POST',
     headers: withAuthHeaders(),
