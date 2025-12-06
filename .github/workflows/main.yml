@@ -28,10 +28,6 @@ jobs:
               dist_path: 'packages/textDifference/dist',
               filter: 'textdifference', // pnpm uses package name (lowercase)
             },
-            'person-resume-app': {
-              deploy_subdir: 'resume',
-              dist_path: 'packages/person-resume-app/dist',
-            },
           };
 
           const entries = fs.readdirSync(packagesDir).filter((name) =>
