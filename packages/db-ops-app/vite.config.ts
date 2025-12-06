@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
       allowedHosts: ['.gitpod.io'],
       proxy: {
         '^/api': {
-          target: 'https://zxkws.nyc.mn',
+          target: 'https://api.zxkws.nyc.mn',
           changeOrigin: true,
           secure: false,
         },

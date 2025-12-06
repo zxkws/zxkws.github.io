@@ -6,7 +6,8 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 const isProd = process.env.NODE_ENV === 'production';
 
 module.exports = {
-  devtool: isProd ? false : 'inline-source-map',
+  // 开启生产环境 source map，便于线上错误定位；如需隐藏源码可改为 'hidden-source-map'
+  devtool: isProd ? 'source-map' : 'inline-source-map',
   entry: './src/app',
   module: {
     rules: [
@@ -76,7 +77,8 @@ module.exports = {
     proxy: [
       {
         context: ['/api'],
-        target: 'https://zxkws.nyc.mn',
+        // 开发态把 /api 转发到后端 API 域名，避免 404
+        target: 'https://api.zxkws.nyc.mn',
         changeOrigin: true,
         secure: false,
       },

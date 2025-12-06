@@ -16,10 +16,10 @@ import {
   notifyMicroAppMounted,
 } from './core/icestark';
 import BasicLayout from './layouts/BasicLayout';
-const Home = lazy(() => import('./pages/Home'));
-const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
-const UserAdmin = lazy(() => import('./pages/UserAdmin'));
-const Profile = lazy(() => import('./pages/Profile'));
+import Home from './pages/Home';
+import PermissionAdmin from './pages/PermissionAdmin';
+import UserAdmin from './pages/UserAdmin';
+import Profile from './pages/Profile';
 import appHistory from '@ice/stark/lib/appHistory';
 
 const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
