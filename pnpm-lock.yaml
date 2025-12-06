@@ -367,9 +367,6 @@ importers:
 
   packages/person-resume-app:
     dependencies:
-      '@ice/stark-app':
-        specifier: ^1.5.0
-        version: 1.5.0
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -410,9 +407,6 @@ importers:
 
   packages/react-learning-app:
     dependencies:
-      '@ice/stark-app':
-        specifier: ^1.5.0
-        version: 1.5.0
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -507,9 +501,6 @@ importers:
 
   packages/vue-learning-app:
     dependencies:
-      '@ice/stark-app':
-        specifier: ^1.5.0
-        version: 1.5.0
       vue:
         specifier: ^3.5.22
         version: 3.5.22(typescript@5.9.3)
