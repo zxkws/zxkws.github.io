@@ -1,6 +1,6 @@
 import { AppRoute, AppRouter } from '@ice/stark';
 import ReactDom from 'react-dom/client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 
 import PageLoading from './components/PageLoading';
 import './global.css';
@@ -15,11 +15,11 @@ import {
   notifyMicroAppLoading,
   notifyMicroAppMounted,
 } from './core/icestark';
-import BasicLayout from './layouts/BasicLayout';
-import Home from './pages/Home';
-import PermissionAdmin from './pages/PermissionAdmin';
-import UserAdmin from './pages/UserAdmin';
-import Profile from './pages/Profile';
+const BasicLayout = lazy(() => import('./layouts/BasicLayout'));
+const Home = lazy(() => import('./pages/Home'));
+const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
+const UserAdmin = lazy(() => import('./pages/UserAdmin'));
+const Profile = lazy(() => import('./pages/Profile'));
 import appHistory from '@ice/stark/lib/appHistory';
 
 const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
@@ -166,52 +166,56 @@ function App() {
   }
 
   const routerContent = (
-    <AppRouter
-      NotFoundComponent={NotFound}
-      onLoadingApp={() => notifyMicroAppLoading(true)}
-      onFinishLoading={() => notifyMicroAppMounted()}
-      onRouteChange={(pathname) => {
-        const nextPath = pathname || (typeof window !== 'undefined' ? window.location.pathname : '/');
-        if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('main-route-change', { detail: nextPath }));
-        }
-      }}
-    >
-      <AppRoute exact activePath="/" component={<Home />} />
-      <AppRoute exact activePath="/app/permission-admin" component={<PermissionAdmin />} />
-      <AppRoute exact activePath="/app/user-admin" component={<UserAdmin />} />
-      <AppRoute exact activePath="/profile" component={<Profile />} />
-      {microApps.map((app) => (
-        <AppRoute key={app.name} {...app} {...(app.render ? {} : app)} />
-      ))}
-      {IFRAME_MICRO_APPS.map((app) => (
-        <AppRoute
-          key={app.name}
-          name={app.name}
-          exact
-          path={app.path}
-          activePath={[app.path]}
-          render={() => (
-            <iframe
-              src={resolveIframeSrc(app)}
-              className="h-full w-full border-0"
-              loading="lazy"
-              allow="clipboard-write; clipboard-read"
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
-          )}
-        />
-      ))}
-    </AppRouter>
+    <Suspense fallback={<PageLoading loading />}>
+      <AppRouter
+        NotFoundComponent={NotFound}
+        onLoadingApp={() => notifyMicroAppLoading(true)}
+        onFinishLoading={() => notifyMicroAppMounted()}
+        onRouteChange={(pathname) => {
+          const nextPath = pathname || (typeof window !== 'undefined' ? window.location.pathname : '/');
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('main-route-change', { detail: nextPath }));
+          }
+        }}
+      >
+        <AppRoute exact activePath="/" render={() => <Home />} />
+        <AppRoute exact activePath="/app/permission-admin" render={() => <PermissionAdmin />} />
+        <AppRoute exact activePath="/app/user-admin" render={() => <UserAdmin />} />
+        <AppRoute exact activePath="/profile" render={() => <Profile />} />
+        {microApps.map((app) => (
+          <AppRoute key={app.name} {...app} {...(app.render ? {} : app)} />
+        ))}
+        {IFRAME_MICRO_APPS.map((app) => (
+          <AppRoute
+            key={app.name}
+            name={app.name}
+            exact
+            path={app.path}
+            activePath={[app.path]}
+            render={() => (
+              <iframe
+                src={resolveIframeSrc(app)}
+                className="h-full w-full border-0"
+                loading="lazy"
+                allow="clipboard-write; clipboard-read"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            )}
+          />
+        ))}
+      </AppRouter>
+    </Suspense>
   );
 
   return (
     <AuthProvider>
-      <BasicLayout>
-        <PageLoading loading={isMicroAppLoading}>
-          <div className="app-router-shell flex flex-1 min-h-0 flex-col">{routerContent}</div>
-        </PageLoading>
-      </BasicLayout>
+      <Suspense fallback={<PageLoading loading />}>
+        <BasicLayout>
+          <PageLoading loading={isMicroAppLoading}>
+            <div className="app-router-shell flex flex-1 min-h-0 flex-col">{routerContent}</div>
+          </PageLoading>
+        </BasicLayout>
+      </Suspense>
     </AuthProvider>
   );
 }
