@@ -1,119 +1,83 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useDocuments } from './hooks/useDocuments';
-import { Sidebar } from './components/Sidebar';
-import { Workspace } from './components/Workspace';
-import { SystemConfigDoc } from './types';
+import { useEffect, useState } from 'react';
+import { fetchConfig, saveConfig } from './services/configApi';
 import './App.css';
 
-const notify = (message: string) => {
-  console.warn(message);
-};
-
 const App = () => {
-  const {
-    documents,
-    activeDocument,
-    activeId,
-    loading,
-    saving,
-    error,
-    dirty,
-    selectDocument,
-    addDocument,
-    updateDocument,
-    renameDocument,
-    duplicateDocument,
-    removeDocument,
-    importDocument,
-    exportDocument,
-    saveActive,
-  } = useDocuments();
+  const [jsonText, setJsonText] = useState<string>('{}');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
-  const [importError, setImportError] = useState<string | null>(null);
-
-  const handleImport = useCallback(
-    (payload: { name?: string; description?: string; content: SystemConfigDoc }) => {
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        importDocument(payload);
-        setImportError(null);
-      } catch (error) {
-        setImportError(error instanceof Error ? error.message : 'Unknown import error');
+        const data = await fetchConfig();
+        setJsonText(JSON.stringify(data, null, 2));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '加载配置失败');
+      } finally {
+        setLoading(false);
       }
-    },
-    [importDocument],
-  );
-
-  const handleExport = useCallback(
-    (id: string) => {
-      const json = exportDocument(id);
-      if (!json) {
-        return;
-      }
-      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-        navigator.clipboard.writeText(json).then(() => notify('Configuration copied to clipboard'));
-      }
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `${Date.now()}-config.json`;
-      anchor.click();
-      URL.revokeObjectURL(url);
-    },
-    [exportDocument],
-  );
-
-  const workspaceProps = useMemo(() => {
-    if (!activeDocument) {
-      return null;
-    }
-    return {
-      document: activeDocument,
-      onUpdate: (_updater: (_doc: SystemConfigDoc) => SystemConfigDoc) => {
-        updateDocument(activeDocument.id, _updater);
-      },
     };
-  }, [activeDocument, updateDocument]);
+    load();
+  }, []);
 
-  if (loading) {
-    return <div className="app-shell app-root">加载配置中...</div>;
-  }
+  const handleSave = async () => {
+    setError(null);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(jsonText);
+      if (parsed === null || typeof parsed !== 'object') {
+        throw new Error('配置必须是一个 JSON 对象');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'JSON 解析失败');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await saveConfig(parsed as Record<string, unknown>);
+      setToast('保存成功');
+      setTimeout(() => setToast(null), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '保存失败');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="app-shell app-root">
-      <Sidebar
-        documents={documents}
-        activeId={activeId}
-        onSelect={selectDocument}
-        onAdd={addDocument}
-        onRename={renameDocument}
-        onDuplicate={duplicateDocument}
-        onDelete={removeDocument}
-        onImport={handleImport}
-        onExport={handleExport}
-      />
-      <main className="workspace">
-        <div className="toolbar">
-          <div className="toolbar-left">
-            <h2>微应用配置中心</h2>
-            {error && <span className="error">{error}</span>}
-          </div>
-          <div className="toolbar-right">
-            <button onClick={() => saveActive()} disabled={saving || !dirty}>
-              {saving ? '保存中...' : dirty ? '保存配置' : '已保存'}
-            </button>
-          </div>
+      <div className="toolbar">
+        <div className="toolbar-left">
+          <h2>微应用配置中心</h2>
+          {error && <span className="error">{error}</span>}
         </div>
-        {!workspaceProps ? (
-          <div className="workspace-empty">
-            <h2>选择或创建一个配置工作区</h2>
-            <p>使用左侧侧边栏来导入、复制或创建新的配置集合。</p>
-          </div>
+        <div className="toolbar-right">
+          <button onClick={handleSave} disabled={saving || loading}>
+            {saving ? '保存中...' : '保存配置'}
+          </button>
+        </div>
+      </div>
+
+      <div className="workspace workspace-single">
+        {loading ? (
+          <div className="workspace-empty">加载配置中...</div>
         ) : (
-          <Workspace {...workspaceProps} key={workspaceProps.document.id} />
+          <textarea
+            className="json-editor"
+            value={jsonText}
+            onChange={(e) => setJsonText(e.target.value)}
+            spellCheck={false}
+          />
         )}
-        {importError && <div className="toast toast-error">导入失败：{importError}</div>}
-      </main>
+      </div>
+
+      {toast && <div className="toast">{toast}</div>}
     </div>
   );
 };
