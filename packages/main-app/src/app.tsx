@@ -178,10 +178,10 @@ function App() {
           }
         }}
       >
-        <AppRoute exact activePath="/" render={() => <Home />} />
-        <AppRoute exact activePath="/app/permission-admin" render={() => <PermissionAdmin />} />
-        <AppRoute exact activePath="/app/user-admin" render={() => <UserAdmin />} />
-        <AppRoute exact activePath="/profile" render={() => <Profile />} />
+        <AppRoute exact activePath="/" component={<Home />} />
+        <AppRoute exact activePath="/app/permission-admin" component={<PermissionAdmin />} />
+        <AppRoute exact activePath="/app/user-admin" component={<UserAdmin />} />
+        <AppRoute exact activePath="/profile" component={<Profile />} />
         {microApps.map((app) => (
           <AppRoute key={app.name} {...app} {...(app.render ? {} : app)} />
         ))}
