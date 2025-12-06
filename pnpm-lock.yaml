@@ -129,9 +129,6 @@ importers:
 
   packages/auth-app:
     dependencies:
-      '@ice/stark-app':
-        specifier: ^1.5.0
-        version: 1.5.0
       '@zxkws/shared-fetch':
         specifier: workspace:*
         version: link:../shared-fetch
@@ -191,8 +188,6 @@ importers:
       vite-plugin-index-html:
         specifier: ^2.0.2
         version: 2.0.2
-
-  packages/config-center: {}
 
   packages/config-hub:
     dependencies:
@@ -443,8 +438,6 @@ importers:
       vite-plugin-index-html:
         specifier: ^2.0.2
         version: 2.0.2
-
-  packages/resume-redirect: {}
 
   packages/shared-fetch:
     devDependencies:
