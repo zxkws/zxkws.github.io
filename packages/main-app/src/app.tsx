@@ -1,6 +1,6 @@
 import { AppRoute, AppRouter } from '@ice/stark';
 import ReactDom from 'react-dom/client';
-import { useEffect, useState, lazy, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
 import PageLoading from './components/PageLoading';
 import './global.css';
@@ -22,6 +22,7 @@ import PermissionAdmin from './pages/PermissionAdmin';
 import UserAdmin from './pages/UserAdmin';
 import Profile from './pages/Profile';
 import appHistory from '@ice/stark/lib/appHistory';
+import { subscribeLoading } from './services/networkLoading';
 
 const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
 
@@ -63,6 +64,7 @@ const resolveIframeSrc = (app: IframeMicroApp) => {
 
 function App() {
   const [isMicroAppLoading, setIsMicroAppLoading] = useState(false);
+  const [isFetchLoading, setIsFetchLoading] = useState(false);
   const [configLoaded, setConfigLoaded] = useState(false);
   const [microApps, setMicroApps] = useState<ReturnType<typeof resolveMicroApps>>([]);
   const [configError, setConfigError] = useState<string | null>(null);
@@ -97,7 +99,11 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = subscribeMicroAppLoading(setIsMicroAppLoading);
-    return unsubscribe;
+    const unsubscribeFetch = subscribeLoading(setIsFetchLoading);
+    return () => {
+      unsubscribe();
+      unsubscribeFetch();
+    };
   }, []);
 
   // 安全兜底：若微应用在 3 秒内未完成加载（或入口 404/未启动），强制关闭全局 loading，防止遮罩卡死
@@ -212,7 +218,7 @@ function App() {
     <AuthProvider>
       <UserProvider>
         <BasicLayout>
-          <PageLoading loading={isMicroAppLoading}>
+          <PageLoading loading={isMicroAppLoading || isFetchLoading}>
             <div className="app-router-shell flex flex-1 min-h-0 flex-col">{routerContent}</div>
           </PageLoading>
         </BasicLayout>

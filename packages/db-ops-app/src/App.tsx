@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createFetchClient } from '@zxkws/shared-fetch';
-
-const BASE_URL = import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import client from './http/client';
+import GlobalLoading from './components/GlobalLoading';
 
 type DbType = 'mysql' | 'redis' | 'mongodb';
 
@@ -95,16 +94,15 @@ const maskSecret = (value?: string) => {
   return value.length <= 3 ? '***' : `${value.slice(0, 2)}***${value.slice(-1)}`;
 };
 
-const unwrap = <T,>(payload: any): T => {
-  if (payload && typeof payload === 'object' && 'data' in payload) {
+const unwrap = <T,>(payload: unknown): T => {
+  if (payload && typeof payload === 'object' && 'data' in (payload as Record<string, unknown>)) {
     return (payload as { data: T }).data;
   }
   return payload as T;
 };
 
-export default function App({ basename }: { basename?: string }) {
+export default function App({ basename: _basename }: { basename?: string }) {
   const [authState, setAuthState] = useState<AuthState>('pending');
-  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [filters, setFilters] = useState<FilterState>({ type: 'all', keyword: '' });
   const [assets, setAssets] = useState<DbAsset[]>([]);
   const [loading, setLoading] = useState(false);
@@ -117,20 +115,6 @@ export default function App({ basename }: { basename?: string }) {
   const [checkingAll, setCheckingAll] = useState(false);
   const [secretVisible, setSecretVisible] = useState<Record<string, boolean>>({});
   const hasRedirectedRef = useRef(false);
-
-  const client = useMemo(
-    () =>
-      createFetchClient({
-        baseURL: BASE_URL,
-        getToken: () => (typeof window === 'undefined' ? null : localStorage.getItem('auth_token')),
-        persistToken: (token) => {
-          if (typeof window === 'undefined') return;
-          localStorage.setItem('auth_token', token);
-        },
-        onUnauthorized: () => setAuthState('need-login'),
-      }),
-    [],
-  );
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -157,7 +141,6 @@ export default function App({ basename }: { basename?: string }) {
     setAuthState('pending');
     try {
       const info = unwrap<UserProfile>(await client('/v1/user', undefined, { method: 'GET' }));
-      setProfile(info);
       if (info.role !== 'admin') {
         setAuthState('forbidden');
         return;
@@ -611,6 +594,7 @@ export default function App({ basename }: { basename?: string }) {
       )}
 
       {toast && <div className="toast">{toast}</div>}
+      <GlobalLoading />
     </div>
   );
 }

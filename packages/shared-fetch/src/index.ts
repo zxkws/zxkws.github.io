@@ -15,6 +15,30 @@ export type CreateClientOptions = {
   onUnauthorized?: () => void;
   defaultHeaders?: Record<string, string>;
   credentials?: RequestCredentials;
+  /**
+   * Request interceptors run before fetch. Mutate and return config.
+   */
+  requestInterceptors?: Array<(_config: FetchRequestConfig) => FetchRequestConfig | Promise<FetchRequestConfig>>;
+  /**
+   * Response interceptors run after response parsing. Fulfills or throws to reject.
+   */
+  responseInterceptors?: Array<ResponseInterceptor>;
+};
+
+export type ResponseInterceptor = {
+  onFulfilled?: (_value: FetchResponse<unknown>) => FetchResponse<unknown> | Promise<FetchResponse<unknown>>;
+  onRejected?: (_error: unknown) => unknown | Promise<unknown>;
+};
+
+export type FetchRequestConfig = {
+  url: string;
+  params?: unknown;
+  options: RequestOptions;
+};
+
+export type FetchResponse<T> = {
+  response: Response;
+  data: T;
 };
 
 const appendQuery = (url: string, params?: Record<string, unknown>) => {
@@ -35,6 +59,8 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
     onUnauthorized,
     defaultHeaders = {},
     credentials = 'include',
+    requestInterceptors = [],
+    responseInterceptors = [],
   } = options;
 
   return async function request<T = unknown>(
@@ -42,7 +68,27 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
     params?: unknown,
     requestOptions: RequestOptions = {},
   ): Promise<T> {
-    const { method = 'POST', headers = {}, file = false, raw = false } = requestOptions;
+    const cfg: FetchRequestConfig = {
+      url,
+      params,
+      options: {
+        method: 'POST',
+        headers: {},
+        file: false,
+        raw: false,
+        ...requestOptions,
+      },
+    };
+
+    // apply request interceptors in order
+    let intercepted = cfg;
+    for (const fn of requestInterceptors) {
+      intercepted = await fn(intercepted);
+    }
+
+    const { method, headers, file, raw } = intercepted.options;
+    params = intercepted.params;
+    url = intercepted.url;
 
     const resolvedUrl =
       method === 'GET' && params && typeof params === 'object' && !file
@@ -77,37 +123,71 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
       finalHeaders['Authorization'] = finalHeaders['Authorization'] ?? `Bearer ${token}`;
     }
 
-    const response = await fetch(resolvedUrl, {
-      method,
-      headers: finalHeaders,
-      body,
-      credentials: requestOptions.credentials ?? credentials,
-    });
+    try {
+      const response = await fetch(resolvedUrl, {
+        method,
+        headers: finalHeaders,
+        body,
+        credentials: intercepted.options.credentials ?? credentials,
+      });
 
-    const headerToken = response.headers.get('Token');
-    if (headerToken && persistToken) {
-      persistToken(headerToken);
-    }
-
-    const contentType = response.headers.get('Content-Type') ?? '';
-    const isJson = contentType.includes('application/json');
-    const payload = (await (isJson ? response.json() : response.text())) as unknown;
-
-    if (!response.ok) {
-      if (response.status === 401 && onUnauthorized) {
-        onUnauthorized();
+      const headerToken = response.headers.get('Token');
+      if (headerToken && persistToken) {
+        persistToken(headerToken);
       }
-      const messageText =
-        (isJson && payload && typeof payload === 'object'
-          ? (payload as any).message || (payload as any).error || (payload as any).msg
-          : undefined) ?? `请求失败，状态码 ${response.status}`;
-      throw new Error(messageText);
-    }
 
-    if (raw) {
-      return response as unknown as T;
-    }
+      const contentType = response.headers.get('Content-Type') ?? '';
+      const isJson = contentType.includes('application/json');
+      const payload = (await (isJson ? response.json() : response.text())) as unknown;
 
-    return payload as T;
+      if (!response.ok) {
+        if (response.status === 401 && onUnauthorized) {
+          onUnauthorized();
+        }
+        const candidate =
+          isJson && payload && typeof payload === 'object'
+            ? (payload as Record<string, unknown>).message ||
+              (payload as Record<string, unknown>).error ||
+              (payload as Record<string, unknown>).msg
+            : undefined;
+        const messageText =
+          typeof candidate === 'string' && candidate.trim() ? candidate : `请求失败，状态码 ${response.status}`;
+        throw new Error(messageText);
+      }
+
+      const result: FetchResponse<T> = {
+        response,
+        data: (raw ? (response as unknown) : payload) as T,
+      };
+
+      let transformed: FetchResponse<unknown> = result;
+      for (const { onFulfilled } of responseInterceptors) {
+        if (onFulfilled) {
+          transformed = await onFulfilled(transformed);
+        }
+      }
+
+      return (transformed.data as T) ?? result.data;
+    } catch (err) {
+      // allow response interceptors to handle errors (inverse order like axios)
+      let errorToHandle: unknown = err;
+      for (let i = responseInterceptors.length - 1; i >= 0; i -= 1) {
+        const handler = responseInterceptors[i]?.onRejected;
+        if (handler) {
+          try {
+            const maybe = await handler(errorToHandle);
+            if (maybe !== undefined) {
+              if (typeof maybe === 'object' && maybe !== null && 'data' in maybe) {
+                return (maybe as FetchResponse<unknown>).data as T;
+              }
+              return maybe as T;
+            }
+          } catch (e) {
+            errorToHandle = e;
+          }
+        }
+      }
+      throw errorToHandle;
+    }
   };
 };

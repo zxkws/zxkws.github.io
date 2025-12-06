@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createFetchClient } from '@zxkws/shared-fetch';
+import { client } from '../../services/httpClient';
 import { message } from 'antd';
 
 type Role = 'user' | 'admin';
@@ -18,11 +18,6 @@ type UserRow = {
   permissions: Permission[];
 };
 
-const client = createFetchClient({
-  baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
-  credentials: 'include',
-});
-
 export default function PermissionAdmin() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [perms, setPerms] = useState<Permission[]>([]);
@@ -34,12 +29,36 @@ export default function PermissionAdmin() {
     setLoading(true);
     setError(null);
     try {
-      const [userList, permList] = await Promise.all([
-        client<UserRow[]>('/v1/rbac/users', {}, { method: 'GET' }),
-        client<Permission[]>('/v1/rbac/permissions', {}, { method: 'GET' }),
+      const [userListRaw, permListRaw] = await Promise.all([
+        client<unknown>('/v1/rbac/users', {}, { method: 'GET' }),
+        client<unknown>('/v1/rbac/permissions', {}, { method: 'GET' }),
       ]);
-      setUsers(userList ?? []);
-      setPerms(permList ?? []);
+
+      const normalizeUsers = (payload: unknown): UserRow[] => {
+        const data =
+          payload && typeof payload === 'object' && 'data' in payload ? (payload as { data?: unknown }).data : payload;
+        if (Array.isArray(data)) {
+          return data as UserRow[];
+        }
+        return [];
+      };
+
+      const normalizePerms = (payload: unknown): Permission[] => {
+        const data =
+          payload && typeof payload === 'object' && 'data' in payload ? (payload as { data?: unknown }).data : payload;
+        if (Array.isArray(data)) {
+          return data as Permission[];
+        }
+        return [];
+      };
+
+      const sanitizedUsers = normalizeUsers(userListRaw).map((u) => ({
+        ...u,
+        permissions: Array.isArray(u.permissions) ? u.permissions : [],
+      }));
+
+      setUsers(sanitizedUsers);
+      setPerms(normalizePerms(permListRaw));
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载失败，请稍后再试');
       message.error(err instanceof Error ? err.message : '加载失败');

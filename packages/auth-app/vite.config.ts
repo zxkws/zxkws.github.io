@@ -25,6 +25,8 @@ export default defineConfig(({ mode }) => {
           target: 'https://api.zxkws.nyc.mn',
           changeOrigin: true,
           secure: false,
+          cookieDomainRewrite: 'localhost',
+          cookiePathRewrite: '/',
         },
       },
     },

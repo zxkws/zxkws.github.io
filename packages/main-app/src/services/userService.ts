@@ -1,4 +1,4 @@
-import { createFetchClient } from '@zxkws/shared-fetch';
+import { client } from './httpClient';
 
 export type UserProfile = {
   id?: string | number;
@@ -7,17 +7,11 @@ export type UserProfile = {
   role?: string;
 };
 
-const client = createFetchClient({
-  baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
-  getToken: () => (typeof window === 'undefined' ? null : localStorage.getItem('auth_token')),
-  credentials: 'include',
-});
-
 let cachedProfile: UserProfile | null = null;
 let inFlight: Promise<UserProfile | null> | null = null;
 const USER_CACHE_KEY = 'main-app:user';
 
-const sanitizeUser = (raw: any): UserProfile => {
+const sanitizeUser = (raw: unknown): UserProfile => {
   if (!raw || typeof raw !== 'object') return {};
   const { username, email, role, id } = raw as Record<string, unknown>;
   return {
@@ -70,8 +64,8 @@ export const fetchCurrentUser = async (forceRefresh = false): Promise<UserProfil
   }
 
   inFlight = client('/v1/user', undefined, { method: 'GET' })
-    .then((res: any) => {
-      const data = res?.data ?? res;
+    .then((res: unknown) => {
+      const data = res && typeof res === 'object' && 'data' in res ? (res as { data: unknown }).data : res;
       const safe = sanitizeUser(data);
       setCachedUser(safe);
       return cachedProfile;
@@ -99,8 +93,17 @@ export const saveCurrentUser = async (
   payload: Partial<UserProfile> & { password?: string },
 ): Promise<UserProfile | null> => {
   const res = await client('/v1/user', payload, { method: 'PATCH' });
-  const data = (res as any)?.data ?? res;
-  const merged = sanitizeUser({ ...(cachedProfile ?? {}), ...payload, ...data });
+  const data =
+    res && typeof res === 'object' && 'data' in (res as Record<string, unknown>)
+      ? (res as { data: unknown }).data
+      : res;
+
+  let mergedSource: Record<string, unknown> = { ...(cachedProfile ?? {}), ...payload };
+  if (data && typeof data === 'object') {
+    mergedSource = { ...mergedSource, ...(data as Record<string, unknown>) };
+  }
+
+  const merged = sanitizeUser(mergedSource);
   setCachedUser(merged);
   return merged;
 };

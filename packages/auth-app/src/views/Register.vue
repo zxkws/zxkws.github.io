@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { createFetchClient } from '@zxkws/shared-fetch';
+import client from '../http/client';
 
 const route = useRoute();
 const form = ref({ username: '', email: '', password: '' });
@@ -11,11 +11,6 @@ const showPassword = ref(false);
 const toast = ref<{ text: string; type: 'error' | 'success' } | null>(null);
 let timer: number | null = null;
 const apiBase = import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api';
-
-const client = createFetchClient({
-  baseURL: apiBase,
-  persistToken: (token) => localStorage.setItem('auth_token', token),
-});
 
 const redirectTo = () => {
   const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/v-app/navList';

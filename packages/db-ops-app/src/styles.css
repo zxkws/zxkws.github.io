@@ -29,6 +29,56 @@ body {
   min-height: 100vh;
 }
 
+.db-global-loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  pointer-events: none;
+  z-index: 2000;
+}
+
+.db-global-loading .pill {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(12, 18, 32, 0.92);
+  color: #e8f0ff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.db-global-loading .spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 3px solid rgba(255, 255, 255, 0.16);
+  border-top-color: var(--primary);
+  animation: db-spin 0.75s linear infinite;
+}
+
+.db-global-loading .text {
+  white-space: nowrap;
+}
+
+@keyframes db-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .page {
   padding: 32px clamp(16px, 4vw, 36px);
   max-width: 1180px;

@@ -1,12 +1,7 @@
-import { createFetchClient } from '@zxkws/shared-fetch';
+import { client } from './httpClient';
 import type { UserProfile } from './userService';
 // 简化类型定义，避免跨仓库依赖
 export type UserStatus = 'active' | 'frozen' | 'banned';
-
-const client = createFetchClient({
-  baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
-  credentials: 'include',
-});
 
 export type AdminUser = UserProfile & {
   email?: string;

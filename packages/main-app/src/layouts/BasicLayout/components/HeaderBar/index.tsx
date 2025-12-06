@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import * as styles from './index.module.css';
-import { createFetchClient } from '@zxkws/shared-fetch';
 import { clearAuthArtifacts } from '../../../../utils/authCleanup';
 import { useUser } from '../../../../context/UserContext';
+import { client as httpClient } from '../../../../services/httpClient';
 
 type Theme = 'light' | 'dark';
 
@@ -141,11 +141,7 @@ const HeaderBar = ({
   const handleLogout = async () => {
     if (typeof window === 'undefined') return;
 
-    const client = createFetchClient({
-      baseURL: process.env.NODE_ENV === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api',
-      credentials: 'include',
-    });
-    await client('/auth/logout', {}, { method: 'POST' });
+    await httpClient('/auth/logout', {}, { method: 'POST' });
 
     clearAuthArtifacts();
     clearUser();
