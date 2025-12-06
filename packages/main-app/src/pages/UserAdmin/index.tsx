@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Input, Modal, Table, Tag, message, Popconfirm, Select, Space, Tooltip } from 'antd';
+import { Button, Input, Table, Tag, message, Popconfirm, Select, Space, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { fetchUsers, updateStatus, updateUser, deleteUser } from '../../services/adminUserService';
+import { fetchUsers, updateStatus, deleteUser } from '../../services/adminUserService';
 import type { UserProfile } from '../../services/userService';
 
 type UserStatus = 'active' | 'frozen' | 'banned';
@@ -26,7 +26,12 @@ export default function UserAdmin() {
     setLoading(true);
     try {
       const res = await fetchUsers(keyword.trim() || undefined);
-      setData(res || []);
+      const resUnknown = res as unknown;
+      const dataSource =
+        resUnknown && typeof resUnknown === 'object' && 'data' in (resUnknown as Record<string, unknown>)
+          ? (resUnknown as { data?: unknown }).data
+          : resUnknown;
+      setData(Array.isArray(dataSource) ? (dataSource as AdminUser[]) : []);
     } catch (err) {
       message.error(err instanceof Error ? err.message : '加载失败');
     } finally {
