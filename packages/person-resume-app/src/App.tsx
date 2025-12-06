@@ -3,10 +3,6 @@ import './styles.css';
 import { Section, Pill } from './components/Section';
 import { education, experiences, profile, projects, skillGroups, workingStyle } from './data/resume';
 
-type AppProps = {
-  basename?: string;
-};
-
 const Stat = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col items-center p-3 bg-white dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/5 backdrop-blur-sm hover:bg-slate-50 dark:hover:bg-white/10 transition-colors shadow-sm dark:shadow-none">
     <div className="text-xl font-bold text-indigo-600 dark:text-indigo-300 tabular-nums">{value}</div>
@@ -110,7 +106,7 @@ const ProjectCard = ({
   </div>
 );
 
-export default function App(_props: AppProps) {
+export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 selection:bg-indigo-500/30 pb-12 transition-colors duration-300">
       {/* Decorative Background Elements */}

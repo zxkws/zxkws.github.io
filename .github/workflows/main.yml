@@ -28,6 +28,18 @@ jobs:
               dist_path: 'packages/textDifference/dist',
               filter: 'textdifference', // pnpm uses package name (lowercase)
             },
+            'person-resume-app': {
+              deploy_subdir: 'resume',
+              filter: 'resume',
+            },
+            'react-learning-app': {
+              deploy_subdir: 'react',
+              filter: 'react',
+            },
+            'vue-learning-app': {
+              deploy_subdir: 'vue',
+              filter: 'vue',
+            },
           };
 
           const entries = fs.readdirSync(packagesDir).filter((name) =>

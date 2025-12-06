@@ -12,11 +12,11 @@ packages/
 ├── textDifference/       # 文本对比工具微应用
 ├── config-center/        # 微应用配置中心（静态配置）
 ├── config-hub/           # 配置管理微应用
-├── vue-learning-app/     # Vue 学习示例
-├── react-learning-app/   # React 学习示例
+├── vue-learning-app/     # Vue 学习示例（部署路径 /vue/）
+├── react-learning-app/   # React 学习示例（部署路径 /react/）
 ├── knowledge-hub-app/    # 知识中台
 ├── codex-chat-app/       # Codex 对话（实验）
-└── person-resume-app/    # 个人简历（实验）
+└── person-resume-app/    # 个人简历（实验，部署路径 /resume/）
 ```
 
 ## 部署架构
@@ -26,11 +26,11 @@ packages/
 - **pdf-editor-app**: 部署到子路径 `/pdf-editor-app/`
 - **textDifference**: 部署到子路径 `/textdiff/`
 - **config-center**: 部署到子路径 `/config-center/`
-- **vue-learning-app**: 独立部署到子路径 `/vue/`
-- **react-learning-app**: 独立部署到子路径 `/react/`
+- **vue**: 独立部署到子路径 `/vue/`
+- **react**: 独立部署到子路径 `/react/`
 - **codex-chat-app**: 部署到子路径 `/codex-chat-app/`
 - **knowledge-hub-app**: 部署到子路径 `/knowledge-hub-app/`
-- **person-resume-app**: 部署到子路径 `/person-resume-app/`
+- **resume**: 部署到子路径 `/resume/`
 
 所有上述应用通过 GitHub Actions 自动构建并部署到 GitHub Pages。
 
@@ -62,10 +62,10 @@ pnpm dev
 - config-center 微应用：`http://localhost:5175`
 - config-hub 微应用：`http://localhost:5176`
 - pdf-editor-app 微应用：`http://localhost:5177`
-- vue-learning-app 微应用：`http://localhost:5178`
-- react-learning-app 微应用：`http://localhost:5179`
+- vue 微应用：`http://localhost:5178`
+- react 微应用：`http://localhost:5179`
 - knowledge-hub-app 微应用：`http://localhost:5180`
-- person-resume-app 微应用：`http://localhost:5181`
+- resume 微应用：`http://localhost:5181`
 
 主应用会自动加载本地开发中的微应用，实现实时热更新。
 
@@ -86,24 +86,24 @@ pnpm dev:pdf-editor
 # 只开发 textDifference 微应用
 pnpm dev:textdiff
 
-# 只开发 person-resume-app 微应用
+# 只开发 resume 微应用
 pnpm dev:resume
 ```
 
 ### 端口说明
 
-| 应用               | 开发端口 | 访问地址              |
-| ------------------ | -------- | --------------------- |
-| main-app           | 3000     | http://localhost:3000 |
-| v-app              | 5173     | http://localhost:5173 |
-| textDifference     | 5174     | http://localhost:5174 |
-| config-center      | 5175     | http://localhost:5175 |
-| config-hub         | 5176     | http://localhost:5176 |
-| pdf-editor-app     | 5177     | http://localhost:5177 |
-| vue-learning-app   | 5178     | http://localhost:5178 |
-| react-learning-app | 5179     | http://localhost:5179 |
-| knowledge-hub-app  | 5180     | http://localhost:5180 |
-| person-resume-app  | 5181     | http://localhost:5181 |
+| 应用              | 开发端口 | 访问地址              |
+| ----------------- | -------- | --------------------- |
+| main-app          | 3000     | http://localhost:3000 |
+| v-app             | 5173     | http://localhost:5173 |
+| textDifference    | 5174     | http://localhost:5174 |
+| config-center     | 5175     | http://localhost:5175 |
+| config-hub        | 5176     | http://localhost:5176 |
+| pdf-editor-app    | 5177     | http://localhost:5177 |
+| vue               | 5178     | http://localhost:5178 |
+| react             | 5179     | http://localhost:5179 |
+| knowledge-hub-app | 5180     | http://localhost:5180 |
+| resume            | 5181     | http://localhost:5181 |
 
 > 生产预览（构建后的静态产物）默认跑在 `417x` 端口，例如 `pnpm preview:pdf-editor` 后访问 `http://localhost:4177/pdf-editor-app/`。
 
@@ -128,9 +128,9 @@ pnpm --filter v-app build
 pnpm --filter pdf-editor-app build
 pnpm --filter textdifference build
 pnpm --filter config-center build
-pnpm --filter person-resume-app build
-pnpm --filter vue-learning-app build
-pnpm --filter react-learning-app build
+pnpm --filter resume build
+pnpm --filter vue build
+pnpm --filter react build
 
 # 生产包本地预览（示例：PDF 编辑器）
 pnpm preview:pdf-editor  # 打开 http://localhost:4177/pdf-editor-app/

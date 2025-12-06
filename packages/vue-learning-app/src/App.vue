@@ -24,11 +24,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-
-const props = defineProps<{ base?: string }>();
 const mode = import.meta.env.MODE;
-const base = computed(() => props.base ?? import.meta.env.BASE_URL ?? '/');
+const base = import.meta.env.BASE_URL ?? '/';
 </script>
 
 <style scoped>

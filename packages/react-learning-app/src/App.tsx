@@ -1,12 +1,8 @@
 import type { FC } from 'react';
 
-type AppProps = {
-  basename?: string;
-};
-
-const App: FC<AppProps> = ({ basename }) => {
+const App: FC = () => {
   const mode = import.meta.env.MODE;
-  const base = basename ?? import.meta.env.BASE_URL ?? '/';
+  const base = import.meta.env.BASE_URL ?? '/';
 
   return (
     <main className="app-shell">

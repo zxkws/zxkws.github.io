@@ -1,5 +1,5 @@
 {
-  "name": "person-resume-app",
+  "name": "resume",
   "version": "0.1.0",
   "private": true,
   "description": "Privacy-safe resume showcase micro app",
@@ -9,7 +9,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ice/stark-app": "^1.5.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
