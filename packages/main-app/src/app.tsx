@@ -15,7 +15,7 @@ import {
   notifyMicroAppLoading,
   notifyMicroAppMounted,
 } from './core/icestark';
-const BasicLayout = lazy(() => import('./layouts/BasicLayout'));
+import BasicLayout from './layouts/BasicLayout';
 const Home = lazy(() => import('./pages/Home'));
 const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
 const UserAdmin = lazy(() => import('./pages/UserAdmin'));
@@ -209,13 +209,11 @@ function App() {
 
   return (
     <AuthProvider>
-      <Suspense fallback={<PageLoading loading />}>
-        <BasicLayout>
-          <PageLoading loading={isMicroAppLoading}>
-            <div className="app-router-shell flex flex-1 min-h-0 flex-col">{routerContent}</div>
-          </PageLoading>
-        </BasicLayout>
-      </Suspense>
+      <BasicLayout>
+        <PageLoading loading={isMicroAppLoading}>
+          <div className="app-router-shell flex flex-1 min-h-0 flex-col">{routerContent}</div>
+        </PageLoading>
+      </BasicLayout>
     </AuthProvider>
   );
 }
