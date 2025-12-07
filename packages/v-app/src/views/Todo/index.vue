@@ -24,7 +24,7 @@ const queryTodo = () => {
   store.setLoading(true, '查询todo....');
   queryTodos({})
     .then((res) => {
-      todos.value = res;
+      todos.value = res.data || [];
     })
     .finally(() => {
       store.setLoading(false);
