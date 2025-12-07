@@ -1,231 +1,216 @@
-import type { ReactNode } from 'react';
+import { MapPin, Github, Mail, Phone, ExternalLink } from 'lucide-react';
 import './styles.css';
-import { Section, Pill } from './components/Section';
-import { education, experiences, profile, projects, skillGroups, workingStyle } from './data/resume';
+import { education, experiences, profile, projects, skillGroups } from './data/resume';
 
-const Stat = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex flex-col items-center p-3 bg-white dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/5 backdrop-blur-sm hover:bg-slate-50 dark:hover:bg-white/10 transition-colors shadow-sm dark:shadow-none">
-    <div className="text-xl font-bold text-indigo-600 dark:text-indigo-300 tabular-nums">{value}</div>
-    <div className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium mt-0.5">
-      {label}
-    </div>
-  </div>
-);
-
-const BulletList = ({ items }: { items: string[] }) => (
-  <ul className="space-y-1.5 text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
-    {items.map((item, idx) => (
-      <li key={idx} className="flex items-start gap-2">
-        <span className="mt-1.5 w-1 h-1 rounded-full bg-indigo-500 shrink-0 opacity-70" />
-        <span>{item}</span>
-      </li>
-    ))}
-  </ul>
-);
-
-const TagLine = ({ items }: { items: string[] }) => (
-  <div className="flex flex-wrap gap-1.5 justify-center md:justify-start my-4">
-    {items.map((item) => (
-      <span
-        key={item}
-        className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-medium"
-      >
-        {item}
-      </span>
-    ))}
-  </div>
-);
-
-const Card = ({
-  title,
-  subtitle,
-  meta,
-  children,
-  tags,
-}: {
-  title: string;
-  subtitle?: string;
-  meta?: ReactNode;
-  children: ReactNode;
-  tags?: string[];
-}) => (
-  <div className="group relative pl-6 pb-6 border-l border-slate-200 dark:border-white/10 last:pb-0">
-    <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-white dark:bg-slate-900 border-2 border-indigo-500 group-hover:bg-indigo-500 transition-colors shadow-[0_0_0_3px_#f8fafc] dark:shadow-[0_0_0_3px_#020617]" />
-    <div className="group-hover:translate-x-1 transition-transform duration-300">
-      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 mb-2">
-        <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">{title}</h3>
-          {subtitle && <p className="text-sm text-indigo-600 dark:text-indigo-300 font-medium">{subtitle}</p>}
-        </div>
-        {meta && (
-          <div className="text-xs font-mono text-slate-500 dark:text-slate-500 whitespace-nowrap bg-slate-100 dark:bg-slate-900/50 px-1.5 py-0.5 rounded">
-            {meta}
-          </div>
-        )}
-      </div>
-      <div className="mb-3">{children}</div>
-      {tags && tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-slate-100 dark:border-white/5 opacity-80 hover:opacity-100 transition-opacity">
-          {tags.map((tag) => (
-            <Pill key={tag} label={tag} />
-          ))}
-        </div>
-      )}
-    </div>
-  </div>
-);
-
-const ProjectCard = ({
-  name,
-  focus,
-  outcomes,
-  stack,
-}: {
-  name: string;
-  focus: string;
-  outcomes: string[];
-  stack: string[];
-}) => (
-  <div className="card h-full flex flex-col p-4">
-    <div className="mb-3">
-      <div className="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider mb-0.5">
-        {focus}
-      </div>
-      <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
-        {name}
-      </h3>
-    </div>
-    <div className="flex-1 mb-4">
-      <BulletList items={outcomes} />
-    </div>
-    <div className="flex flex-wrap gap-1.5 mt-auto pt-3 border-t border-slate-100 dark:border-white/5">
-      {stack.map((item) => (
-        <Pill key={item} label={item} />
-      ))}
-    </div>
-  </div>
-);
+// Simple icons component map
+const icons = {
+  phone: Phone,
+  email: Mail,
+  github: Github,
+  location: MapPin,
+};
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 selection:bg-indigo-500/30 pb-12 transition-colors duration-300">
-      {/* Decorative Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-200/40 dark:bg-indigo-900/20 blur-[80px] mix-blend-multiply dark:mix-blend-screen" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-200/40 dark:bg-blue-900/10 blur-[80px] mix-blend-multiply dark:mix-blend-screen" />
-      </div>
-
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12">
-        {/* Hero Section - Compact */}
-        <header className="mb-10 text-center md:text-left grid md:grid-cols-[1.5fr_1fr] gap-8 items-center">
-          <div>
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-              <span className="inline-block px-2 py-0.5 text-[10px] font-bold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase bg-indigo-100 dark:bg-indigo-500/10 rounded-full border border-indigo-200 dark:border-indigo-500/20">
-                Privacy-safe Resume
-              </span>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-10 md:py-16 print:bg-white print:py-0">
+      <div className="max-w-4xl mx-auto bg-white dark:bg-slate-800 shadow-xl print:shadow-none print:bg-white rounded-lg overflow-hidden">
+        {/* Header Section */}
+        <header className="px-8 py-8 md:px-10 border-b border-slate-200 dark:border-slate-700 print:px-0 print:py-4 print:border-b-2 print:border-slate-800">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+            <div className="flex-1">
+              <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2 uppercase print:text-black">
+                {profile.name}
+              </h1>
+              <p className="text-xl text-indigo-600 dark:text-indigo-400 font-medium mb-4 print:text-slate-700">
+                {profile.title}
+              </p>
+              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300 max-w-2xl print:text-slate-700 text-justify">
+                {profile.summary}
+              </p>
             </div>
-            <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
-              {profile.alias}
-            </h1>
-            <p className="text-lg text-slate-600 dark:text-slate-300 font-light mb-1">{profile.title}</p>
-            <p className="text-slate-500 dark:text-slate-400 max-w-lg text-sm leading-relaxed mb-3 mx-auto md:mx-0">
-              {profile.headline}
-            </p>
-            <TagLine items={[profile.metrics[1].value, profile.metrics[2].value, profile.metrics[3].value]} />
-          </div>
 
-          <div className="grid grid-cols-2 gap-2.5">
-            {profile.metrics.map((metric) => (
-              <Stat key={metric.label} label={metric.label} value={metric.value} />
-            ))}
+            {/* Contact Info - Right aligned on desktop/print */}
+            <div className="flex flex-col gap-2 min-w-[200px] text-sm text-slate-600 dark:text-slate-400 print:text-slate-800">
+              {profile.contact.phone && (
+                <div className="flex items-center gap-2">
+                  <Phone size={14} className="text-indigo-500 print:text-slate-800" />
+                  <span>{profile.contact.phone}</span>
+                </div>
+              )}
+              {profile.contact.email && (
+                <div className="flex items-center gap-2">
+                  <Mail size={14} className="text-indigo-500 print:text-slate-800" />
+                  <a
+                    href={`mailto:${profile.contact.email}`}
+                    className="hover:text-indigo-600 underline decoration-indigo-200 print:no-underline"
+                  >
+                    {profile.contact.email}
+                  </a>
+                </div>
+              )}
+              {profile.contact.github && (
+                <div className="flex items-center gap-2">
+                  <Github size={14} className="text-indigo-500 print:text-slate-800" />
+                  <a
+                    href={`https://${profile.contact.github}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-indigo-600 underline decoration-indigo-200 print:no-underline"
+                  >
+                    {profile.contact.github}
+                  </a>
+                </div>
+              )}
+              {profile.contact.location && (
+                <div className="flex items-center gap-2">
+                  <MapPin size={14} className="text-indigo-500 print:text-slate-800" />
+                  <span>{profile.contact.location}</span>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
-        <div className="space-y-10">
-          {/* Summary Section */}
-          <Section title="职业概览" hint="B 端 / 平台类产品为主">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="card">
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                  <span className="text-indigo-500">✦</span> 核心速览
-                </h3>
-                <BulletList items={profile.summary} />
-              </div>
-              <div className="card">
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
-                  <span className="text-indigo-500">✦</span> 工作习惯
-                </h3>
-                <BulletList items={workingStyle} />
-              </div>
-            </div>
-          </Section>
+        {/* Main Content Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-[2.2fr_1fr] print:grid-cols-[2.2fr_1fr] min-h-[800px]">
+          {/* Left Column: Experience & Projects */}
+          <main className="p-8 md:px-10 py-8 space-y-8 print:px-0 print:py-6 print:pr-6">
+            {/* Experience Section */}
+            <section>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-5 pb-1 border-b-2 border-indigo-500 print:border-slate-800 print:text-black">
+                工作经历
+              </h2>
+              <div className="space-y-6">
+                {experiences.map((exp, idx) => (
+                  <div
+                    key={idx}
+                    className="relative pl-4 border-l-2 border-slate-200 dark:border-slate-700 print:border-l-0 print:pl-0"
+                  >
+                    <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-white dark:bg-slate-800 border-2 border-indigo-500 print:hidden"></div>
 
-          {/* Skills Section */}
-          <Section title="技能版图" hint="覆盖框架、工程、质量保障">
-            <div className="grid md:grid-cols-2 gap-4">
-              {skillGroups.map((group) => (
-                <div
-                  key={group.name}
-                  className="p-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
-                >
-                  <div className="text-sm font-bold text-slate-900 dark:text-white mb-2">{group.name}</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {group.items.map((item) => (
-                      <Pill key={item} label={item} />
-                    ))}
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-1">
+                      <h3 className="font-bold text-slate-900 dark:text-white text-base print:text-black">{exp.org}</h3>
+                      <span className="text-xs font-mono text-slate-500 dark:text-slate-400 print:text-slate-600 bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded print:bg-transparent print:p-0 print:font-bold">
+                        {exp.period}
+                      </span>
+                    </div>
+
+                    <div className="text-indigo-600 dark:text-indigo-400 font-medium text-sm mb-2 print:text-slate-700">
+                      {exp.role}
+                    </div>
+
+                    <ul className="list-disc list-outside ml-4 space-y-1 text-sm text-slate-700 dark:text-slate-300 leading-relaxed text-justify print:text-black">
+                      {exp.highlights.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+
+                    {/* Tech stack for experience - visible on screen, minimal on print */}
+                    <div className="mt-3 flex flex-wrap gap-1.5 print:hidden">
+                      {exp.tech.map((t) => (
+                        <span
+                          key={t}
+                          className="px-2 py-0.5 text-[10px] bg-indigo-50 text-indigo-700 rounded dark:bg-indigo-500/10 dark:text-indigo-300"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </Section>
+                ))}
+              </div>
+            </section>
 
-          {/* Experience Section */}
-          <Section title="经历亮点" hint="按时间顺序展示主要职责与成果">
-            <div className="ml-2 md:ml-3 pt-2">
-              {experiences.map((exp) => (
-                <Card key={exp.period + exp.org} title={exp.org} subtitle={exp.role} meta={exp.period} tags={exp.tech}>
-                  <BulletList items={exp.highlights} />
-                </Card>
-              ))}
-            </div>
-          </Section>
+            {/* Projects Section - Compact */}
+            <section>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-5 pb-1 border-b-2 border-indigo-500 print:border-slate-800 print:text-black">
+                精选项目
+              </h2>
+              <div className="grid gap-4">
+                {projects.map((proj, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-lg print:bg-transparent print:p-0 print:border print:border-slate-200 print:p-2 print:rounded-none"
+                  >
+                    <div className="flex justify-between items-baseline mb-2">
+                      <h3 className="font-bold text-slate-900 dark:text-white text-sm print:text-black">{proj.name}</h3>
+                      <span className="text-[10px] uppercase font-bold text-indigo-600 dark:text-indigo-400 tracking-wider print:text-slate-600">
+                        {proj.focus}
+                      </span>
+                    </div>
+                    <ul className="list-disc list-outside ml-4 space-y-1 text-sm text-slate-600 dark:text-slate-300 print:text-black">
+                      {proj.outcomes.map((out, i) => (
+                        <li key={i}>{out}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </main>
 
-          {/* Projects Section */}
-          <Section title="精选项目" hint="与岗位契合度高的交付记录">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {projects.map((proj) => (
-                <ProjectCard
-                  key={proj.name}
-                  name={proj.name}
-                  focus={proj.focus}
-                  outcomes={proj.outcomes}
-                  stack={proj.stack}
-                />
-              ))}
-            </div>
-          </Section>
+          {/* Right Column: Skills & Education */}
+          <aside className="bg-slate-50 dark:bg-slate-800/50 border-l border-slate-200 dark:border-slate-700 p-8 print:bg-transparent print:p-0 print:pt-6 print:pl-6 print:border-l-2 print:border-slate-200">
+            {/* Skills */}
+            <section className="mb-8">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 pb-1 border-b border-indigo-200 dark:border-indigo-900 print:border-slate-300 print:text-black">
+                技术栈
+              </h2>
+              <div className="space-y-6">
+                {skillGroups.map((group, idx) => (
+                  <div key={idx}>
+                    <h3 className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-2 print:text-slate-800">
+                      {group.name}
+                    </h3>
+                    <ul className="space-y-2">
+                      {group.items.map((skill, i) => (
+                        <li
+                          key={i}
+                          className="text-xs text-slate-600 dark:text-slate-300 leading-snug print:text-black font-medium"
+                        >
+                          • {skill}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </section>
 
-          {/* Education Section */}
-          <Section title="教育与诚信">
-            <div className="card flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 bg-gradient-to-r from-indigo-50/50 to-transparent dark:from-indigo-500/10 dark:to-transparent border-dashed">
+            {/* Education */}
+            <section className="mb-8">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-4 pb-1 border-b border-indigo-200 dark:border-indigo-900 print:border-slate-300 print:text-black">
+                教育背景
+              </h2>
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">{education.degree}</h3>
-                <p className="text-slate-500 dark:text-slate-400 text-sm mb-0.5">{education.graduation}</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 italic">{education.note}</p>
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm print:text-black">
+                  {education.school}
+                </h3>
+                <div className="text-indigo-600 dark:text-indigo-400 text-xs font-medium mb-0.5 print:text-slate-700">
+                  {education.degree}
+                </div>
+                <div className="text-slate-500 dark:text-slate-500 text-xs font-mono">{education.period}</div>
               </div>
-              <div className="px-3 py-1.5 rounded bg-indigo-100 dark:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-200 text-xs font-medium">
-                Verified Credentials
+            </section>
+
+            {/* Print Only: QR or Link hint */}
+            <div className="hidden print:block mt-10 pt-10 border-t border-slate-200">
+              <div className="flex items-center gap-1 text-[10px] text-slate-400 justify-center">
+                <span>Online version:</span>
+                <span className="font-mono">https://zxkws.github.io/resume</span>
               </div>
             </div>
-          </Section>
+          </aside>
         </div>
-
-        <footer className="mt-16 text-center text-slate-400 dark:text-slate-600 text-xs pb-6">
-          <p>
-            © {new Date().getFullYear()} {profile.alias}. All rights reserved.
-          </p>
-        </footer>
       </div>
+
+      {/* Footer for Screen */}
+      <footer className="mt-8 text-center text-slate-400 text-sm print:hidden">
+        <p>
+          Press <kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200">Cmd/Ctrl + P</kbd> to
+          save as PDF
+        </p>
+      </footer>
     </div>
   );
 }

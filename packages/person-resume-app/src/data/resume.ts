@@ -1,4 +1,3 @@
-export type Metric = { label: string; value: string };
 export type SkillGroup = { name: string; items: string[] };
 export type Experience = {
   period: string;
@@ -15,144 +14,118 @@ export type Project = {
 };
 
 export const profile = {
-  alias: '前端工程师',
-  title: '前端工程师 / 微前端 & 平台研发',
-  headline: '专注 B 端体验、工程效率与可观测性',
-  summary: [
-    '5+ 年前端研发经验，覆盖大模型平台、云监控、接口管理、PDM / 收益管理等 B 端产品。',
-    '熟悉 Vue2/3、React、TypeScript，能在单页、微前端、iframe 混合场景下快速落地。',
-    '深度参与工程化：Webpack/Vite 优化、CI/CD、发布治理、调试与自动化测试链路。',
-  ],
-  metrics: [
-    { label: '经验', value: '5+ 年' },
-    { label: '主栈', value: 'Vue · React · TS' },
-    { label: '工程', value: '微前端 / Webpack / Vite / CI/CD' },
-    { label: '领域', value: 'LLM · 监控 · 接口管理 · PDM' },
-  ] as Metric[],
-  notice: '联系方式、身份标识等已脱敏；如需查看完整版 PDF，请通过授权渠道获取。',
+  name: '张三 (Placeholder)', // Changed from alias to name for formal resume
+  title: '资深前端工程师',
+  contact: {
+    phone: '138-xxxx-xxxx',
+    email: 'email@example.com',
+    github: 'github.com/zxkws',
+    location: '北京',
+  },
+  summary:
+    '拥有 5 年以上前端研发经验，专注于 B 端复杂业务系统与工程化建设。精通 Vue/React 生态，具备深厚的微前端架构落地经验。擅长通过 Webpack/Vite 构建优化、CI/CD 自动化链路搭建以及可观测性体系建设，显著提升团队开发效率与交付质量。在大型监控平台、LLM 应用及企业级管理系统中有卓越的架构设计与性能优化实战成果。',
 };
 
 export const skillGroups: SkillGroup[] = [
   {
-    name: '前端框架',
-    items: ['Vue 2 & class-component', 'Vue 3 组合式 API', 'React 18/19', 'TypeScript', 'Ant Design / Element'],
-  },
-  {
-    name: '工程效能',
+    name: '架构与工程化',
     items: [
-      '微前端（ice-stark）',
-      'Webpack / Vite 优化',
-      '模块拆分与按需加载',
-      'lint-staged + husky',
-      '自动化发布与灰度',
+      '精通 Webpack/Vite 构建配置与性能优化，熟练编写 Custom Plugin/Loader',
+      '深入理解微前端架构 (ice-stark/Module Federation)，有大型巨石应用拆分重构经验',
+      '熟练掌握 CI/CD 流程 (Jenkins/GitLab CI)，搭建自动化发布与灰度基础设施',
+      '掌握前端监控体系建设 (Sentry/自定义探针)，具备全链路排查与性能调优能力',
     ],
   },
   {
-    name: '后端与数据',
-    items: ['Node.js (Express / Koa)', 'MongoDB / PostgreSQL', '接口 Mock 与网关联调', 'CI/CD 集成 Jenkins/pm2'],
-  },
-  {
-    name: '质量与体验',
+    name: '技术栈',
     items: [
-      '可观测性与告警埋点',
-      'UI 自动化（XPath 协助）',
-      '性能优化与缓存策略',
-      '跨团队调试基线（Charles/代理配置）',
+      '核心：Vue 2/3 (Composition API), React 18, TypeScript, Node.js',
+      'UI/可视化：Ant Design, Element Plus, ECharts, Tailwind CSS',
+      '后端/数据库：NestJS, Express, MongoDB, PostgreSQL, Nginx',
     ],
   },
 ];
 
 export const experiences: Experience[] = [
   {
-    period: '2023.10 – 现在',
-    org: '智能终端大模型平台',
-    role: '前端工程师',
+    period: '2023.10 – 至今',
+    org: '某科技公司 (智能终端大模型平台)',
+    role: '资深前端工程师',
     highlights: [
-      '基于 Vue2 + class-component 开发大模型对话、角色扮演等核心功能，保持旧框架下的可维护性。',
-      '为报表查询条件增加前端缓存与还原逻辑，降低重复查询成本。',
-      '优化标注项目测试环境的打包与部署方式，减少环境切换带来的发布风险。',
+      '主导大模型对话平台的交互架构设计，兼容 Vue2 旧系统同时引入新技术栈，保障了业务平滑过渡。',
+      '设计并实现前端复杂报表系统的缓存与状态还原方案，显著提升用户跨会话操作效率。',
+      '重构测试环境部署流程，实现多环境并行隔离与自动化构建，将环境切换耗时从 30 分钟降低至分钟级。',
     ],
-    tech: ['Vue2', 'class-component', '微前端', 'Webpack', 'CI/CD'],
+    tech: ['Vue2/3', 'TypeScript', 'Micro-frontend', 'Engineering'],
   },
   {
     period: '2021.02 – 2023.10',
-    org: '云监控平台',
-    role: '前端工程师',
+    org: '某云服务公司 (云监控平台)',
+    role: '前端核心开发',
     highlights: [
-      '主导 Angular 项目向 React 重构并拆分微应用，加快首屏与按需加载速度。',
-      '引入 CSS Modules 与 hash 方案，解决样式污染与分片加载错配问题。',
-      '为团队配置 Charles 代理与环境切换脚本，提升联调与测试效率。',
-      '支持测试同事以 XPath 做 UI 自动化，沉淀跨产品路由跳转 npm 包，实现参数化跳转和配置化兼容。',
+      '主导云监控平台从 Angular 向 React 的重构工作，制定微前端拆分方案，将首屏加载速度提升 40%。',
+      '引入 CSS Modules 与样式隔离策略，彻底解决微应用间的样式冲突问题。',
+      '搭建本地开发代理与跨域调试基础设施，统一团队开发环境，提升联调效率 50% 以上。',
+      '封装跨应用路由跳转 SDK，统一参数处理与权限校验，被多个内部产品线采纳。',
     ],
-    tech: ['React', 'Webpack', 'Micro-frontend', 'CSS Modules', 'Node 工具链'],
+    tech: ['React', 'Micro-frontend', 'Webpack Optimization', 'SDK Design'],
   },
   {
     period: '2020.08 – 2021.01',
-    org: '接口管理平台二次开发（Yapi）',
+    org: '某互联网公司 (接口管理平台)',
     role: '前端工程师',
     highlights: [
-      '完成 Ant Design 4 升级与 ykit → Webpack4 迁移，显著缩短构建时间。',
-      '优化打包（多线程、资源压缩），并对接 Jenkins / pm2，提供一键 CI/CD 部署。',
-      '为测试同事提供可复用的部署与回滚接口，提升迭代稳定性。',
+      '负责 Yapi 平台的二次开发与维护，完成从 ykit 到 Webpack4 的底层构建迁移，构建速度提升 60%。',
+      '集成 Jenkins 自动化流水线，实现一键部署与秒级回滚，保障了高频迭代下的系统稳定性。',
+      '优化大数据量下的接口文档渲染性能，解决了列表卡顿问题。',
     ],
-    tech: ['React', 'Webpack4', 'MongoDB', 'Node.js', 'Ant Design'],
+    tech: ['React', 'Node.js', 'CI/CD', 'Performance'],
   },
   {
     period: '2019.11 – 2021.01',
-    org: 'PDM 绩效管理系统',
+    org: '某企业服务公司 (PDM 系统)',
     role: '前端工程师',
     highlights: [
-      '抽象报表通用功能为独立业务组件，支持灵活导出 Excel。',
-      '推动 Git commit 规范落地，结合 prettier/eslint/husky/commitlint 保证代码一致性。',
+      '设计通用报表组件库，通过配置化方式支持多种业务场景，减少重复代码开发。',
+      '建立前端工程化规范，引入 ESLint/Prettier/Commitlint 工作流，显著降低代码维护成本。',
     ],
-    tech: ['Vue', 'Axios', 'Element UI', 'PostgreSQL', 'Spring Boot'],
+    tech: ['Vue', 'Element UI', 'Engineering Standards'],
   },
   {
     period: '2019.04 – 2020.07',
-    org: '航空收益系统（nRise）',
-    role: '前端工程师',
+    org: '某航空收益系统',
+    role: '前端开发',
     highlights: [
-      '实现登录注册、密码强度校验与滑块验证码，强化账号安全。',
-      '用 ECharts 交互式呈现收益数据（条形图、甘特图等），并按需加载提升性能。',
-      '交付 Excel 导入导出与表格联动、旧接口与新接口一键切换，兼顾迁移平滑性。',
-      '在配套 App 中编写 Flutter 页，串联 Jenkins 流水线与 Sonar 扫描。',
+      '负责收益管理系统核心模块开发，利用 ECharts 实现复杂数据的可视化交互展示。',
+      '实现 Excel 数据的高性能导入导出与前端校验，提升数据处理体验。',
     ],
-    tech: ['Vue', 'ECharts', 'Spring Boot', 'Jenkins', 'Flutter'],
+    tech: ['Vue', 'ECharts', 'Data Visualization'],
   },
 ];
 
 export const projects: Project[] = [
   {
-    name: 'LLM 对话与标注平台',
-    focus: '面向业务团队的多角色对话、标注与报表查询体验',
+    name: '企业级大模型对话与标注平台',
+    focus: '架构设计 & 体验优化',
     outcomes: [
-      '在旧版 Vue2 体系下补齐角色扮演、缓存等体验升级，降低切换成本',
-      '通过更安全的发布与环境管理，减少测试环境回滚成本',
+      '在遗留代码库中实施渐进式重构，通过微前端手段引入新特性，避免了推翻重来的高昂成本。',
+      '设计了一套基于类装饰器的业务逻辑复用模式，减少了 30% 的样板代码。',
     ],
-    stack: ['Vue2', 'Webpack', '类装饰器', '微前端'],
+    stack: ['Vue', 'TypeScript', 'Design Patterns'],
   },
   {
-    name: '云监控微前端改造',
-    focus: '监控/告警平台的性能与可维护性优化',
-    outcomes: ['拆分微应用与路由，缩短首屏并提升按需加载能力', '统一代理、日志与 UI 自动化辅助工具，提升团队协作效率'],
-    stack: ['React', 'Webpack', 'CSS Modules', '模块联邦'],
-  },
-  {
-    name: 'Yapi 二次开发与工程化',
-    focus: '接口管理平台的性能和交付效率提升',
-    outcomes: ['完成 AntD/webpack 升级、打包加速与 CI/CD 全链路自动化', '提供统一的部署/回滚接口，缩短测试验证周期'],
-    stack: ['React', 'AntD', 'Node.js', 'MongoDB'],
+    name: '云监控微前端架构改造',
+    focus: '性能优化 & 架构升级',
+    outcomes: [
+      '设计并落地基于 Module Federation 的微前端方案，实现了 10+ 子应用的独立部署与运行。',
+      '构建了统一的日志采集与错误监控 SDK，覆盖全平台，帮助团队快速定位线上问题。',
+    ],
+    stack: ['React', 'Webpack 5', 'Micro-frontend'],
   },
 ];
 
 export const education = {
-  degree: '软件工程（本科）',
-  graduation: '2019 年毕业',
-  note: '',
+  degree: '软件工程（统招本科）',
+  school: 'XX 大学',
+  period: '2015 – 2019',
 };
-
-export const workingStyle = [
-  '优先解决可维护性与上线稳定性问题，习惯将调试、构建、发布工具链沉淀为脚本或文档。',
-  '偏好数据驱动的性能优化：监控指标、缓存命中率、分片体积作为决策依据。',
-  '在多团队协作场景主动输出使用说明、调试手册与自动化 baseline。',
-];
