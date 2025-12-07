@@ -1,20 +1,16 @@
 import type { SystemConfig, MicroAppConfig } from '../types/config';
+import { client } from './httpClient';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
+const CONFIG_ENDPOINT = '/config-center/micro-apps';
 
 /**
  * 从配置中心加载配置
  */
 export async function loadSystemConfig(): Promise<SystemConfig> {
-  const configUrl = isDevelopment
-    ? '/api/config-center/micro-apps'
-    : 'https://api.zxkws.nyc.mn/api/config-center/micro-apps';
-  const response = await fetch(configUrl, { credentials: 'include' });
-  if (!response.ok) {
-    throw new Error(`Failed to load config: ${response.status} ${response.statusText}`);
-  }
-  const raw = await response.json();
-  const config = 'data' in raw ? raw.data : raw;
+  // 统一使用封装的 fetch，继承 BaseURL、credentials 与拦截器（loading/token 等）
+  const raw = await client<any>(CONFIG_ENDPOINT, undefined, { method: 'GET' });
+  const config = raw && typeof raw === 'object' && 'data' in raw ? (raw as any).data : raw;
   return {
     ...config,
     updatedAt: new Date(config.updatedAt),
