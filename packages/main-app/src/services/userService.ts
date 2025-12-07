@@ -12,6 +12,7 @@ export type UserProfile = {
 let cachedProfile: UserProfile | null = null;
 let inFlight: Promise<UserProfile | null> | null = null;
 const USER_CACHE_KEY = 'main-app:user';
+const AUTH_TOKEN_KEY = 'auth_token';
 
 const sanitizeUser = (raw: unknown): UserProfile => {
   if (!raw || typeof raw !== 'object') return {};
@@ -60,6 +61,14 @@ export const setCachedUser = (profile: UserProfile | null) => {
  * Ensures password / sensitive fields are dropped on the frontend.
  */
 export const fetchCurrentUser = async (forceRefresh = false): Promise<UserProfile | null> => {
+  // 若无本地 token，直接返回 null，避免无意义的 401 请求
+  const token = typeof window === 'undefined' ? null : window.localStorage.getItem(AUTH_TOKEN_KEY) || undefined;
+  if (!token) {
+    cachedProfile = null;
+    inFlight = null;
+    return null;
+  }
+
   if (cachedProfile && !forceRefresh) {
     return cachedProfile;
   }
