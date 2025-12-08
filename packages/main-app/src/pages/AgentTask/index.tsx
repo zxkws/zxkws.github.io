@@ -200,7 +200,9 @@ const AgentTaskPage = () => {
         return;
       }
 
-      const registration = await navigator.serviceWorker.register('/sw.js');
+      const registration = await navigator.serviceWorker.register('/agent-sw.js', {
+        scope: '/app/agent-tasks',
+      });
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),

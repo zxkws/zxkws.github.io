@@ -12,6 +12,6 @@
     }
   },
   "files": {
-    "includes": ["src/**", "public/sw.js"]
+    "includes": ["src/**", "public/agent-sw.js"]
   }
 }
