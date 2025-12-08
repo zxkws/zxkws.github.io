@@ -18,7 +18,7 @@ export const profile = {
   title: '资深前端工程师',
   contact: {
     phone: '138-xxxx-xxxx',
-    email: 'email@example.com',
+    email: 'LoveU2163.com',
     github: 'github.com/zxkws',
     location: '北京',
   },
@@ -48,7 +48,17 @@ export const skillGroups: SkillGroup[] = [
 
 export const experiences: Experience[] = [
   {
-    period: '2023.10 – 至今',
+    period: '2025.03 – 至今',
+    org: '新公司名称 (Placeholder)',
+    role: '高级/资深前端工程师',
+    highlights: [
+      '负责核心业务线的技术架构选型与落地，主导关键技术难点的攻关。',
+      '推动前端工程化体系建设，优化研发流程与交付质量。',
+    ],
+    tech: ['React/Vue', 'TypeScript', 'Architecture'],
+  },
+  {
+    period: '2023.10 – 2025.03',
     org: '某科技公司 (智能终端大模型平台)',
     role: '资深前端工程师',
     highlights: [
