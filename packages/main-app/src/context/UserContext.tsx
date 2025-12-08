@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
+import { createContext, type PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { clearCachedUser, fetchCurrentUser, saveCurrentUser, type UserProfile } from '../services/userService';
 
 type UserContextValue = {
@@ -15,8 +15,8 @@ type UserContextValue = {
 const UserContext = createContext<UserContextValue>({
   user: null,
   loading: false,
-  refreshUser: async () => null,
-  saveUser: async () => null,
+  refreshUser: async (_opts) => null,
+  saveUser: async (_payload) => null,
   clearUser: () => undefined,
 });
 

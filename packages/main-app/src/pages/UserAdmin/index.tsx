@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Button, Input, Table, Tag, message, Popconfirm, Select, Space, Tooltip } from 'antd';
+import { Button, Input, message, Popconfirm, Select, Space, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { fetchUsers, updateStatus, deleteUser } from '../../services/adminUserService';
+import { useEffect, useMemo, useState } from 'react';
+import { deleteUser, fetchUsers, updateStatus } from '../../services/adminUserService';
 import type { UserProfile } from '../../services/userService';
 
 type UserStatus = 'active' | 'frozen' | 'banned';
@@ -67,7 +67,12 @@ export default function UserAdmin() {
     () => [
       { title: '用户名', dataIndex: 'username', key: 'username' },
       { title: '邮箱', dataIndex: 'email', key: 'email' },
-      { title: '角色', dataIndex: 'role', key: 'role', render: (role) => (role === 'admin' ? '管理员' : '用户') },
+      {
+        title: '角色',
+        dataIndex: 'role',
+        key: 'role',
+        render: (role) => (role === 'admin' ? '管理员' : '用户'),
+      },
       {
         title: '状态',
         dataIndex: 'status',

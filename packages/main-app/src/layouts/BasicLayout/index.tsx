@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { useUser } from '../../context/UserContext';
+import { fetchRemoteMenus } from '../../services/menuService';
+import type { MenuItem } from '../../types/menu';
+import { clearAuthArtifacts } from '../../utils/authCleanup';
 import HeaderBar from './components/HeaderBar';
 import PageNav from './components/PageNav';
 import { builtInAsideMenus } from './menuConfig';
-import type { MenuItem } from '../../types/menu';
-import { fetchRemoteMenus } from '../../services/menuService';
-import { clearAuthArtifacts } from '../../utils/authCleanup';
-import { useUser } from '../../context/UserContext';
 
 type BasicLayoutProps = {
   children: ReactNode;
@@ -71,7 +71,7 @@ const resolveInitialNavState = (): boolean => {
   return false;
 };
 
-const filterMenusByRole = (items: any[], isAuthenticated: boolean, isAdmin: boolean): any[] => {
+const filterMenusByRole = (items: MenuItem[], isAuthenticated: boolean, isAdmin: boolean): MenuItem[] => {
   // 后端已做权限过滤；这里仅处理 requiresAuth/adminOnly 兼容老数据的兜底逻辑
   return items
     .map((item) => {
@@ -80,7 +80,7 @@ const filterMenusByRole = (items: any[], isAuthenticated: boolean, isAdmin: bool
       const children = item.children ? filterMenusByRole(item.children, isAuthenticated, isAdmin) : undefined;
       return { ...item, children };
     })
-    .filter(Boolean);
+    .filter(Boolean) as MenuItem[];
 };
 
 export default function BasicLayout({ children }: BasicLayoutProps) {

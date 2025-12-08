@@ -1,6 +1,6 @@
+import { message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { client } from '../../services/httpClient';
-import { message } from 'antd';
 
 type Role = 'user' | 'admin';
 
@@ -92,7 +92,7 @@ export default function PermissionAdmin() {
   const handleRoleChange = async (userId: string, role: Role) => {
     setSavingId(userId);
     try {
-      await client('/v1/rbac/users/' + userId + '/role', { role }, { method: 'PATCH' });
+      await client(`/v1/rbac/users/${userId}/role`, { role }, { method: 'PATCH' });
       await fetchAll();
     } catch (err) {
       setError(err instanceof Error ? err.message : '更新角色失败');
@@ -106,7 +106,7 @@ export default function PermissionAdmin() {
     setSavingId(user.userId);
     try {
       const ids = togglePerm(user, permId);
-      await client('/v1/rbac/users/' + user.userId + '/permissions', { permissionIds: ids }, { method: 'PATCH' });
+      await client(`/v1/rbac/users/${user.userId}/permissions`, { permissionIds: ids }, { method: 'PATCH' });
       await fetchAll();
     } catch (err) {
       setError(err instanceof Error ? err.message : '更新权限失败');
@@ -124,6 +124,7 @@ export default function PermissionAdmin() {
           <p className="text-sm text-[var(--color-muted)]">仅管理员可见：授予角色与权限</p>
         </div>
         <button
+          type="button"
           onClick={fetchAll}
           className="rounded bg-[var(--accent)] px-3 py-2 text-white shadow hover:brightness-95"
           disabled={loading}
@@ -169,6 +170,7 @@ export default function PermissionAdmin() {
                       const active = u.permissions.some((up) => up.id === p.id);
                       return (
                         <button
+                          type="button"
                           key={p.id}
                           onClick={() => handlePermChange(u, p.id)}
                           disabled={savingId === u.userId}

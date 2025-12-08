@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import SafeAppLink from '../../../../components/SafeAppLink';
 import type { MenuItem } from '../../../../types/menu';
 import * as styles from './index.module.css';
-import SafeAppLink from '../../../../components/SafeAppLink';
 
 type MenuGroupState = Set<string>;
 
@@ -12,7 +12,7 @@ const getCurrentPath = () => {
     return '/';
   }
   const { pathname, hash } = window.location;
-  if (hash && hash.startsWith('#/')) {
+  if (hash?.startsWith('#/')) {
     return hash.slice(1);
   }
   return pathname || '/';
@@ -153,7 +153,9 @@ const useMenuState = (menus: MenuItem[]) => {
   useEffect(() => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
-      collectExpandedKeys(menuConfig, activePath).forEach((key) => next.add(key));
+      for (const key of collectExpandedKeys(menuConfig, activePath)) {
+        next.add(key);
+      }
       return next;
     });
   }, [activePath, menuConfig]);
@@ -191,7 +193,7 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
         const isExpanded = expandedGroups.has(key);
         const active = isPathMatch(item.path, activePath);
         const hasActiveChild = hasChildren
-          ? item.children!.some((child) => menuItemHasActive(child, activePath))
+          ? item.children?.some((child) => menuItemHasActive(child, activePath))
           : false;
         const emblem = getIconSymbol(item);
 
@@ -221,7 +223,7 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
                 id={`${key}-children`}
                 className={CX(styles.childContainer, isExpanded && styles.childContainerVisible)}
               >
-                {renderMenuItems(item.children!, key)}
+                {renderMenuItems(item.children ?? [], key)}
               </div>
             </div>
           );

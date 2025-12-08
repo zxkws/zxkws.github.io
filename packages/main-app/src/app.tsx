@@ -1,6 +1,7 @@
 import { AppRoute, AppRouter } from '@ice/stark';
+import appHistory from '@ice/stark/lib/appHistory';
+import { Suspense, useEffect, useState } from 'react';
 import ReactDom from 'react-dom/client';
-import { useEffect, useState, Suspense } from 'react';
 
 import PageLoading from './components/PageLoading';
 import './global.css';
@@ -8,20 +9,20 @@ import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import { UserProvider } from './context/UserContext';
 import {
-  ensureIcestarkStarted,
   ensureIcestarkAppsRegistered,
-  resolveMicroApps,
-  subscribeMicroAppLoading,
+  ensureIcestarkStarted,
   loadConfig,
   notifyMicroAppLoading,
   notifyMicroAppMounted,
+  resolveMicroApps,
+  subscribeMicroAppLoading,
 } from './core/icestark';
 import BasicLayout from './layouts/BasicLayout';
+import AgentTaskPage from './pages/AgentTask';
 import Home from './pages/Home';
 import PermissionAdmin from './pages/PermissionAdmin';
-import UserAdmin from './pages/UserAdmin';
 import Profile from './pages/Profile';
-import appHistory from '@ice/stark/lib/appHistory';
+import UserAdmin from './pages/UserAdmin';
 import { subscribeLoading } from './services/networkLoading';
 
 const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
@@ -159,6 +160,7 @@ function App() {
         <h1 className="mb-4 text-2xl font-semibold">无法加载配置中心数据</h1>
         <p className="mb-6 text-sm opacity-80">{configError}</p>
         <button
+          type="button"
           className="rounded bg-blue-500 px-4 py-2 text-white shadow hover:bg-blue-600"
           onClick={() => window.location.reload()}
         >
@@ -188,6 +190,7 @@ function App() {
         <AppRoute exact activePath="/" component={<Home />} />
         <AppRoute exact activePath="/app/permission-admin" component={<PermissionAdmin />} />
         <AppRoute exact activePath="/app/user-admin" component={<UserAdmin />} />
+        <AppRoute exact activePath="/app/agent-tasks" component={<AgentTaskPage />} />
         <AppRoute exact activePath="/profile" component={<Profile />} />
         {microApps.map((app) => (
           <AppRoute key={app.name} {...app} {...(app.render ? {} : app)} />
@@ -202,6 +205,7 @@ function App() {
             render={() => (
               <iframe
                 src={resolveIframeSrc(app)}
+                title={app.name}
                 className="h-full w-full border-0"
                 loading="lazy"
                 allow="clipboard-write; clipboard-read"

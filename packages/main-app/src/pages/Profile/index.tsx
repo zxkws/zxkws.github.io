@@ -44,7 +44,10 @@ export default function Profile() {
       if (!isValidEmail(email)) {
         throw new Error('请输入有效邮箱地址，例如 name@example.com');
       }
-      const updated = await saveUser({ email: email || undefined, password: password || undefined });
+      const updated = await saveUser({
+        email: email || undefined,
+        password: password || undefined,
+      });
       setMe((updated as Me) ?? null);
       setEmail(updated?.email ?? '');
       setPassword('');
@@ -90,6 +93,7 @@ export default function Profile() {
           />
         </label>
         <button
+          type="button"
           className="rounded bg-[var(--accent)] px-4 py-2 text-white disabled:opacity-60"
           onClick={save}
           disabled={loading}

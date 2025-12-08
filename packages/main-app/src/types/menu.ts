@@ -10,5 +10,3 @@ export interface MenuItem {
   requiresAuth?: boolean;
   permission?: string | null;
 }
-
-export {};

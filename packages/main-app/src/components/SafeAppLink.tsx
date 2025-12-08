@@ -1,5 +1,5 @@
-import { useCallback, type AnchorHTMLAttributes, type MouseEvent } from 'react';
 import appHistory from '@ice/stark/lib/appHistory';
+import { type AnchorHTMLAttributes, type MouseEvent, useCallback } from 'react';
 
 type HashType = 'slash' | 'hashbang' | 'noslash' | boolean;
 

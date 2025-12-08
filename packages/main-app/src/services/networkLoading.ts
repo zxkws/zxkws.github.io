@@ -5,7 +5,9 @@ const listeners = new Set<Listener>();
 
 const emit = () => {
   const active = counter > 0;
-  listeners.forEach((fn) => fn(active));
+  for (const fn of listeners) {
+    fn(active);
+  }
 };
 
 export const pushLoading = () => {

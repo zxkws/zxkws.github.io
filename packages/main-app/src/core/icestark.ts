@@ -1,6 +1,6 @@
-import { registerMicroApps, start, type AppConfig } from '@ice/stark';
+import { type AppConfig, registerMicroApps, start } from '@ice/stark';
 import type { AppRouteProps } from '@ice/stark/lib/AppRoute';
-import { loadSystemConfig, convertToIceStarkApps } from '../services/configService';
+import { convertToIceStarkApps, loadSystemConfig } from '../services/configService';
 import type { SystemConfig } from '../types/config';
 
 type MicroAppConfig = AppRouteProps;

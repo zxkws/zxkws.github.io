@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import * as styles from './index.module.css';
-import { clearAuthArtifacts } from '../../../../utils/authCleanup';
 import { useUser } from '../../../../context/UserContext';
 import { client as httpClient } from '../../../../services/httpClient';
+import { clearAuthArtifacts } from '../../../../utils/authCleanup';
+import * as styles from './index.module.css';
 
 type Theme = 'light' | 'dark';
 
@@ -171,7 +171,7 @@ const HeaderBar = ({
             <span className={styles.menuIcon} aria-hidden="true" />
           </button>
         )}
-        <div className={styles.brand} aria-label="ZXKWS 主应用">
+        <div className={styles.brand}>
           <span className={styles.brandMark}>ZXKWS</span>
           <span className={styles.brandTagline}>A Hub</span>
         </div>
@@ -205,7 +205,7 @@ const HeaderBar = ({
         <div className={styles.avatarBox}>
           {user?.username ? (
             <div className={styles.avatarWrapper}>
-              <button className={styles.avatarBtn} onClick={() => setMenuOpen((v) => !v)}>
+              <button type="button" className={styles.avatarBtn} onClick={() => setMenuOpen((v) => !v)}>
                 <img
                   className={styles.avatarImg}
                   src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=120&h=120&fit=crop&auto=format"
@@ -224,14 +224,14 @@ const HeaderBar = ({
                   <a className={styles.menuItem} href="/app/config-hub" onClick={() => setMenuOpen(false)}>
                     菜单管理
                   </a>
-                  <button className={styles.menuItem} onClick={handleLogout}>
+                  <button className={styles.menuItem} type="button" onClick={handleLogout}>
                     退出登录
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            <button className={styles.loginBtn} onClick={goLogin}>
+            <button className={styles.loginBtn} type="button" onClick={goLogin}>
               登录
             </button>
           )}

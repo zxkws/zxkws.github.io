@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect, type PropsWithChildren } from 'react';
+import { createContext, type PropsWithChildren, useContext, useEffect, useState } from 'react';
 
 type AuthContextValue = {
   isAuthenticated: boolean;

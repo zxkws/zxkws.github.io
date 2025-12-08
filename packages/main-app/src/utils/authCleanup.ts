@@ -27,7 +27,10 @@ export const clearAuthArtifacts = () => {
       .filter(Boolean) as string[],
   );
   // Ensure critical auth cookie names are also covered even if HttpOnly (cannot be read).
-  ['jwt', 'connect.sid', 'auth_token', 'token', 'sid'].forEach((name) => cookieNames.add(name));
+  const criticalCookies = ['jwt', 'connect.sid', 'auth_token', 'token', 'sid'];
+  for (const name of criticalCookies) {
+    cookieNames.add(name);
+  }
 
   const domains = (() => {
     const host = window.location.hostname;
@@ -55,6 +58,7 @@ export const clearAuthArtifacts = () => {
       domain ? `domain=${domain}` : '',
       ...extra,
     ].filter(Boolean);
+    // biome-ignore lint/suspicious/noDocumentCookie: legacy cookie cleanup for cross-domain logout
     document.cookie = attrs.join('; ');
   };
 

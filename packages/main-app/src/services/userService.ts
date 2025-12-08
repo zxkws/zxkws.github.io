@@ -111,7 +111,10 @@ export const saveCurrentUser = async (
       ? (res as { data: unknown }).data
       : res;
 
-  let mergedSource: Record<string, unknown> = { ...(cachedProfile ?? {}), ...payload };
+  let mergedSource: Record<string, unknown> = {
+    ...(cachedProfile ?? {}),
+    ...payload,
+  };
   if (data && typeof data === 'object') {
     mergedSource = { ...mergedSource, ...(data as Record<string, unknown>) };
   }
