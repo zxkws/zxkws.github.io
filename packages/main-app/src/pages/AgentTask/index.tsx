@@ -15,8 +15,34 @@ import {
   savePushSubscription,
 } from '../../services/agentTaskService';
 
-// TODO: 将此处替换为你的 VAPID 公钥（仅公钥，私钥留在服务端）
-const vapidPublicKey = 'REPLACE_WITH_YOUR_VAPID_PUBLIC_KEY';
+const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
+const inlineSwSource = `
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (evt) => evt.waitUntil(self.clients.claim()));
+self.addEventListener("push", (event) => {
+  const data = event.data ? event.data.json() : { title: "通知", body: "你有新的提醒" };
+  const title = data.title || "通知";
+  const options = {
+    body: data.body || "你有新的提醒",
+    icon: "/favicon.ico",
+    data: data.url ? { url: data.url } : {},
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/app/agent-tasks";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ("focus" in client) return client.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(url);
+      return undefined;
+    }),
+  );
+});
+`;
 
 const defaultCondition: AgentTaskCondition = {
   sourceType: 'mcp',
@@ -63,6 +89,11 @@ const AgentTaskPage = () => {
   const [mcpConnections, setMcpConnections] = useState<McpConnection[]>([]);
   const [subs, setSubs] = useState<PushSubscriptionPayload[]>([]);
   const [pushStatus, setPushStatus] = useState<string>('');
+  const inlineSwUrl = useMemo(() => {
+    if (typeof window === 'undefined') return '';
+    const blob = new Blob([inlineSwSource], { type: 'application/javascript' });
+    return URL.createObjectURL(blob);
+  }, []);
 
   const toolOptions = useMemo(() => {
     const list: Array<{ id: string; label: string }> = [];
@@ -200,7 +231,7 @@ const AgentTaskPage = () => {
         return;
       }
 
-      const registration = await navigator.serviceWorker.register('/agent-sw.js', {
+      const registration = await navigator.serviceWorker.register(inlineSwUrl || '/agent-sw.js', {
         scope: '/app/agent-tasks',
       });
       const sub = await registration.pushManager.subscribe({
@@ -233,8 +264,8 @@ const AgentTaskPage = () => {
     );
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
-      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="flex flex-1 flex-col gap-6 p-6 text-[var(--color-text)]">
+      <section className="rounded-lg border border-[var(--header-border)] bg-[var(--card-bg)] p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">1) 自然语言解析</h2>
           <button
@@ -260,7 +291,7 @@ const AgentTaskPage = () => {
         )}
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="rounded-lg border border-[var(--header-border)] bg-[var(--card-bg)] p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">2) 创建任务</h2>
           <button
@@ -395,7 +426,7 @@ const AgentTaskPage = () => {
         </div>
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="rounded-lg border border-[var(--header-border)] bg-[var(--card-bg)] p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">3) 任务列表</h2>
           <button type="button" className="text-sm text-blue-600" onClick={loadTasks} disabled={taskLoading}>
@@ -448,7 +479,7 @@ const AgentTaskPage = () => {
         )}
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="rounded-lg border border-[var(--header-border)] bg-[var(--card-bg)] p-4 shadow-sm">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-lg font-semibold">4) Web Push 订阅</h2>
           <button
