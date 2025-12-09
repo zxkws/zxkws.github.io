@@ -58,8 +58,10 @@ export type PushSubscriptionPayload = {
 };
 
 export const fetchVapidPublicKey = async () => {
-  const res = await httpClient.get('/agent-tasks/push/public-key');
-  return res?.publicKey as string | null;
+  const res = await client<{ publicKey: string | null; hint?: string }>('/agent-tasks/push/public-key', undefined, {
+    method: 'GET',
+  });
+  return res?.publicKey ?? null;
 };
 
 export const savePushSubscription = (payload: PushSubscriptionPayload) =>
