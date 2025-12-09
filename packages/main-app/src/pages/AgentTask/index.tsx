@@ -16,8 +16,6 @@ import {
   savePushSubscription,
 } from '../../services/agentTaskService';
 
-const getStaticVapid = () =>
-  (process.env as unknown as { VITE_VAPID_PUBLIC_KEY?: string }).VITE_VAPID_PUBLIC_KEY || undefined;
 const inlineSwSource = `
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (evt) => evt.waitUntil(self.clients.claim()));
@@ -91,7 +89,7 @@ const AgentTaskPage = () => {
   const [mcpConnections, setMcpConnections] = useState<McpConnection[]>([]);
   const [subs, setSubs] = useState<PushSubscriptionPayload[]>([]);
   const [pushStatus, setPushStatus] = useState<string>('');
-  const [vapidKey, setVapidKey] = useState<string | null | undefined>(getStaticVapid());
+  const [vapidKey, setVapidKey] = useState<string | null | undefined>(undefined);
   const inlineSwUrl = useMemo(() => {
     if (typeof window === 'undefined') return '';
     const blob = new Blob([inlineSwSource], { type: 'application/javascript' });
@@ -147,10 +145,10 @@ const AgentTaskPage = () => {
   const loadVapidKey = async () => {
     try {
       const remoteKey = await fetchVapidPublicKey();
-      setVapidKey(remoteKey ?? getStaticVapid());
+      setVapidKey(remoteKey ?? null);
     } catch (error) {
       console.error(error);
-      setVapidKey(getStaticVapid());
+      setVapidKey(null);
     }
   };
 
