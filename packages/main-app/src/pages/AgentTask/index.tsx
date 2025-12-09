@@ -16,7 +16,8 @@ import {
   savePushSubscription,
 } from '../../services/agentTaskService';
 
-const getStaticVapid = () => (process.env.VITE_VAPID_PUBLIC_KEY as string | undefined) || undefined;
+const getStaticVapid = () =>
+  (process.env as unknown as { VITE_VAPID_PUBLIC_KEY?: string }).VITE_VAPID_PUBLIC_KEY || undefined;
 const inlineSwSource = `
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (evt) => evt.waitUntil(self.clients.claim()));
