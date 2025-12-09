@@ -6,6 +6,7 @@ import {
   type AgentTaskCondition,
   createAgentTask,
   executeAgentTask,
+  fetchVapidPublicKey,
   listAgentTasks,
   listMcpConnections,
   listPushSubscriptions,
@@ -15,7 +16,7 @@ import {
   savePushSubscription,
 } from '../../services/agentTaskService';
 
-const vapidPublicKey = (process.env.VITE_VAPID_PUBLIC_KEY as string | undefined) || undefined;
+const getStaticVapid = () => (process.env.VITE_VAPID_PUBLIC_KEY as string | undefined) || undefined;
 const inlineSwSource = `
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (evt) => evt.waitUntil(self.clients.claim()));
@@ -89,6 +90,7 @@ const AgentTaskPage = () => {
   const [mcpConnections, setMcpConnections] = useState<McpConnection[]>([]);
   const [subs, setSubs] = useState<PushSubscriptionPayload[]>([]);
   const [pushStatus, setPushStatus] = useState<string>('');
+  const [vapidKey, setVapidKey] = useState<string | null | undefined>(getStaticVapid());
   const inlineSwUrl = useMemo(() => {
     if (typeof window === 'undefined') return '';
     const blob = new Blob([inlineSwSource], { type: 'application/javascript' });
@@ -141,11 +143,22 @@ const AgentTaskPage = () => {
     }
   };
 
+  const loadVapidKey = async () => {
+    try {
+      const remoteKey = await fetchVapidPublicKey();
+      setVapidKey(remoteKey ?? getStaticVapid());
+    } catch (error) {
+      console.error(error);
+      setVapidKey(getStaticVapid());
+    }
+  };
+
   useEffect(() => {
     if (!userLoading && user) {
       loadTasks();
       loadConnections();
       loadSubs();
+      loadVapidKey();
     }
   }, [user, userLoading]);
 
@@ -215,8 +228,8 @@ const AgentTaskPage = () => {
   };
 
   const subscribePush = async () => {
-    if (!vapidPublicKey) {
-      setPushStatus('缺少 VAPID 公钥（VITE_VAPID_PUBLIC_KEY）');
+    if (!vapidKey) {
+      setPushStatus('服务端未配置推送公钥，稍后重试或联系管理员');
       return;
     }
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -236,7 +249,7 @@ const AgentTaskPage = () => {
       });
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
       });
 
       const payload = sub.toJSON();
