@@ -1,382 +1,382 @@
 .headerBar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 0 28px;
-  height: 64px;
-  background: var(--header-bg);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--header-border);
-  box-shadow: var(--header-shadow);
-  transition:
-    background-color 0.4s ease,
-    border-color 0.4s ease,
-    box-shadow 0.4s ease;
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 24px;
+	padding: 0 28px;
+	height: 64px;
+	background: var(--header-bg);
+	backdrop-filter: blur(16px);
+	border-bottom: 1px solid var(--header-border);
+	box-shadow: var(--header-shadow);
+	transition:
+		background-color 0.4s ease,
+		border-color 0.4s ease,
+		box-shadow 0.4s ease;
 }
 
 .brandArea {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
+	display: inline-flex;
+	align-items: center;
+	gap: 14px;
 }
 
 .brand {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-width: 0;
 }
 
 .brandMark {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: 0.4em;
-  color: var(--accent);
-  text-transform: uppercase;
+	font-size: 22px;
+	font-weight: 800;
+	letter-spacing: 0.4em;
+	color: var(--accent);
+	text-transform: uppercase;
 }
 
 .brandTagline {
-  font-size: 12px;
-  letter-spacing: 0.28em;
-  color: var(--color-muted);
-  text-transform: uppercase;
+	font-size: 12px;
+	letter-spacing: 0.28em;
+	color: var(--color-muted);
+	text-transform: uppercase;
 }
 
 .actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
 }
 
 .collapseBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--header-border);
-  background: var(--color-bg);
-  color: var(--color-muted-strong);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	border-radius: 12px;
+	border: 1px solid var(--header-border);
+	background: var(--color-bg);
+	color: var(--color-muted-strong);
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition:
+		background 0.2s ease,
+		color 0.2s ease,
+		border-color 0.2s ease,
+		transform 0.2s ease;
 }
 
 .collapseBtn:hover {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-color: var(--accent);
-  transform: translateY(-1px);
+	background: var(--accent-soft);
+	color: var(--accent);
+	border-color: var(--accent);
+	transform: translateY(-1px);
 }
 
-.collapseBtn[data-collapsed='true'] {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: rgba(37, 99, 235, 0.08);
+.collapseBtn[data-collapsed="true"] {
+	color: var(--accent);
+	border-color: var(--accent);
+	background: rgba(37, 99, 235, 0.08);
 }
 
 .collapseIcon {
-  position: relative;
-  width: 14px;
-  height: 14px;
+	position: relative;
+	width: 14px;
+	height: 14px;
 }
 
 .collapseIcon::before,
 .collapseIcon::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 10px;
-  height: 2px;
-  border-radius: 999px;
-  background: currentColor;
+	content: "";
+	position: absolute;
+	inset: 0;
+	margin: auto;
+	width: 10px;
+	height: 2px;
+	border-radius: 999px;
+	background: currentColor;
 }
 
 .collapseIcon::after {
-  transform: rotate(90deg);
+	transform: rotate(90deg);
 }
 
 .collapseText {
-  white-space: nowrap;
+	white-space: nowrap;
 }
 
 .themeToggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  border: none;
-  border-radius: 999px;
-  padding: 8px 16px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    background 0.25s ease;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	border: none;
+	border-radius: 999px;
+	padding: 8px 16px;
+	background: var(--accent-soft);
+	color: var(--accent);
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition:
+		transform 0.25s ease,
+		box-shadow 0.25s ease,
+		background 0.25s ease;
 }
 
 .themeToggle:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 32px -18px rgba(37, 99, 235, 0.55);
+	transform: translateY(-1px);
+	box-shadow: 0 12px 32px -18px rgba(37, 99, 235, 0.55);
 }
 
-[data-theme='dark'] .themeToggle:hover {
-  box-shadow: 0 14px 28px -16px rgba(56, 189, 248, 0.5);
+[data-theme="dark"] .themeToggle:hover {
+	box-shadow: 0 14px 28px -16px rgba(56, 189, 248, 0.5);
 }
 
 .themeToggle:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+	outline: none;
+	box-shadow: var(--focus-ring);
 }
 
 .themeIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.75);
-  color: var(--accent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.75);
+	color: var(--accent);
 }
 
-[data-theme='dark'] .themeIcon {
-  background: rgba(15, 23, 42, 0.6);
+[data-theme="dark"] .themeIcon {
+	background: rgba(15, 23, 42, 0.6);
 }
 
 .icon {
-  width: 16px;
-  height: 16px;
+	width: 16px;
+	height: 16px;
 }
 
 .themeText {
-  white-space: nowrap;
+	white-space: nowrap;
 }
 
 .localePlaceholder {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 14px;
-  border-radius: 999px;
-  border: 1px dashed var(--color-muted);
-  background: transparent;
-  color: var(--color-muted-strong);
-  font-size: 13px;
-  cursor: not-allowed;
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 7px 14px;
+	border-radius: 999px;
+	border: 1px dashed var(--color-muted);
+	background: transparent;
+	color: var(--color-muted-strong);
+	font-size: 13px;
+	cursor: not-allowed;
 }
 
 .localeDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-muted);
-  opacity: 0.6;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--color-muted);
+	opacity: 0.6;
 }
 
 .menuButton {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  border: 1px solid var(--header-border);
-  background: rgba(255, 255, 255, 0.65);
-  color: var(--color-text);
-  cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.25s ease,
-    background 0.25s ease;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	width: 42px;
+	height: 42px;
+	border-radius: 12px;
+	border: 1px solid var(--header-border);
+	background: rgba(255, 255, 255, 0.65);
+	color: var(--color-text);
+	cursor: pointer;
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.25s ease,
+		background 0.25s ease;
 }
 
-[data-theme='dark'] .menuButton {
-  background: rgba(15, 23, 42, 0.75);
+[data-theme="dark"] .menuButton {
+	background: rgba(15, 23, 42, 0.75);
 }
 
 .menuButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.35);
+	transform: translateY(-1px);
+	box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.35);
 }
 
 .menuIcon,
 .menuIcon::before,
 .menuIcon::after {
-  display: block;
-  width: 18px;
-  height: 2px;
-  border-radius: 999px;
-  background: currentColor;
-  position: relative;
-  transition:
-    transform 0.25s ease,
-    opacity 0.25s ease;
+	display: block;
+	width: 18px;
+	height: 2px;
+	border-radius: 999px;
+	background: currentColor;
+	position: relative;
+	transition:
+		transform 0.25s ease,
+		opacity 0.25s ease;
 }
 
 .menuIcon::before,
 .menuIcon::after {
-  content: '';
-  position: absolute;
-  left: 0;
+	content: "";
+	position: absolute;
+	left: 0;
 }
 
 .menuIcon::before {
-  top: -6px;
+	top: -6px;
 }
 
 .menuIcon::after {
-  top: 6px;
+	top: 6px;
 }
 
-.menuButton[data-open='true'] .menuIcon {
-  background: transparent;
+.menuButton[data-open="true"] .menuIcon {
+	background: transparent;
 }
 
-.menuButton[data-open='true'] .menuIcon::before {
-  transform: translateY(6px) rotate(45deg);
+.menuButton[data-open="true"] .menuIcon::before {
+	transform: translateY(6px) rotate(45deg);
 }
 
-.menuButton[data-open='true'] .menuIcon::after {
-  transform: translateY(-6px) rotate(-45deg);
+.menuButton[data-open="true"] .menuIcon::after {
+	transform: translateY(-6px) rotate(-45deg);
 }
 
 @media (max-width: 900px) {
-  .headerBar {
-    height: 56px;
-    padding: 0 16px;
-    gap: 12px;
-  }
+	.headerBar {
+		height: 56px;
+		padding: 0 16px;
+		gap: 12px;
+	}
 
-  .brandArea {
-    gap: 10px;
-  }
+	.brandArea {
+		gap: 10px;
+	}
 
-  .brand {
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-  }
+	.brand {
+		flex-direction: row;
+		align-items: center;
+		gap: 8px;
+	}
 
-  .brandMark {
-    font-size: 18px;
-    letter-spacing: 0.3em;
-  }
+	.brandMark {
+		font-size: 18px;
+		letter-spacing: 0.3em;
+	}
 
-  .brandTagline {
-    display: none;
-  }
+	.brandTagline {
+		display: none;
+	}
 
-  .actions {
-    gap: 8px;
-  }
+	.actions {
+		gap: 8px;
+	}
 
-  .themeToggle {
-    padding: 8px 10px;
-    gap: 8px;
-  }
+	.themeToggle {
+		padding: 8px 10px;
+		gap: 8px;
+	}
 
-  .themeText {
-    display: none;
-  }
+	.themeText {
+		display: none;
+	}
 
-  .menuButton {
-    display: inline-flex;
-  }
+	.menuButton {
+		display: inline-flex;
+	}
 }
 
 .avatarBox {
-  position: relative;
+	position: relative;
 }
 
 .loginBtn {
-  padding: 8px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+	padding: 8px 14px;
+	border-radius: 12px;
+	border: 1px solid var(--accent);
+	background: var(--accent);
+	color: #fff;
+	font-weight: 600;
+	cursor: pointer;
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.2s ease;
 }
 
 .loginBtn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px -10px var(--accent);
+	transform: translateY(-1px);
+	box-shadow: 0 8px 20px -10px var(--accent);
 }
 
 .avatarWrapper {
-  position: relative;
+	position: relative;
 }
 
 .avatarBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
-  border-radius: 14px;
-  border: 1px solid var(--header-border);
-  background: var(--color-bg);
-  color: var(--color-text);
-  cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 6px 10px;
+	border-radius: 14px;
+	border: 1px solid var(--header-border);
+	background: var(--color-bg);
+	color: var(--color-text);
+	cursor: pointer;
 }
 
 .avatarImg {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	object-fit: cover;
 }
 
 .avatarName {
-  font-size: 14px;
-  font-weight: 600;
+	font-size: 14px;
+	font-weight: 600;
 }
 
 .avatarMenu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  min-width: 140px;
-  background: var(--color-bg);
-  border: 1px solid var(--header-border);
-  border-radius: 12px;
-  box-shadow: 0 18px 32px -16px rgba(0, 0, 0, 0.18);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  z-index: 50;
+	position: absolute;
+	right: 0;
+	top: calc(100% + 8px);
+	min-width: 140px;
+	background: var(--color-bg);
+	border: 1px solid var(--header-border);
+	border-radius: 12px;
+	box-shadow: 0 18px 32px -16px rgba(0, 0, 0, 0.18);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	z-index: 50;
 }
 
 .menuItem {
-  display: block;
-  width: 100%;
-  padding: 10px 12px;
-  text-align: left;
-  background: transparent;
-  border: none;
-  color: var(--color-text);
-  font-size: 14px;
-  cursor: pointer;
+	display: block;
+	width: 100%;
+	padding: 10px 12px;
+	text-align: left;
+	background: transparent;
+	border: none;
+	color: var(--color-text);
+	font-size: 14px;
+	cursor: pointer;
 }
 
 .menuItem:hover {
-  background: var(--accent-soft);
-  color: var(--accent);
+	background: var(--accent-soft);
+	color: var(--accent);
 }
