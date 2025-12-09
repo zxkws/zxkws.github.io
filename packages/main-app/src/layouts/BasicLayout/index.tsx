@@ -202,7 +202,7 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
     [remoteMenus, isAuthenticated, isAdmin],
   );
 
-  const shouldShowNav = isMobile || !isNavCollapsed;
+  const shouldShowNav = isMobile ? isNavOpen : true;
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-[var(--color-bg)] text-[var(--color-text)] transition-colors duration-300">
@@ -214,7 +214,16 @@ export default function BasicLayout({ children }: BasicLayoutProps) {
         isNavCollapsed={isNavCollapsed}
       />
       <div className="flex flex-1 overflow-hidden">
-        {shouldShowNav && <PageNav isMobile={isMobile} isOpen={isNavOpen} onClose={closeNav} menus={menus} />}
+        {shouldShowNav && (
+          <PageNav
+            isMobile={isMobile}
+            isOpen={isNavOpen}
+            onClose={closeNav}
+            menus={menus}
+            isCollapsed={!isMobile && isNavCollapsed}
+            onToggleCollapse={toggleDesktopNav}
+          />
+        )}
         <main className="flex flex-1 min-h-0 flex-col overflow-hidden px-8 py-10" aria-hidden={isMobile && isNavOpen}>
           {children}
         </main>

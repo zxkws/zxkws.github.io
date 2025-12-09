@@ -180,9 +180,11 @@ type PageNavProps = {
   isOpen: boolean;
   onClose: () => void;
   menus: MenuItem[];
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
 };
 
-const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
+const PageNav = ({ isMobile, isOpen, onClose, menus, isCollapsed, onToggleCollapse }: PageNavProps) => {
   const { activePath, menuConfig, expandedGroups, toggleGroup } = useMenuState(menus);
 
   const renderMenuItems = useCallback(
@@ -197,7 +199,7 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
           : false;
         const emblem = getIconSymbol(item);
 
-        if (hasChildren) {
+        if (hasChildren && !isCollapsed) {
           return (
             <div key={key} className={styles.menuNode}>
               <button
@@ -243,7 +245,7 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
           <SafeAppLink
             key={key}
             to={item.path}
-            className={CX(styles.navLink, active && styles.navLinkActive)}
+            className={CX(styles.navLink, active && styles.navLinkActive, isCollapsed && styles.navLinkCollapsed)}
             title={item.name}
             onClick={handleLinkClick}
           >
@@ -251,13 +253,13 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
               <span className={styles.emblem} aria-hidden="true">
                 {emblem}
               </span>
-              <span className={styles.linkText}>{item.name}</span>
+              {!isCollapsed && <span className={styles.linkText}>{item.name}</span>}
             </span>
-            {isMicroAppEntry(item.path) && <span className={styles.microBadge}>Micro</span>}
+            {!isCollapsed && isMicroAppEntry(item.path) && <span className={styles.microBadge}>Micro</span>}
           </SafeAppLink>
         );
       }),
-    [activePath, expandedGroups, toggleGroup, isMobile, onClose],
+    [activePath, expandedGroups, toggleGroup, isMobile, onClose, isCollapsed],
   );
 
   const menuContent = useMemo(() => renderMenuItems(menuConfig), [renderMenuItems, menuConfig]);
@@ -266,6 +268,7 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
     styles.navContainer,
     isMobile && styles.navContainerMobile,
     isMobile && isOpen && styles.navContainerMobileOpen,
+    !isMobile && isCollapsed && styles.navContainerCollapsed,
   );
 
   const overlayClassName = CX(styles.mobileOverlay, isOpen && styles.mobileOverlayVisible);
@@ -276,6 +279,17 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
       {isMobile && (
         <button type="button" className={styles.mobileClose} onClick={onClose}>
           关闭
+        </button>
+      )}
+      {!isMobile && (
+        <button
+          type="button"
+          className={CX(styles.collapseHandle, isCollapsed && styles.collapseHandleCollapsed)}
+          onClick={onToggleCollapse}
+          aria-label={isCollapsed ? '展开侧边栏' : '收起侧边栏'}
+          title={isCollapsed ? '展开侧边栏' : '收起侧边栏'}
+        >
+          <span aria-hidden="true">{isCollapsed ? '›' : '‹'}</span>
         </button>
       )}
     </nav>

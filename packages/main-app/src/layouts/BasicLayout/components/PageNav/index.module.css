@@ -16,6 +16,14 @@
 		background 0.3s ease,
 		border-color 0.3s ease,
 		box-shadow 0.3s ease;
+	position: relative;
+}
+
+.navContainerCollapsed {
+	width: 78px;
+	min-width: 78px;
+	flex: 0 0 78px;
+	padding: 20px 12px;
 }
 
 .navContainerMobile {
@@ -221,6 +229,11 @@
 		box-shadow 0.25s ease;
 }
 
+.navLinkCollapsed {
+	justify-content: center;
+	padding: 10px 12px;
+}
+
 .navLink:hover {
 	background: var(--accent-soft);
 	color: var(--accent);
@@ -248,6 +261,11 @@
 	gap: 10px;
 }
 
+.navContainerCollapsed .linkContent {
+	justify-content: center;
+	gap: 0;
+}
+
 .linkText {
 	max-width: 140px;
 	overflow: hidden;
@@ -272,6 +290,20 @@
 [data-theme="dark"] .microBadge {
 	background: rgba(56, 189, 248, 0.18);
 	color: rgba(56, 189, 248, 0.92);
+}
+
+.navContainerCollapsed .linkText,
+.navContainerCollapsed .microBadge,
+.navContainerCollapsed .groupLabel,
+.navContainerCollapsed .chevron,
+.navContainerCollapsed .childContainer {
+	display: none;
+}
+
+.navContainerCollapsed .emblem {
+	width: 32px;
+	height: 32px;
+	font-size: 13px;
 }
 
 .mobileOverlay {
@@ -302,6 +334,31 @@
 	font-weight: 600;
 	cursor: pointer;
 	box-shadow: 0 12px 32px -20px var(--accent);
+}
+
+.collapseHandle {
+	position: absolute;
+	top: 50%;
+	right: -14px;
+	transform: translateY(-50%);
+	width: 28px;
+	height: 48px;
+	border-radius: 999px;
+	border: 1px solid var(--header-border);
+	background: var(--card-bg);
+	color: var(--color-muted-strong);
+	box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.35);
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.collapseHandle:hover {
+	background: var(--accent-soft);
+	color: var(--accent);
+}
+
+.collapseHandleCollapsed {
+	right: -12px;
 }
 
 @media (max-width: 900px) {
