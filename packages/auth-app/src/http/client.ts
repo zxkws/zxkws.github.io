@@ -1,7 +1,7 @@
 import { createFetchClient, type FetchRequestConfig, type FetchResponse } from '@zxkws/shared-fetch';
 import { startLoading, stopLoading } from './loading';
 
-const apiBase = import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api';
+const apiBase = import.meta.env.MODE === 'development' ? '/api' : 'https://system.zxkws.nyc.mn/api';
 
 const client = createFetchClient({
   baseURL: apiBase,

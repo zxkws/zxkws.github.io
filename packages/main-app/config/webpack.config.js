@@ -85,7 +85,7 @@ module.exports = {
       {
         context: ['/api'],
         // 开发态把 /api 转发到后端 API 域名，避免 404
-        target: 'https://api.zxkws.nyc.mn',
+        target: 'https://system.zxkws.nyc.mn',
         changeOrigin: true,
         secure: false,
         cookieDomainRewrite: 'localhost',

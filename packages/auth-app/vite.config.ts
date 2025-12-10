@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
       port: 5183,
       proxy: {
         '^/api': {
-          target: 'https://api.zxkws.nyc.mn',
+          target: 'https://system.zxkws.nyc.mn',
           changeOrigin: true,
           secure: false,
           cookieDomainRewrite: 'localhost',

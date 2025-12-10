@@ -1,7 +1,7 @@
 import type { MenuItem } from '../types/menu';
 
 const isDev = process.env.NODE_ENV === 'development';
-const API_BASE = isDev ? '/api' : 'https://api.zxkws.nyc.mn/api';
+const API_BASE = isDev ? '/api' : 'https://system.zxkws.nyc.mn/api';
 
 const normalizeMenus = (list: unknown): MenuItem[] => {
   if (!Array.isArray(list)) return [];

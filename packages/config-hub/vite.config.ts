@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
       open: false,
       proxy: {
         '^/api': {
-          target: 'https://api.zxkws.nyc.mn',
+          target: 'https://system.zxkws.nyc.mn',
           changeOrigin: true,
           secure: false,
         },

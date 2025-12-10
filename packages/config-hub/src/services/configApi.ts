@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api';
+const API_BASE = import.meta.env.MODE === 'development' ? '/api' : 'https://system.zxkws.nyc.mn/api';
 
 const withAuthHeaders = () => {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };

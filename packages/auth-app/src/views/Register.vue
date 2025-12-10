@@ -10,7 +10,7 @@ const error = ref('');
 const showPassword = ref(false);
 const toast = ref<{ text: string; type: 'error' | 'success' } | null>(null);
 let timer: number | null = null;
-const apiBase = import.meta.env.MODE === 'development' ? '/api' : 'https://api.zxkws.nyc.mn/api';
+const apiBase = import.meta.env.MODE === 'development' ? '/api' : 'https://system.zxkws.nyc.mn/api';
 
 const redirectTo = () => {
   const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/v-app/navList';
