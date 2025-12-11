@@ -1,41 +1,38 @@
-import axios from 'axios';
+import { createFetchClient, type FetchResponse } from '@zxkws/shared-fetch';
 import { Note } from './store';
 
 const isProd = import.meta.env.PROD;
-const http = axios.create({
+
+const client = createFetchClient({
   baseURL: isProd ? 'https://system.zxkws.nyc.mn/api' : '/api',
-  withCredentials: true,
+  credentials: 'include',
+  responseInterceptors: [
+    {
+      onFulfilled: (res: FetchResponse<unknown>) => {
+        const payload = res.data as unknown;
+        const data =
+          payload && typeof payload === 'object' && 'data' in (payload as Record<string, unknown>)
+            ? (payload as { data: unknown }).data
+            : payload;
+        return { ...res, data };
+      },
+    },
+  ],
 });
 
-export const listNotes = async (): Promise<Note[]> => {
-  const { data } = await http.get('/notes');
-  return data;
+const request = async <T>(url: string, params?: unknown, method: 'GET' | 'POST' | 'PATCH' = 'GET') => {
+  return client<T>(url, params, { method });
 };
 
-export const getNote = async (id: string): Promise<Note> => {
-  const { data } = await http.get(`/notes/${id}`);
-  return data;
-};
+export const listNotes = async (): Promise<Note[]> => request<Note[]>('/notes');
 
-export const createNote = async (payload: Partial<Note>) => {
-  const { data } = await http.post('/notes', payload);
-  return data as Note;
-};
+export const getNote = async (id: string): Promise<Note> => request<Note>(`/notes/${id}`);
 
-export const createDaily = async (date: string) => {
-  const { data } = await http.post('/notes/daily', { date });
-  return data as Note;
-};
+export const createNote = async (payload: Partial<Note>) => request<Note>('/notes', payload, 'POST');
 
-export const patchNote = async (
-  id: string,
-  payload: Partial<Note> & { version?: number },
-) => {
-  const { data } = await http.patch(`/notes/${id}`, payload);
-  return data as Note;
-};
+export const createDaily = async (date: string) => request<Note>('/notes/daily', { date }, 'POST');
 
-export const deleteNote = async (id: string) => {
-  const { data } = await http.post(`/notes/${id}/delete`);
-  return data;
-};
+export const patchNote = async (id: string, payload: Partial<Note> & { version?: number }) =>
+  request<Note>(`/notes/${id}`, payload, 'PATCH');
+
+export const deleteNote = async (id: string) => request(`/notes/${id}/delete`, undefined, 'POST');

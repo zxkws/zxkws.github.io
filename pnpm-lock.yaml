@@ -516,9 +516,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.63.0
         version: 5.90.12(react@19.2.0)
-      axios:
-        specifier: ^1.7.7
-        version: 1.12.2
+      '@zxkws/shared-fetch':
+        specifier: workspace:*
+        version: link:../shared-fetch
       dayjs:
         specifier: ^1.11.13
         version: 1.11.18
