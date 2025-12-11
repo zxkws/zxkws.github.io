@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { Note } from './store';
 
+const isProd = import.meta.env.PROD;
 const http = axios.create({
-  baseURL: '/api',
+  baseURL: isProd ? 'https://system.zxkws.nyc.mn/api' : '/api',
   withCredentials: true,
 });
 
