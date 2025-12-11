@@ -1,30 +1,23 @@
+import configFile from '../config/micro-app-config.json';
 import type { MicroAppConfig, SystemConfig } from '../types/config';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
-const CONFIG_FILE_PATH =
-  (typeof window !== 'undefined' && (window as any).__MAIN_APP_CONFIG_FILE__) || '/micro-app-config.json';
 
 type SystemConfigResponse = Omit<SystemConfig, 'updatedAt'> & {
   updatedAt: string | Date;
 };
 
 /**
- * 从 public 下的静态文件加载微应用配置
+ * 从内置 JSON 加载微应用配置
  */
 export async function loadSystemConfig(): Promise<SystemConfig> {
-  const res = await fetch(CONFIG_FILE_PATH, { cache: 'no-cache' });
-  if (!res.ok) {
-    throw new Error(`无法读取微应用配置文件（${res.status}）`);
-  }
+  const normalized =
+    (configFile as unknown as { data?: SystemConfigResponse }).data ??
+    (configFile as unknown as SystemConfigResponse | undefined);
 
-  const raw = (await res.json()) as SystemConfigResponse | { data: SystemConfigResponse };
-  const payload = raw && typeof raw === 'object' && 'data' in raw ? (raw as { data: SystemConfigResponse }).data : raw;
-
-  if (!payload || typeof payload !== 'object') {
+  if (!normalized) {
     throw new Error('微应用配置文件格式不正确');
   }
-
-  const normalized = payload as SystemConfigResponse;
 
   return {
     microApps: (normalized.microApps ?? []) as MicroAppConfig[],

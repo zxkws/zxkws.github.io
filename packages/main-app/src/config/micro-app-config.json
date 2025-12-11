@@ -1,0 +1,78 @@
+{
+	"version": "1.1.0",
+	"updatedAt": "2025-12-05T00:00:00Z",
+	"microApps": [
+		{
+			"name": "v-app",
+			"displayName": "Vue 应用",
+			"devEntry": "http://localhost:5173",
+			"prodEntry": "https://zxkws.nyc.mn/v-app/",
+			"entry": "/v-app/",
+			"activeRule": ["/v-app"],
+			"sandbox": false,
+			"enabled": true
+		},
+		{
+			"name": "config-hub",
+			"displayName": "配置中心",
+			"devEntry": "http://localhost:5176",
+			"prodEntry": "https://zxkws.nyc.mn/config-hub/",
+			"entry": "/config-hub/",
+			"activeRule": ["/app/config-hub"],
+			"sandbox": false,
+			"enabled": true
+		},
+		{
+			"name": "pdf-editor-app",
+			"displayName": "PDF 编辑器",
+			"devEntry": "http://localhost:5177",
+			"prodEntry": "https://zxkws.nyc.mn/pdf-editor-app/",
+			"entry": "/pdf-editor-app/",
+			"activeRule": ["/app/pdf-editor"],
+			"sandbox": true,
+			"enabled": true
+		},
+		{
+			"name": "codex-chat-app",
+			"displayName": "Codex 模型对话",
+			"devEntry": "http://localhost:5180",
+			"prodEntry": "https://zxkws.nyc.mn/codex-chat-app/",
+			"entry": "/codex-chat-app/",
+			"activeRule": ["/app/codex-chat"],
+			"sandbox": true,
+			"enabled": true
+		},
+		{
+			"name": "knowledge-hub-app",
+			"displayName": "知识中台",
+			"devEntry": "http://localhost:5180",
+			"prodEntry": "https://zxkws.nyc.mn/knowledge-hub-app/",
+			"entry": "/knowledge-hub-app/",
+			"activeRule": ["/app/knowledge-hub"],
+			"sandbox": true,
+			"enabled": true
+		},
+		{
+			"name": "db-ops-app",
+			"displayName": "数据库管控",
+			"devEntry": "http://localhost:5184",
+			"prodEntry": "https://zxkws.nyc.mn/db-ops-app/",
+			"entry": "/db-ops-app/",
+			"activeRule": ["/app/db-ops"],
+			"sandbox": true,
+			"enabled": true
+		},
+		{
+			"name": "v-react",
+			"displayName": "Obsidian 笔记",
+			"devEntry": "http://localhost:5185",
+			"prodEntry": "https://zxkws.nyc.mn/v-react/",
+			"entry": "/v-react/",
+			"activeRule": ["/app/v-react"],
+			"sandbox": true,
+			"enabled": true
+		}
+	],
+	"standaloneMenus": [],
+	"metadata": {}
+}

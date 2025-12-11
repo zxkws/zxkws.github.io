@@ -1,6 +1,5 @@
 const { resolve } = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
@@ -55,17 +54,6 @@ module.exports = {
       //   `https://cdnjs.cloudflare.com/ajax/libs/react-router/6.26.2/react-router.${process.env.NODE_ENV}.min.js`,
       //   `https://cdnjs.cloudflare.com/ajax/libs/react-router-dom/6.26.2/react-router-dom.${process.env.NODE_ENV}.min.js`,
       // ],
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: resolve(__dirname, '../public'),
-          to: '.',
-          globOptions: {
-            ignore: ['**/index.html'],
-          },
-        },
-      ],
     }),
     new webpack.DefinePlugin({
       'process.env': JSON.stringify({
