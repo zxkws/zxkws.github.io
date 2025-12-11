@@ -1,7 +1,6 @@
 import type { MenuItem } from '../types/menu';
 
-const isDev = process.env.NODE_ENV === 'development';
-const API_BASE = isDev ? '/api' : 'https://system.zxkws.nyc.mn/api';
+const MENU_FILE_PATH = (typeof window !== 'undefined' && (window as any).__MAIN_APP_MENU_FILE__) || '/menus.json';
 
 const normalizeMenus = (list: unknown): MenuItem[] => {
   if (!Array.isArray(list)) return [];
@@ -30,14 +29,10 @@ const normalizeMenus = (list: unknown): MenuItem[] => {
 /**
  * 获取菜单：已登录用户走 /menu/list（带权限过滤），未登录走 list-public
  */
-export async function fetchRemoteMenus(authenticated: boolean): Promise<MenuItem[]> {
-  const endpoint = authenticated ? '/menu/list' : '/menu/list-public';
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    method: 'POST',
-    credentials: 'include',
-  });
+export async function fetchRemoteMenus(_authenticated: boolean): Promise<MenuItem[]> {
+  const res = await fetch(MENU_FILE_PATH, { cache: 'no-cache' });
   if (!res.ok) {
-    throw new Error(`Failed to load remote menus: ${res.status}`);
+    throw new Error(`Failed to load local menus: ${res.status}`);
   }
   const data = await res.json();
   const list = 'data' in data ? (data as Record<string, unknown>).data : data;

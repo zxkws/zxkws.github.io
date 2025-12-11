@@ -79,6 +79,11 @@
   <% for (var i in htmlWebpackPlugin.options.cdn) { %>
     <script src="<%= htmlWebpackPlugin.options.cdn[i] %>"></script>
     <% } %>
+  <script>
+    // 静态部署下：指定配置和菜单文件路径
+    window.__MAIN_APP_CONFIG_FILE__ = '/micro-app-config.json';
+    window.__MAIN_APP_MENU_FILE__ = '/menus.json';
+  </script>
 </head>
 
 <body>

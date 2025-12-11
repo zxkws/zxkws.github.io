@@ -1,5 +1,6 @@
 const { resolve } = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
@@ -55,6 +56,17 @@ module.exports = {
       //   `https://cdnjs.cloudflare.com/ajax/libs/react-router-dom/6.26.2/react-router-dom.${process.env.NODE_ENV}.min.js`,
       // ],
     }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: resolve(__dirname, '../public'),
+          to: '.',
+          globOptions: {
+            ignore: ['**/index.html'],
+          },
+        },
+      ],
+    }),
     new webpack.DefinePlugin({
       'process.env': JSON.stringify({
         NODE_ENV: process.env.NODE_ENV,
@@ -83,6 +95,10 @@ module.exports = {
     open: true,
     headers: {
       'Access-Control-Allow-Origin': '*',
+    },
+    static: {
+      directory: resolve(__dirname, '../public'),
+      publicPath: '/',
     },
     // webpack-dev-server@5 expects proxy to be an array; the old object shape triggers a schema error
     proxy: [

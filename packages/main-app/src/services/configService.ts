@@ -1,36 +1,35 @@
 import type { MicroAppConfig, SystemConfig } from '../types/config';
-import { client } from './httpClient';
 
 const isDevelopment = process.env.NODE_ENV === 'development';
-const CONFIG_ENDPOINT = '/config-center/micro-apps';
+const CONFIG_FILE_PATH =
+  (typeof window !== 'undefined' && (window as any).__MAIN_APP_CONFIG_FILE__) || '/micro-app-config.json';
 
 type SystemConfigResponse = Omit<SystemConfig, 'updatedAt'> & {
   updatedAt: string | Date;
 };
 
 /**
- * 从配置中心加载配置
+ * 从 public 下的静态文件加载微应用配置
  */
 export async function loadSystemConfig(): Promise<SystemConfig> {
-  // 统一使用封装的 fetch，继承 BaseURL、credentials 与拦截器（loading/token 等）
-  const raw = await client<SystemConfigResponse | { data: SystemConfigResponse }>(CONFIG_ENDPOINT, undefined, {
-    method: 'GET',
-  });
+  const res = await fetch(CONFIG_FILE_PATH, { cache: 'no-cache' });
+  if (!res.ok) {
+    throw new Error(`无法读取微应用配置文件（${res.status}）`);
+  }
 
-  const payload =
-    raw && typeof raw === 'object' && raw !== null && 'data' in raw
-      ? (raw as { data: SystemConfigResponse }).data
-      : raw;
+  const raw = (await res.json()) as SystemConfigResponse | { data: SystemConfigResponse };
+  const payload = raw && typeof raw === 'object' && 'data' in raw ? (raw as { data: SystemConfigResponse }).data : raw;
 
   if (!payload || typeof payload !== 'object') {
-    throw new Error('Invalid system config response');
+    throw new Error('微应用配置文件格式不正确');
   }
 
   const normalized = payload as SystemConfigResponse;
 
   return {
-    ...normalized,
-    updatedAt: new Date(normalized.updatedAt),
+    microApps: (normalized.microApps ?? []) as MicroAppConfig[],
+    version: normalized.version ?? '1.0.0',
+    updatedAt: new Date(normalized.updatedAt ?? Date.now()),
   };
 }
 
