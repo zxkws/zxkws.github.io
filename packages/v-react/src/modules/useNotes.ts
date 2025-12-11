@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createDaily, createNote, listNotes, patchNote } from './api';
 import { createEmptyDaily, useNoteStore, Note } from './store';
@@ -72,9 +72,12 @@ export const useNotes = () => {
 
   const activeNote = ui.activeId ? notes[ui.activeId] : undefined;
 
+  const hydratedRef = useRef(false);
+
   useEffect(() => {
-    if (listQuery.data) {
+    if (!hydratedRef.current && listQuery.data) {
       hydrate(listQuery.data);
+      hydratedRef.current = true;
     }
     return () => {
       debouncedSave.cancel();
