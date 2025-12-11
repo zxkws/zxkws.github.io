@@ -13,16 +13,6 @@
 			"enabled": true
 		},
 		{
-			"name": "config-hub",
-			"displayName": "配置中心",
-			"devEntry": "http://localhost:5176",
-			"prodEntry": "https://zxkws.nyc.mn/config-hub/",
-			"entry": "/config-hub/",
-			"activeRule": ["/app/config-hub"],
-			"sandbox": false,
-			"enabled": true
-		},
-		{
 			"name": "pdf-editor-app",
 			"displayName": "PDF 编辑器",
 			"devEntry": "http://localhost:5177",

@@ -48,12 +48,6 @@ const IFRAME_MICRO_APPS: IframeMicroApp[] = [
     path: '/curlconverter',
     prodSrc: 'https://curlconverter.com/',
   },
-  {
-    name: 'config-hub',
-    path: '/config-hub',
-    devSrc: 'http://localhost:5176',
-    prodSrc: 'https://zxkws.nyc.mn/config-hub/',
-  },
 ];
 
 const resolveIframeSrc = (app: IframeMicroApp) => {

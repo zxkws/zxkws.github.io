@@ -12,7 +12,6 @@ export const builtInAsideMenus: MenuItem[] = [
   { name: 'PDF 编辑器', path: '/app/pdf-editor' },
   { name: '模型对话', path: '/app/codex-chat' },
   { name: '智能代理', path: '/app/agent-tasks' },
-  { name: '配置中心', path: '/app/config-hub' },
   { name: '数据库管控', path: '/app/db-ops' },
   { name: '权限管理', path: '/app/permission-admin' },
   { name: '用户管理', path: '/app/user-admin' },
