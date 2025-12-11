@@ -1,10 +1,10 @@
 import { createFetchClient, type FetchResponse } from '@zxkws/shared-fetch';
 import { Note } from './store';
 
-const isProd = import.meta.env.PROD;
+const BASE_URL = import.meta.env.MODE === 'development' ? '/api' : 'https://system.zxkws.nyc.mn/api';
 
 const client = createFetchClient({
-  baseURL: isProd ? 'https://system.zxkws.nyc.mn/api' : '/api',
+  baseURL: BASE_URL,
   credentials: 'include',
   responseInterceptors: [
     {
