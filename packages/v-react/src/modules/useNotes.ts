@@ -9,7 +9,11 @@ const SAVE_DEBOUNCE = 1200;
 
 export const useNotes = () => {
   const qc = useQueryClient();
-  const { notes, hydrate, upsert, setActive, ui } = useNoteStore();
+  const notes = useNoteStore((s) => s.notes);
+  const ui = useNoteStore((s) => s.ui);
+  const hydrate = useNoteStore((s) => s.hydrate);
+  const upsert = useNoteStore((s) => s.upsert);
+  const setActive = useNoteStore((s) => s.setActive);
   const [saving, setSaving] = useState<'idle' | 'local' | 'syncing' | 'error'>(
     'idle',
   );
