@@ -5,6 +5,7 @@
   "description": "数据库服务监控与配置微应用",
   "scripts": {
     "dev": "vite",
+    "dev:prod": "SERVER_ENV=prod vite",
     "build": "vite build",
     "preview": "vite preview"
   },

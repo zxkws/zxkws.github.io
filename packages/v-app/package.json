@@ -4,6 +4,7 @@
   "description": "v-app",
   "scripts": {
     "vite": "vite",
+    "dev:prod": "SERVER_ENV=prod vite",
     "build": "vite build",
     "serve": "vite preview"
   },

@@ -4,6 +4,7 @@
   "description": "Auth micro-frontend for login/register",
   "scripts": {
     "dev": "vite --host --port 5183",
+    "dev:prod": "SERVER_ENV=prod vite --host --port 5183",
     "build": "vite build",
     "preview": "vite preview --host --port 5183"
   },

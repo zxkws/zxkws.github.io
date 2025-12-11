@@ -7,6 +7,8 @@ import { resolve } from 'path';
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const isProd = mode === 'production';
+  const serverEnv = process.env.SERVER_ENV === 'prod' ? 'prod' : 'dev';
+  const apiProxyTarget = serverEnv === 'prod' ? 'https://system.zxkws.nyc.mn' : 'http://localhost:3333';
 
   return {
     plugins: [
@@ -41,7 +43,7 @@ export default defineConfig(({ mode }) => {
       },
       proxy: {
         '^/api': {
-          target: 'https://system.zxkws.nyc.mn',
+          target: apiProxyTarget,
           changeOrigin: true,
           secure: false,
           cookieDomainRewrite: 'localhost',

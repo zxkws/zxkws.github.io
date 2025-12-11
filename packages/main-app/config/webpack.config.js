@@ -4,6 +4,10 @@ const webpack = require('webpack');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
+// 运行时后端目标：默认走本地开发服务，必要时可以通过 SERVER_ENV=prod 切换到线上网关
+const SERVER_ENV = process.env.SERVER_ENV === 'prod' ? 'prod' : 'dev';
+const API_PROXY_TARGET = SERVER_ENV === 'prod' ? 'https://system.zxkws.nyc.mn' : 'http://localhost:3333';
+
 const isProd = process.env.NODE_ENV === 'production';
 
 module.exports = {
@@ -84,8 +88,8 @@ module.exports = {
     proxy: [
       {
         context: ['/api'],
-        // 开发态把 /api 转发到后端 API 域名，避免 404
-        target: 'https://system.zxkws.nyc.mn',
+        // 根据 SERVER_ENV 选择本地/线上后端，默认本地
+        target: API_PROXY_TARGET,
         changeOrigin: true,
         secure: false,
         cookieDomainRewrite: 'localhost',

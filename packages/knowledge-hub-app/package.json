@@ -5,6 +5,7 @@
   "description": "知识中台微应用，提供文本、多模态与 GraphRAG 能力编排",
   "scripts": {
     "dev": "vite",
+    "dev:prod": "SERVER_ENV=prod vite",
     "build": "vite build",
     "preview": "vite preview"
   },

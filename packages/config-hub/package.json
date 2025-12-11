@@ -5,6 +5,7 @@
   "description": "Universal configuration center micro app",
   "scripts": {
     "dev": "vite",
+    "dev:prod": "SERVER_ENV=prod vite",
     "build": "vite build",
     "preview": "vite preview"
   },

@@ -5,6 +5,7 @@
   "description": "面向大模型对话体验的微应用，提供类似 ChatGPT Codex 的交互界面",
   "scripts": {
     "dev": "vite",
+    "dev:prod": "SERVER_ENV=prod vite",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
