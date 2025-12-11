@@ -17,13 +17,33 @@ const AUTH_TOKEN_KEY = 'auth_token';
 const sanitizeUser = (raw: unknown): UserProfile => {
   if (!raw || typeof raw !== 'object') return {};
   const { username, email, role, roles, permissions, id } = raw as Record<string, unknown>;
+
+  const normalizeRoles = (value: unknown): string[] | undefined => {
+    if (!Array.isArray(value)) return undefined;
+    const out: string[] = [];
+    for (const item of value) {
+      if (typeof item === 'string') {
+        out.push(item);
+      } else if (item && typeof item === 'object' && 'code' in item && typeof (item as any).code === 'string') {
+        out.push((item as any).code);
+      }
+    }
+    return out.length ? out : undefined;
+  };
+
+  const normalizePerms = (value: unknown): string[] | undefined => {
+    if (!Array.isArray(value)) return undefined;
+    const out = value.filter((p) => typeof p === 'string') as string[];
+    return out.length ? out : undefined;
+  };
+
   return {
     id: typeof id === 'string' || typeof id === 'number' ? id : undefined,
     username: typeof username === 'string' ? username : undefined,
     email: typeof email === 'string' ? email : undefined,
     role: typeof role === 'string' ? role : undefined,
-    roles: Array.isArray(roles) ? roles.filter((r) => typeof r === 'string') : undefined,
-    permissions: Array.isArray(permissions) ? permissions.filter((p) => typeof p === 'string') : undefined,
+    roles: normalizeRoles(roles),
+    permissions: normalizePerms(permissions),
   };
 };
 

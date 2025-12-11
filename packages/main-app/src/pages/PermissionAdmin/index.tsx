@@ -2,10 +2,9 @@ import { message } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { client } from '../../services/httpClient';
 
-type Role = 'user' | 'admin';
-
-type Permission = {
+type Role = {
   id: number;
+  code: string;
   name: string;
   desc?: string;
 };
@@ -14,24 +13,25 @@ type UserRow = {
   userId: string;
   username: string;
   email?: string;
-  role: Role;
-  permissions: Permission[];
+  roles?: Role[];
 };
 
 export default function PermissionAdmin() {
   const [users, setUsers] = useState<UserRow[]>([]);
-  const [perms, setPerms] = useState<Permission[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(false);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [featureOn, setFeatureOn] = useState<boolean>(false);
 
   const fetchAll = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [userListRaw, permListRaw] = await Promise.all([
+      const [statusRaw, userListRaw, roleListRaw] = await Promise.all([
+        client<unknown>('/v1/rbac/status', {}, { method: 'GET' }),
         client<unknown>('/v1/rbac/users', {}, { method: 'GET' }),
-        client<unknown>('/v1/rbac/permissions', {}, { method: 'GET' }),
+        client<unknown>('/v1/rbac/roles', {}, { method: 'GET' }),
       ]);
 
       const normalizeUsers = (payload: unknown): UserRow[] => {
@@ -43,22 +43,30 @@ export default function PermissionAdmin() {
         return [];
       };
 
-      const normalizePerms = (payload: unknown): Permission[] => {
+      const normalizeRoles = (payload: unknown): Role[] => {
         const data =
           payload && typeof payload === 'object' && 'data' in payload ? (payload as { data?: unknown }).data : payload;
         if (Array.isArray(data)) {
-          return data as Permission[];
+          return data as Role[];
         }
         return [];
       };
 
       const sanitizedUsers = normalizeUsers(userListRaw).map((u) => ({
         ...u,
-        permissions: Array.isArray(u.permissions) ? u.permissions : [],
+        roles: Array.isArray(u.roles) ? u.roles : [],
       }));
 
+      // feature flag
+      const status =
+        statusRaw && typeof statusRaw === 'object' && 'data' in statusRaw
+          ? (statusRaw as { data?: any }).data
+          : statusRaw;
+      const enabled = (status as any)?.roleManageEnabled;
+      setFeatureOn(enabled === true || enabled === 'true');
+
       setUsers(sanitizedUsers);
-      setPerms(normalizePerms(permListRaw));
+      setRoles(normalizeRoles(roleListRaw));
     } catch (err) {
       setError(err instanceof Error ? err.message : '加载失败，请稍后再试');
       message.error(err instanceof Error ? err.message : '加载失败');
@@ -71,28 +79,12 @@ export default function PermissionAdmin() {
     fetchAll();
   }, []);
 
-  const roleOptions: Array<{ value: Role; label: string }> = useMemo(
-    () => [
-      { value: 'user', label: '普通用户' },
-      { value: 'admin', label: '管理员' },
-    ],
-    [],
-  );
+  const roleOptions = useMemo(() => roles.map((r) => ({ value: r.id, label: r.name })), [roles]);
 
-  const togglePerm = (user: UserRow, permId: number) => {
-    const current = new Set(user.permissions.map((p) => p.id));
-    if (current.has(permId)) {
-      current.delete(permId);
-    } else {
-      current.add(permId);
-    }
-    return Array.from(current);
-  };
-
-  const handleRoleChange = async (userId: string, role: Role) => {
+  const handleRoleChange = async (userId: string, roleIds: number[]) => {
     setSavingId(userId);
     try {
-      await client(`/v1/rbac/users/${userId}/role`, { role }, { method: 'PATCH' });
+      await client(`/v1/rbac/users/${userId}/roles`, { roleIds }, { method: 'POST' });
       await fetchAll();
     } catch (err) {
       setError(err instanceof Error ? err.message : '更新角色失败');
@@ -102,26 +94,12 @@ export default function PermissionAdmin() {
     }
   };
 
-  const handlePermChange = async (user: UserRow, permId: number) => {
-    setSavingId(user.userId);
-    try {
-      const ids = togglePerm(user, permId);
-      await client(`/v1/rbac/users/${user.userId}/permissions`, { permissionIds: ids }, { method: 'PATCH' });
-      await fetchAll();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '更新权限失败');
-      message.error(err instanceof Error ? err.message : '更新权限失败');
-    } finally {
-      setSavingId(null);
-    }
-  };
-
   return (
     <div className="flex h-full w-full flex-col gap-4 bg-[var(--color-bg)] px-6 py-6 text-[var(--color-text)]">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold">权限管理</h1>
-          <p className="text-sm text-[var(--color-muted)]">仅管理员可见：授予角色与权限</p>
+          <h1 className="text-xl font-semibold">角色管理</h1>
+          <p className="text-sm text-[var(--color-muted)]">任何人可见；服务端开关控制是否可编辑</p>
         </div>
         <button
           type="button"
@@ -136,13 +114,17 @@ export default function PermissionAdmin() {
       {error && <div className="rounded border border-red-400 bg-red-50 px-3 py-2 text-red-700">{error}</div>}
 
       <div className="overflow-x-auto rounded-xl border border-[var(--header-border)] bg-[var(--card-bg)] p-2">
+        {!featureOn && (
+          <div className="mb-3 rounded border border-amber-400 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+            角色管理功能未开启（ROLE_MANAGE_ENABLED=false），当前仅可查看，无法修改。
+          </div>
+        )}
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-[var(--header-border)] text-left">
               <th className="px-3 py-2">用户</th>
               <th className="px-3 py-2">邮箱</th>
               <th className="px-3 py-2">角色</th>
-              <th className="px-3 py-2">权限</th>
             </tr>
           </thead>
           <tbody>
@@ -151,37 +133,34 @@ export default function PermissionAdmin() {
                 <td className="px-3 py-2 font-medium">{u.username}</td>
                 <td className="px-3 py-2">{u.email || '--'}</td>
                 <td className="px-3 py-2">
-                  <select
-                    className="rounded border border-[var(--header-border)] bg-transparent px-2 py-1"
-                    value={u.role}
-                    onChange={(e) => handleRoleChange(u.userId, e.target.value as Role)}
-                    disabled={savingId === u.userId}
-                  >
-                    {roleOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-3 py-2">
                   <div className="flex flex-wrap gap-2">
-                    {perms.map((p) => {
-                      const active = u.permissions.some((up) => up.id === p.id);
+                    {roleOptions.map((r) => {
+                      const active = (u.roles || []).some((ur) => ur.id === r.value);
                       return (
-                        <button
-                          type="button"
-                          key={p.id}
-                          onClick={() => handlePermChange(u, p.id)}
-                          disabled={savingId === u.userId}
-                          className={`rounded-full px-3 py-1 text-xs ${
+                        <label
+                          key={r.value}
+                          className={`flex cursor-pointer items-center gap-1 rounded border px-2 py-1 text-xs ${
                             active
-                              ? 'bg-[var(--accent)] text-white'
-                              : 'border border-[var(--header-border)] text-[var(--color-text)]'
+                              ? 'border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]'
+                              : 'border-[var(--header-border)]'
                           }`}
                         >
-                          {p.name}
-                        </button>
+                          <input
+                            type="checkbox"
+                            checked={active}
+                            disabled={savingId === u.userId || !featureOn}
+                            onChange={() => {
+                              const current = new Set((u.roles || []).map((ur) => ur.id));
+                              if (current.has(r.value)) {
+                                current.delete(r.value);
+                              } else {
+                                current.add(r.value);
+                              }
+                              handleRoleChange(u.userId, Array.from(current));
+                            }}
+                          />
+                          {r.label}
+                        </label>
                       );
                     })}
                   </div>

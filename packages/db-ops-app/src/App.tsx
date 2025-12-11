@@ -39,7 +39,8 @@ type CheckResult = {
 type UserProfile = {
   userId: string;
   username: string;
-  role?: string;
+  role?: string; // 兼容旧字段
+  roles?: string[]; // 新结构，可能是字符串数组
 };
 
 type AuthState = 'pending' | 'ok' | 'need-login' | 'forbidden';
@@ -141,7 +142,12 @@ export default function App({ basename: _basename }: { basename?: string }) {
     setAuthState('pending');
     try {
       const info = unwrap<UserProfile>(await client('/v1/user', undefined, { method: 'GET' }));
-      if (info.role !== 'admin') {
+
+      const isAdmin =
+        info.role === 'admin' ||
+        (Array.isArray(info.roles) && info.roles.find((item) => (item as any).code === 'admin'));
+
+      if (!isAdmin) {
         setAuthState('forbidden');
         return;
       }
