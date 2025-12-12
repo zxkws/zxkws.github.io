@@ -1,34 +1,47 @@
 :root {
 	color-scheme: light;
-	--color-bg: #f8fafc;
-	--color-text: #0f172a;
-	--color-muted: #64748b;
-	--color-muted-strong: #475569;
-	--header-bg: rgba(255, 255, 255, 0.85);
-	--header-border: rgba(226, 232, 240, 0.8);
-	--header-shadow: 0 24px 50px -40px rgba(37, 99, 235, 0.75);
-	--accent: #2563eb;
-	--accent-soft: rgba(37, 99, 235, 0.1);
-	--card-bg: rgba(255, 255, 255, 0.6);
-	--focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
-	--spinner-track: rgba(148, 163, 184, 0.55);
-	--spinner-head: #2563eb;
+
+	/* Palette Mapping */
+	--color-bg: #f8fafc; /* Slate 50 */
+	--color-text: #0f172a; /* Slate 900 */
+	--color-muted: #64748b; /* Slate 500 */
+	--color-muted-strong: #334155; /* Slate 700 */
+
+	--header-bg: rgba(255, 255, 255, 0.7);
+	--header-border: rgba(255, 255, 255, 0.5);
+	--header-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+
+	--accent: #0ea5e9; /* Sky 500 */
+	--accent-soft: #e0f2fe; /* Sky 100 */
+
+	--card-bg: rgba(255, 255, 255, 0.7);
+
+	--focus-ring: 0 0 0 3px rgba(14, 165, 233, 0.3);
+
+	--spinner-track: rgba(226, 232, 240, 0.8);
+	--spinner-head: #0ea5e9;
 }
 
 [data-theme="dark"] {
 	color-scheme: dark;
-	--color-bg: #0f172a;
-	--color-text: #e2e8f0;
-	--color-muted: #94a3b8;
+
+	--color-bg: #0f172a; /* Slate 900 */
+	--color-text: #f1f5f9; /* Slate 100 */
+	--color-muted: #94a3b8; /* Slate 400 */
 	--color-muted-strong: #cbd5f5;
-	--header-bg: rgba(15, 23, 42, 0.8);
-	--header-border: rgba(51, 65, 85, 0.7);
-	--header-shadow: 0 24px 45px -35px rgba(14, 165, 233, 0.45);
-	--accent: #38bdf8;
-	--accent-soft: rgba(56, 189, 248, 0.12);
-	--card-bg: rgba(15, 23, 42, 0.55);
-	--focus-ring: 0 0 0 3px rgba(56, 189, 248, 0.35);
-	--spinner-track: rgba(148, 163, 184, 0.35);
+
+	--header-bg: rgba(15, 23, 42, 0.7);
+	--header-border: rgba(255, 255, 255, 0.08);
+	--header-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+
+	--accent: #38bdf8; /* Sky 400 */
+	--accent-soft: rgba(56, 189, 248, 0.15);
+
+	--card-bg: rgba(30, 41, 59, 0.7); /* Slate 800 approx */
+
+	--focus-ring: 0 0 0 3px rgba(56, 189, 248, 0.3);
+
+	--spinner-track: rgba(51, 65, 85, 0.5);
 	--spinner-head: #38bdf8;
 }
 
@@ -56,10 +69,17 @@ body,
 	background: var(--color-bg);
 	color: var(--color-text);
 	transition:
-		background-color 0.4s ease,
-		color 0.4s ease;
-	font-family:
-		"Inter", "PingFang SC", "Microsoft YaHei", Helvetica, Arial, sans-serif;
+		background-color 0.3s ease,
+		color 0.3s ease;
+	font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+/* Glassmorphism helpers */
+.glass {
+	background: var(--card-bg);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border: 1px solid var(--header-border);
 }
 
 .ice-stark-loading {

@@ -1,6 +1,31 @@
 @charset "utf-8";
 
-/* 全局样式 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Variables */
+:root {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent-color: #0ea5e9;
+  --border-color: #e2e8f0;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+}
+
+html.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent-color: #38bdf8;
+  --border-color: #334155;
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
 
 html,
 body {
@@ -9,154 +34,70 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: 'HarmonyOS_Regular', sans-serif;
-}
-
-*,
-a,
-p {
-  margin: 0;
-  padding: 0;
-  text-decoration: none;
-  box-sizing: border-box;
-}
-
-*:hover {
-  transition: 0.3s;
-}
-
-a:hover {
-  color: rgb(57, 159, 255);
-  text-decoration: underline;
-}
-
-@font-face {
-  font-family: 'Pacifico-Regular';
-  font-display: swap;
-  src: url('/font/Pacifico-Regular.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'UnidreamLED';
-  font-display: swap;
-  src: url('/font/UnidreamLED.ttf') format('truetype');
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #app {
-  position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
 }
 
+/* Modern Card Style */
 .cards {
-  border-radius: 6px;
-  background-color: #00000040;
-  backdrop-filter: blur(10px);
-  transform: scale(1);
-  transition:
-    backdrop-filter 0.3s,
-    transform 0.3s;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .cards:hover {
-  transform: scale(1.01);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: var(--accent-color);
 }
 
-.cards:active {
-  transform: scale(0.98);
+/* Glassmorphism Utility */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
 }
 
-.text-hidden {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+/* Typography Utilities */
+.text-gradient {
+  background: linear-gradient(135deg, var(--accent-color), #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background-color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Animations */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.3s ease;
 }
 
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-@keyframes fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fade-blur-in {
-  from {
-    filter: blur(20px) brightness(0.3);
-    transform: scale(1.6);
-  }
-  to {
-    filter: blur(0) brightness(1);
-    transform: scale(1);
-  }
-}
-
-@keyframes fade-blur-main-in {
-  from {
-    transform: scale(1.2);
-  }
-  to {
-    transform: scale(1);
-  }
-}
-
-@media (min-width: 910px) and (max-width: 1200px) {
-  .sm-hidden {
-    display: none;
-  }
-}
-
-#cursor {
-  position: fixed;
-  width: 18px;
-  height: 18px;
-  background: #fff;
-  border-radius: 25px;
-  opacity: 0.25;
-  z-index: 10086;
-  pointer-events: none;
-  transition: 0.2s ease-in-out;
-  transition-property: background, opacity, transform;
-}
-
-#cursor.hidden {
-  opacity: 0;
-}
-
-#cursor.active {
-  opacity: 0.5;
-  transform: scale(0.5);
-}
-
-::-webkit-scrollbar,
-scrollbar {
-  width: 6px;
-  height: 6px;
-  background-color: transparent;
-}
-
-::-webkit-scrollbar-thumb,
-scrollbar-thumb {
-  border-radius: 10px;
-  background-color: #eeeeee;
-}
-
-#message-container {
-  position: fixed;
-  top: 20px;
-  z-index: 9999;
 }

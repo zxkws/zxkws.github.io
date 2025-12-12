@@ -155,7 +155,7 @@ function App() {
         <p className="mb-6 text-sm opacity-80">{configError}</p>
         <button
           type="button"
-          className="rounded bg-blue-500 px-4 py-2 text-white shadow hover:bg-blue-600"
+          className="rounded bg-primary-500 px-4 py-2 text-white shadow hover:bg-primary-600"
           onClick={() => window.location.reload()}
         >
           刷新重试
