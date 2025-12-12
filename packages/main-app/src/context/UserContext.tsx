@@ -4,10 +4,10 @@ import { clearCachedUser, fetchCurrentUser, saveCurrentUser, type UserProfile } 
 // 定义虚拟游客用户
 export const GUEST_USER: UserProfile = {
   userId: 'guest-001',
-  username: 'Guest Visitor',
+  username: 'Guest',
   email: 'guest@example.com',
   role: 'guest',
-  avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Guest', // 一个机器人头像
+  avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=Guest',
 };
 
 type UserContextValue = {
@@ -20,28 +20,24 @@ type UserContextValue = {
   saveUser: (payload: Partial<UserProfile> & { password?: string }) => Promise<UserProfile | null>;
   /** 登出/清空时调用 */
   clearUser: () => void;
-  /** 开启游客模式 */
-  loginAsGuest: () => void;
 };
 
 const UserContext = createContext<UserContextValue>({
-  user: null,
+  user: GUEST_USER, // 默认为游客
   loading: false,
-  isGuest: false,
+  isGuest: true,
   refreshUser: async (_opts) => null,
   saveUser: async (_payload) => null,
   clearUser: () => undefined,
-  loginAsGuest: () => undefined,
 });
 
 export const UserProvider = ({ children }: PropsWithChildren) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  // 默认就是 Guest，不需要等待 loading，直接可以渲染 UI
+  const [user, setUser] = useState<UserProfile | null>(GUEST_USER);
   const [loading, setLoading] = useState(true);
 
-  // 判断当前是否是游客
-  const isGuest = useMemo(() => user?.role === 'guest', [user]);
+  const isGuest = useMemo(() => !user || user.role === 'guest', [user]);
 
-  // 处理从 OAuth 回跳带 ?token= 的场景：落地存储并清理地址栏
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const url = new URL(window.location.href);
@@ -55,54 +51,40 @@ export const UserProvider = ({ children }: PropsWithChildren) => {
       url.searchParams.delete('token');
       window.history.replaceState({}, '', url.toString());
     }
-
-    // 检查是否有游客标记
-    if (window.localStorage.getItem('is_guest') === 'true' && !token) {
-      setUser(GUEST_USER);
-      setLoading(false);
-    }
   }, []);
 
   const clearUser = useCallback(() => {
     clearCachedUser();
-    window.localStorage.removeItem('is_guest');
-    setUser(null);
+    // 登出后，回退到 Guest，而不是 null
+    setUser(GUEST_USER);
     setLoading(false);
   }, []);
 
-  const loginAsGuest = useCallback(() => {
-    window.localStorage.setItem('is_guest', 'true');
-    setUser(GUEST_USER);
-  }, []);
-
-  const refreshUser = useCallback(
-    async ({ force = false }: { force?: boolean } = {}) => {
-      // 如果是游客，不需要去后端拉取
-      if (window.localStorage.getItem('is_guest') === 'true') {
-        setUser(GUEST_USER);
-        setLoading(false);
-        return GUEST_USER;
-      }
-
-      setLoading(true);
-      try {
-        const profile = await fetchCurrentUser(force);
+  const refreshUser = useCallback(async ({ force = false }: { force?: boolean } = {}) => {
+    setLoading(true);
+    try {
+      // 尝试获取用户信息
+      const profile = await fetchCurrentUser(force);
+      if (profile) {
         setUser(profile);
         return profile;
-      } catch {
-        clearUser();
-        return null;
-      } finally {
-        setLoading(false);
       }
-    },
-    [clearUser],
-  );
+      // 如果后端返回空或没有 Token，则静默失败，维持 Guest 状态
+      setUser(GUEST_USER);
+      return GUEST_USER;
+    } catch {
+      // 异常（如 401），也视为 Guest
+      clearCachedUser();
+      setUser(GUEST_USER);
+      return GUEST_USER;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const saveUser = useCallback(
     async (payload: Partial<UserProfile> & { password?: string }) => {
       if (isGuest) {
-        // 游客不能保存后端数据，这里可以抛出错误或静默失败
         console.warn('[UserContext] Guest cannot save user profile');
         return GUEST_USER;
       }
@@ -119,14 +101,14 @@ export const UserProvider = ({ children }: PropsWithChildren) => {
     [isGuest],
   );
 
-  // 初始化时尝试拉取一次用户信息
+  // 初始化拉取
   useEffect(() => {
     refreshUser().catch(() => undefined);
   }, [refreshUser]);
 
   const value = useMemo(
-    () => ({ user, loading, isGuest, refreshUser, saveUser, clearUser, loginAsGuest }),
-    [user, loading, isGuest, refreshUser, saveUser, clearUser, loginAsGuest],
+    () => ({ user, loading, isGuest, refreshUser, saveUser, clearUser }),
+    [user, loading, isGuest, refreshUser, saveUser, clearUser],
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
