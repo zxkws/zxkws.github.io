@@ -277,11 +277,9 @@ export default function App({ basename: _basename }: { basename?: string }) {
   const goLogin = () => {
     if (typeof window === 'undefined') return;
     const current = window.location.href;
-    const authUrl =
-      import.meta.env.MODE === 'development'
-        ? `http://localhost:5183/#/login?redirect=${encodeURIComponent(current)}`
-        : `https://zxkws.nyc.mn/auth-app/#/login?redirect=${encodeURIComponent(current)}`;
-    window.location.href = authUrl;
+    const isDev = import.meta.env.MODE === 'development';
+    const base = isDev ? 'http://localhost:5183' : `${window.location.origin}/auth-app`;
+    window.location.href = `${base}/#/login?redirect=${encodeURIComponent(current)}`;
   };
 
   // 一旦发现未登录，立即跳转登录，避免用户留在受限页面

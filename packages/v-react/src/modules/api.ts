@@ -5,6 +5,11 @@ const BASE_URL = import.meta.env.MODE === 'development' ? '/api' : 'https://syst
 
 const client = createFetchClient({
   baseURL: BASE_URL,
+  getToken: () => (typeof window === 'undefined' ? null : localStorage.getItem('auth_token')),
+  persistToken: (token) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('auth_token', token);
+  },
   credentials: 'include',
   responseInterceptors: [
     {

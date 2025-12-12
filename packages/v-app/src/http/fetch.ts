@@ -5,11 +5,9 @@ const BASE_URL = process.env.NODE_ENV === 'development' ? '/api' : 'https://syst
 
 const getRedirectLogin = () => {
   const current = typeof window === 'undefined' ? '/' : window.location.href;
-  const authUrl =
-    process.env.NODE_ENV === 'development'
-      ? `http://localhost:5183/#/login?redirect=${encodeURIComponent(current)}`
-      : `https://zxkws.nyc.mn/auth-app/#/login?redirect=${encodeURIComponent(current)}`;
-  return authUrl;
+  const isDev = process.env.NODE_ENV === 'development';
+  const base = isDev ? 'http://localhost:5183' : `${window.location.origin}/auth-app`;
+  return `${base}/#/login?redirect=${encodeURIComponent(current)}`;
 };
 
 const bumpLoading = (() => {

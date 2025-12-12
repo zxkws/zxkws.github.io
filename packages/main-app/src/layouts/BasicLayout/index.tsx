@@ -17,14 +17,9 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
     if (!loading && !user) {
       // 记录当前 URL 以便登录后跳转回来
       const currentUrl = window.location.href;
-      const loginUrl = `https://zxkws.nyc.mn/auth-app/#/login?redirect=${encodeURIComponent(currentUrl)}`;
-
-      // 在开发环境跳转到本地
-      if (process.env.NODE_ENV === 'development') {
-        window.location.href = `http://localhost:5183/#/login?redirect=${encodeURIComponent(currentUrl)}`;
-      } else {
-        window.location.href = loginUrl;
-      }
+      const isDev = process.env.NODE_ENV === 'development';
+      const authBase = isDev ? 'http://localhost:5183' : `${window.location.origin}/auth-app`;
+      window.location.href = `${authBase}/#/login?redirect=${encodeURIComponent(currentUrl)}`;
     }
   }, [user, loading]);
 

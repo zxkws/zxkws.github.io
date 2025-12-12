@@ -20,7 +20,10 @@ const redirectTo = () => {
 };
 
 const onGithubLogin = () => {
-  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : 'https://zxkws.nyc.mn/';
+  const redirect =
+    typeof route.query.redirect === 'string'
+      ? route.query.redirect
+      : `${window.location.origin}/`;
   const target = `${apiBase}/auth/github?redirect=${encodeURIComponent(redirect)}`;
   window.location.href = target;
 };

@@ -41,7 +41,7 @@ const IFRAME_MICRO_APPS: IframeMicroApp[] = [
     name: 'textdiff',
     path: '/textdiff',
     devSrc: 'http://localhost:5174',
-    prodSrc: 'https://zxkws.nyc.mn/textdiff/',
+    prodSrc: '/textdiff/',
   },
   {
     name: 'curlconverter',

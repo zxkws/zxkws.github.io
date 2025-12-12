@@ -49,7 +49,7 @@
   </script>
   <script>
     (() => {
-      const origin = 'https://zxkws.nyc.mn';
+      const origin = window.location.origin;
       const selectOrCreate = (selector, tag, attributes) => {
         const existing = document.head.querySelector(selector);
         if (existing) return existing;
