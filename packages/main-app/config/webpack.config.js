@@ -97,17 +97,17 @@ module.exports = {
               },
             },
           },
-          // 3. API 请求网络优先 (NetworkFirst)，这里主要是为了防误伤，其实默认 fetch 不会被 SW 拦截除非配了
+          // 3. API 请求网络优先 (NetworkOnly)，这里主要是为了防误伤，其实默认 fetch 不会被 SW 拦截除非配了
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
-            handler: 'NetworkFirst',
+            handler: 'NetworkOnly', // Changed from 'NetworkFirst' to 'NetworkOnly'
             options: {
               cacheName: 'api-cache',
-              networkTimeoutSeconds: 3,
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 5 * 60, // 5 minutes
-              },
+              // networkTimeoutSeconds: 3, // NetworkOnly doesn't need networkTimeoutSeconds
+              // expiration: { // NetworkOnly doesn't cache, so expiration is not needed
+              //   maxEntries: 50,
+              //   maxAgeSeconds: 5 * 60, // 5 minutes
+              // },
             },
           },
         ],

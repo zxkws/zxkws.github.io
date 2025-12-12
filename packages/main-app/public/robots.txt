@@ -1,5 +1,3 @@
 User-agent: *
 Allow: /
 Disallow: /login
-
-Sitemap: https://zxkws.nyc.mn/sitemap.xml

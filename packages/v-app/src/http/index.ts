@@ -69,21 +69,21 @@ export const uploadFile = (formData: FormData) => {
 
 // 账户管理API
 export const createAccount = (params: CreateAccountDto) => {
-  return fetch<void>('/account-manage/create', params);
+  return fetch<void>('/v1/account-manage', params);
 };
 
 export const getAccounts = () => {
-  return fetch<AccountDto[]>('/account-manage/list', {});
+  return fetch<AccountDto[]>('/v1/account-manage', {});
 };
 
 export const getAccount = (id: number) => {
-  return fetch<AccountDto>(`/account-manage/detail`, { id });
+  return fetch<AccountDto>(`/v1/account-manage/${id}`, {});
 };
 
 export const updateAccount = (id: number, params: UpdateAccountDto) => {
-  return fetch<void>(`/account-manage/update`, { id, ...params }, { method: 'PATCH' });
+  return fetch<void>(`/v1/account-manage/${id}`, params, { method: 'PATCH' });
 };
 
 export const deleteAccount = (id: number) => {
-  return fetch<void>(`/account-manage/remove`, { id }, { method: 'DELETE' });
+  return fetch<void>(`/v1/account-manage/${id}`, {}, { method: 'DELETE' });
 };
