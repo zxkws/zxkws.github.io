@@ -57,6 +57,42 @@ const resolveIframeSrc = (app: IframeMicroApp) => {
   return app.prodSrc;
 };
 
+// --- Service Worker Registration ---
+if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then((registration) => {
+        console.log('SW registered: ', registration);
+
+        // 监听更新
+        registration.addEventListener('updatefound', () => {
+          const installingWorker = registration.installing;
+          if (installingWorker == null) {
+            return;
+          }
+          installingWorker.addEventListener('statechange', () => {
+            if (installingWorker.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                // 有新版本，提示用户刷新
+                console.log('New content is available and will be used when all tabs for this page are closed.');
+                if (window.confirm('检测到新版本，是否立即刷新体验？')) {
+                  window.location.reload();
+                }
+              } else {
+                console.log('Content is cached for offline use.');
+              }
+            }
+          });
+        });
+      })
+      .catch((registrationError) => {
+        console.log('SW registration failed: ', registrationError);
+      });
+  });
+}
+// -----------------------------------
+
 function App() {
   const [isMicroAppLoading, setIsMicroAppLoading] = useState(false);
   const [isFetchLoading, setIsFetchLoading] = useState(false);

@@ -1,6 +1,7 @@
 const { resolve } = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
+const WorkboxPlugin = require('workbox-webpack-plugin');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
@@ -48,12 +49,6 @@ module.exports = {
       template: './public/index.html',
       inject: true,
       minify: isProd,
-      // cdn: [
-      //   `https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.${process.env.NODE_ENV}.min.js`,
-      //   `https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.${process.env.NODE_ENV}.min.js`,
-      //   `https://cdnjs.cloudflare.com/ajax/libs/react-router/6.26.2/react-router.${process.env.NODE_ENV}.min.js`,
-      //   `https://cdnjs.cloudflare.com/ajax/libs/react-router-dom/6.26.2/react-router-dom.${process.env.NODE_ENV}.min.js`,
-      // ],
     }),
     new webpack.DefinePlugin({
       'process.env': JSON.stringify({
@@ -61,20 +56,68 @@ module.exports = {
         VITE_VAPID_PUBLIC_KEY: process.env.VITE_VAPID_PUBLIC_KEY,
       }),
     }),
-  ],
+    // PWA Service Worker Configuration
+    isProd &&
+      new WorkboxPlugin.GenerateSW({
+        // 这些选项帮助快速启用 ServiceWorkers
+        // 不允许遗留的 SW 控制页面
+        clientsClaim: true,
+        skipWaiting: true,
+
+        // 预缓存过滤
+        exclude: [/\.map$/, /asset-manifest\.json$/],
+
+        // 运行时缓存策略 (Runtime Caching)
+        runtimeCaching: [
+          // 1. 缓存子应用的资源 (JS/CSS)
+          {
+            // 匹配子应用路径，例如 /v-react/assets/xxx.js 或 localhost:5185/xxx.js
+            urlPattern: ({ url }) => {
+              return url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|gif)$/);
+            },
+            handler: 'StaleWhileRevalidate', // 策略：优先用旧的，后台更新
+            options: {
+              cacheName: 'sub-apps-assets',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+              },
+            },
+          },
+          // 2. 缓存图片 CDN
+          {
+            urlPattern: ({ url }) =>
+              url.origin.includes('images.unsplash.com') || url.origin.includes('api.dicebear.com'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'external-images',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+          // 3. API 请求网络优先 (NetworkFirst)，这里主要是为了防误伤，其实默认 fetch 不会被 SW 拦截除非配了
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              networkTimeoutSeconds: 3,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 5 * 60, // 5 minutes
+              },
+            },
+          },
+        ],
+      }),
+  ].filter(Boolean),
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx'],
     alias: {
       '@': resolve(__dirname, 'packages/main-app/src'),
     },
-  },
-  externals: {
-    // react: 'React',
-    // 'react/jsx-runtime': 'React',
-    // 'react-dom': 'ReactDOM',
-    // 'react-router': 'ReactRouter',
-    // 'react-router-dom': 'ReactRouterDOM',
-    // 'react-dom/client': 'ReactDOM',
   },
   devServer: {
     port: 3000,
@@ -88,11 +131,9 @@ module.exports = {
       directory: resolve(__dirname, '../public'),
       publicPath: '/',
     },
-    // webpack-dev-server@5 expects proxy to be an array; the old object shape triggers a schema error
     proxy: [
       {
         context: ['/api'],
-        // 根据 SERVER_ENV 选择本地/线上后端，默认本地
         target: API_PROXY_TARGET,
         changeOrigin: true,
         secure: false,
