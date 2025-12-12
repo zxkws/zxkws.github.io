@@ -24,6 +24,16 @@
 	--font-sans:
 		"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
 		sans-serif;
+
+	/* Layout metrics (keep in sync with BasicLayout) */
+	--layout-header-height: 64px;
+	--layout-stage-pad: 16px;
+}
+
+@media (min-width: 768px) {
+	:root {
+		--layout-stage-pad: 24px;
+	}
 }
 
 [data-theme="dark"] {
