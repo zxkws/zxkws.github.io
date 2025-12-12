@@ -2,8 +2,10 @@ import { client } from './httpClient';
 
 export type UserProfile = {
   id?: string | number;
+  userId?: string | number; // Alias for id
   username?: string;
   email?: string;
+  avatar?: string;
   role?: string; // 兼容旧字段
   roles?: string[];
   permissions?: string[];
@@ -16,7 +18,7 @@ const AUTH_TOKEN_KEY = 'auth_token';
 
 const sanitizeUser = (raw: unknown): UserProfile => {
   if (!raw || typeof raw !== 'object') return {};
-  const { username, email, role, roles, permissions, id } = raw as Record<string, unknown>;
+  const { username, email, role, roles, permissions, id, userId, avatar } = raw as Record<string, unknown>;
 
   const normalizeRoles = (value: unknown): string[] | undefined => {
     if (!Array.isArray(value)) return undefined;
@@ -37,10 +39,14 @@ const sanitizeUser = (raw: unknown): UserProfile => {
     return out.length ? out : undefined;
   };
 
+  const finalId = id ?? userId;
+
   return {
-    id: typeof id === 'string' || typeof id === 'number' ? id : undefined,
+    id: typeof finalId === 'string' || typeof finalId === 'number' ? finalId : undefined,
+    userId: typeof finalId === 'string' || typeof finalId === 'number' ? finalId : undefined,
     username: typeof username === 'string' ? username : undefined,
     email: typeof email === 'string' ? email : undefined,
+    avatar: typeof avatar === 'string' ? avatar : undefined,
     role: typeof role === 'string' ? role : undefined,
     roles: normalizeRoles(roles),
     permissions: normalizePerms(permissions),
