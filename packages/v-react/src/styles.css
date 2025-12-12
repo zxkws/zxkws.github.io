@@ -223,6 +223,12 @@ body {
   line-height: 1.6;
 }
 
+.editor .preview img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* Empty State */
 .empty {
   flex: 1;

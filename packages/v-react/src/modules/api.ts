@@ -36,3 +36,20 @@ export const patchNote = async (id: string, payload: Partial<Note> & { version?:
   request<Note>(`/notes/${id}`, payload, 'PATCH');
 
 export const deleteNote = async (id: string) => request(`/notes/${id}/delete`, undefined, 'POST');
+
+export type UploadRecord = {
+  id: number;
+  filename: string;
+  mimeType: string;
+  size: number;
+  url: string;
+  downloadToken: string;
+  signedUrl?: string;
+  createdAt?: string;
+};
+
+export const uploadFile = async (file: File): Promise<UploadRecord> => {
+  const formData = new FormData();
+  formData.append('file', file, file.name);
+  return client<UploadRecord>('/upload/file', formData, { method: 'POST', file: true });
+};
