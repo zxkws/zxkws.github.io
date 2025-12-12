@@ -14,7 +14,7 @@
 		},
 		{
 			"name": "v-react",
-			"displayName": "Obsidian 笔记",
+			"displayName": "React 应用",
 			"devEntry": "http://localhost:5185",
 			"prodEntry": "https://zxkws.nyc.mn/v-react/",
 			"entry": "/v-react/",
