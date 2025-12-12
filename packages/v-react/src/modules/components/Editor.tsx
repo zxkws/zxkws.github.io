@@ -6,6 +6,9 @@ import { useEffect, useRef, useState } from 'react';
 import { uploadFile } from '../api';
 
 const MAX_INLINE_FILE_SIZE = 5 * 1024 * 1024; // 5MB, avoid accidental huge embeds
+const SPLIT_STORAGE_KEY = 'v-react-notes-split';
+const MIN_SPLIT = 0.25;
+const MAX_SPLIT = 0.75;
 
 export const Editor = ({
   note,
@@ -15,12 +18,25 @@ export const Editor = ({
   onChange: (md: string) => void;
 }) => {
   const [value, setValue] = useState(note.contentMd);
+  const [split, setSplit] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0.5;
+    const raw = window.localStorage.getItem(SPLIT_STORAGE_KEY);
+    const parsed = raw ? Number(raw) : NaN;
+    if (!Number.isFinite(parsed)) return 0.5;
+    return Math.min(MAX_SPLIT, Math.max(MIN_SPLIT, parsed));
+  });
+  const splitRef = useRef(split);
+  const containerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const valueRef = useRef(value);
 
   useEffect(() => {
     valueRef.current = value;
   }, [value]);
+
+  useEffect(() => {
+    splitRef.current = split;
+  }, [split]);
 
   // When switching notes, reset editor content to the new note.
   useEffect(() => {
@@ -120,8 +136,41 @@ export const Editor = ({
     void handleFiles(files);
   };
 
+  const handleSplitterPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const container = containerRef.current;
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    let latest = splitRef.current;
+
+    const onMove = (ev: PointerEvent) => {
+      const ratio = (ev.clientX - rect.left) / rect.width;
+      latest = Math.min(MAX_SPLIT, Math.max(MIN_SPLIT, ratio));
+      setSplit(latest);
+    };
+
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      try {
+        window.localStorage.setItem(SPLIT_STORAGE_KEY, String(latest));
+      } catch {
+        /* ignore */
+      }
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  };
+
   return (
-    <div className="editor">
+    <div
+      ref={containerRef}
+      className="editor"
+      style={{
+        gridTemplateColumns: `${split * 100}% 8px ${100 - split * 100}%`,
+      }}
+    >
       <textarea
         ref={textareaRef}
         value={value}
@@ -130,6 +179,7 @@ export const Editor = ({
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       />
+      <div className="splitter" onPointerDown={handleSplitterPointerDown} />
       <div className="preview">
         <ReactMarkdown
           remarkPlugins={[remarkGfm as any]}
