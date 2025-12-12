@@ -12,7 +12,7 @@ type HeaderBarProps = {
 const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, clearUser } = useUser();
+  const { user, clearUser, isGuest } = useUser();
 
   useEffect(() => {
     // Initial Theme Sync
@@ -40,10 +40,21 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
   };
 
   const handleLogout = async () => {
+    // 如果是游客，直接清理本地存储即可，不需要调用后端 logout
+    if (isGuest) {
+      clearUser(); // UserContext 内部会清理 localStorage
+      window.location.reload();
+      return;
+    }
+
     await httpClient('/auth/logout', {}, { method: 'POST' });
     clearAuthArtifacts();
     clearUser();
     window.location.reload();
+  };
+
+  const handleLoginRedirect = () => {
+    window.location.href = 'https://zxkws.nyc.mn/auth-app/#/login';
   };
 
   return (
@@ -80,32 +91,39 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
           <div className={styles.userProfile}>
             <button className={styles.userBtn} onClick={() => setIsMenuOpen(!isMenuOpen)} type="button">
               <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces"
+                src={
+                  user.avatar ||
+                  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces'
+                }
                 className={styles.avatar}
                 alt="User"
               />
-              <span className={styles.username}>{user.username}</span>
+              <span className={styles.username}>
+                {user.username}
+                {isGuest && <span style={{ opacity: 0.5, marginLeft: 4, fontSize: 12 }}>(Guest)</span>}
+              </span>
             </button>
 
             {isMenuOpen && (
               <div className={styles.dropdown} onMouseLeave={() => setIsMenuOpen(false)} role="menu" tabIndex={-1}>
-                <a href="/profile" className={styles.menuItem} role="menuitem">
-                  个人资料
-                </a>
+                {isGuest ? (
+                  <button onClick={handleLoginRedirect} className={styles.menuItem} type="button" role="menuitem">
+                    👉 立即登录
+                  </button>
+                ) : (
+                  <a href="/profile" className={styles.menuItem} role="menuitem">
+                    个人资料
+                  </a>
+                )}
+
                 <button onClick={handleLogout} className={styles.menuItem} type="button" role="menuitem">
-                  退出登录
+                  {isGuest ? '退出体验' : '退出登录'}
                 </button>
               </div>
             )}
           </div>
         ) : (
-          <button
-            className={styles.loginBtn}
-            onClick={() => {
-              window.location.href = 'https://zxkws.nyc.mn/auth-app/#/login';
-            }}
-            type="button"
-          >
+          <button className={styles.loginBtn} onClick={handleLoginRedirect} type="button">
             登录
           </button>
         )}

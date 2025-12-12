@@ -7,7 +7,7 @@ import PageLoading from './components/PageLoading';
 import './global.css';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
-import { UserProvider } from './context/UserContext';
+import { GUEST_USER, UserProvider } from './context/UserContext';
 import {
   ensureIcestarkAppsRegistered,
   ensureIcestarkStarted,
@@ -63,6 +63,24 @@ function App() {
   const [configLoaded, setConfigLoaded] = useState(false);
   const [microApps, setMicroApps] = useState<ReturnType<typeof resolveMicroApps>>([]);
   const [configError, setConfigError] = useState<string | null>(null);
+
+  // 监听 URL 上的 ?guest=true 参数
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('guest') === 'true') {
+      try {
+        window.localStorage.setItem('is_guest', 'true');
+        // 清理 URL 参数
+        url.searchParams.delete('guest');
+        window.history.replaceState({}, '', url.toString());
+        // 触发一个自定义事件或 reload 来确保 UserContext 捕捉到变化 (UserContext 内部也会读 storage)
+        // 但最简单的是不做任何事，因为 UserContext 初始化时会读取 storage
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const bootstrap = async () => {

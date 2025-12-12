@@ -25,6 +25,18 @@ const onGithubLogin = () => {
   window.location.href = target;
 };
 
+// 新增：触发主应用切换到游客模式
+const onGuestLogin = () => {
+  // 我们通过 postMessage 或直接操作 localStorage (因为同源) 来通讯
+  // 但最简单的是跳转回主应用并在 query 中带个标记，或者主应用暴露全局方法
+  // 这里我们采用最稳妥的方式：直接写入 localStorage (假设同域) 并跳转
+  // 如果不同域，需要 postMessage。这里假设 auth-app 和 main-app 部署在同域或通过 subdomain 共享 cookie/storage
+  // 但为了安全起见，我们跳转到一个特定的 URL，主应用拦截该 URL
+  
+  // 简化方案：直接跳转回主应用首页，并带上 ?guest=true
+  window.location.href = '/?guest=true';
+};
+
 const onSubmit = async () => {
   error.value = '';
   loading.value = true;
@@ -90,7 +102,11 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <button class="btn" :disabled="loading" @click="onSubmit">{{ loading ? '登录中...' : '登录' }}</button>
-        <button class="btn ghost" type="button" @click="onGithubLogin">使用 GitHub 登录</button>
+        <div class="divider">or</div>
+        <div class="btn-group">
+          <button class="btn ghost small" type="button" @click="onGithubLogin">GitHub 登录</button>
+          <button class="btn ghost small guest-btn" type="button" @click="onGuestLogin">游客体验 →</button>
+        </div>
         <div class="link-row">
           <span></span>
           <router-link class="link" to="/register" :query="route.query">去注册</router-link>
@@ -105,3 +121,40 @@ onBeforeUnmount(() => {
     </transition>
   </div>
 </template>
+
+<style scoped>
+.divider {
+  text-align: center;
+  margin: 16px 0;
+  color: #64748b;
+  font-size: 12px;
+  position: relative;
+}
+.divider::before, .divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.divider::before { left: 0; }
+.divider::after { right: 0; }
+
+.btn-group {
+  display: flex;
+  gap: 12px;
+}
+.btn.small {
+  margin-top: 0;
+  font-size: 14px;
+  padding: 10px;
+}
+.guest-btn {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.guest-btn:hover {
+  background: rgba(56, 189, 248, 0.1);
+}
+</style>
