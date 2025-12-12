@@ -67,10 +67,6 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
             </svg>
           </button>
         )}
-        <div className={styles.brand}>
-          <div className={styles.brandIcon}>Z</div>
-          <span>ZXKWS Hub</span>
-        </div>
       </div>
 
       <div className={styles.actions}>

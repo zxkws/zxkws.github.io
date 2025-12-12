@@ -4,11 +4,11 @@
   --color-primary-hover: #0284c7;
   --color-primary-light: #e0f2fe; /* Sky 100 */
   
-  --bg-main: #f8fafc; /* Slate 50 */
-  --bg-surface: #ffffff;
-  --bg-surface-hover: #f1f5f9; /* Slate 100 */
+  --bg-main: transparent; /* Changed from #f8fafc to transparent to blend with Glass OS */
+  --bg-surface: rgba(255, 255, 255, 0.6); /* Semi-transparent surface */
+  --bg-surface-hover: rgba(255, 255, 255, 0.8);
   
-  --border-subtle: #e2e8f0; /* Slate 200 */
+  --border-subtle: rgba(226, 232, 240, 0.6);
   --border-focus: #0ea5e9;
   
   --text-main: #0f172a; /* Slate 900 */
@@ -17,22 +17,24 @@
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  
+  --glass-blur: blur(12px);
 }
 
 /* Dark Mode Variables */
 html.dark {
-  --bg-main: #0f172a; /* Slate 900 */
-  --bg-surface: #1e293b; /* Slate 800 */
-  --bg-surface-hover: #334155; /* Slate 700 */
+  --bg-main: transparent;
+  --bg-surface: rgba(30, 41, 59, 0.6); /* Slate 800 semi-transparent */
+  --bg-surface-hover: rgba(51, 65, 85, 0.7);
   
-  --color-primary-light: #075985; /* Sky 800 */
+  --color-primary-light: rgba(7, 89, 133, 0.4);
   
-  --border-subtle: #334155;
+  --border-subtle: rgba(255, 255, 255, 0.1);
   
-  --text-main: #f1f5f9; /* Slate 100 */
-  --text-muted: #94a3b8; /* Slate 400 */
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
   
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
@@ -46,8 +48,8 @@ body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: var(--text-main);
-  background: var(--bg-main);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  background: var(--bg-main); /* Transparent */
+  transition: color 0.3s ease;
 }
 
 /* Layout Structure */
@@ -55,13 +57,14 @@ body {
   display: grid;
   grid-template-columns: 260px 1fr;
   height: 100vh;
-  background: var(--bg-main);
   overflow: hidden;
+  background: transparent;
 }
 
-/* Sidebar Styling */
+/* Sidebar Styling - Glass Card */
 .sidebar {
   background: var(--bg-surface);
+  backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
@@ -80,7 +83,7 @@ body {
   padding: 8px 12px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: var(--bg-surface);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-main);
   font-size: 13px;
   font-weight: 500;
@@ -119,6 +122,7 @@ body {
 .note-item.active {
   background: var(--color-primary-light);
   border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
 }
 
 .note-item .title {
@@ -139,16 +143,15 @@ body {
   justify-content: space-between;
 }
 
-/* Main Content Area */
+/* Main Content Area - Another Glass Card */
 .main {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   background: var(--bg-surface);
-  margin: 12px; /* Card effect */
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-sm);
+  backdrop-filter: var(--glass-blur);
+  margin: 0; /* Removing margin to fit main stage perfectly */
+  border-left: 1px solid var(--border-subtle); /* Divider instead of gap */
   overflow: hidden;
 }
 
@@ -162,13 +165,13 @@ body {
   gap: 8px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .tab {
   padding: 6px 16px;
   border-radius: 20px; /* Pill shape */
-  background: var(--bg-surface-hover);
+  background: transparent;
   color: var(--text-muted);
   font-size: 13px;
   cursor: pointer;
@@ -178,12 +181,13 @@ body {
 
 .tab:hover {
   color: var(--text-main);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .tab.active {
   background: var(--color-primary);
   color: white;
-  box-shadow: 0 2px 4px rgba(14, 165, 233, 0.3);
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
 }
 
 /* Editor */
@@ -193,7 +197,7 @@ body {
   gap: 0;
   flex: 1;
   overflow: hidden;
-  background: var(--bg-surface);
+  background: transparent;
 }
 
 .editor textarea {
@@ -206,12 +210,12 @@ body {
   line-height: 1.6;
   outline: none;
   resize: none;
-  background: var(--bg-surface);
+  background: transparent;
   color: var(--text-main);
 }
 
 .editor .preview {
-  background: var(--bg-main); /* Slightly different bg for preview */
+  background: rgba(0, 0, 0, 0.02); /* Very subtle separation */
   overflow: auto;
   padding: 24px;
   border-left: 1px solid var(--border-subtle);
@@ -234,6 +238,7 @@ body {
   content: '⚡';
   font-size: 48px;
   opacity: 0.5;
+  filter: drop-shadow(0 0 10px rgba(14, 165, 233, 0.5));
 }
 
 /* Status Bar */
@@ -244,7 +249,7 @@ body {
   align-items: center;
   justify-content: flex-end;
   border-top: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
+  background: rgba(255, 255, 255, 0.05);
   font-size: 12px;
   color: var(--text-muted);
   font-family: 'JetBrains Mono', monospace;

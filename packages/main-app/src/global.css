@@ -1,40 +1,48 @@
 :root {
 	color-scheme: light;
 
-	/* Palette Mapping */
-	--color-bg: #f8fafc;
-	--color-text: #0f172a;
-	--color-muted: #64748b;
-	--color-muted-strong: #334155;
+	/* Palette Mapping - Adjusted for higher contrast and elegance */
+	--color-bg: #f1f5f9; /* Slate 100 - Slightly darker than pure white for depth */
+	--color-text: #1e293b; /* Slate 800 - High contrast text */
+	--color-muted: #64748b; /* Slate 500 */
+	--color-muted-strong: #475569; /* Slate 600 */
 
-	--glass-border: rgba(255, 255, 255, 0.4);
-	--glass-surface: rgba(255, 255, 255, 0.65);
-	--glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+	/* Glass System Refined */
+	--glass-border: rgba(255, 255, 255, 0.6);
+	--glass-surface: rgba(255, 255, 255, 0.75);
+	--glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 
-	--accent: #0ea5e9;
-	--accent-glow: rgba(14, 165, 233, 0.5);
+	--accent: #0ea5e9; /* Sky 500 */
+	--accent-glow: rgba(14, 165, 233, 0.3);
 
 	--stage-bg: rgba(255, 255, 255, 0.85);
-	--stage-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+	--stage-shadow:
+		0 24px 60px -12px rgba(50, 50, 93, 0.15), 0 12px 24px -16px
+		rgba(0, 0, 0, 0.1);
+
+	/* Fonts */
+	--font-sans:
+		"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+		sans-serif;
 }
 
 [data-theme="dark"] {
 	color-scheme: dark;
 
-	--color-bg: #020617;
-	--color-text: #f8fafc;
-	--color-muted: #94a3b8;
-	--color-muted-strong: #cbd5f5;
+	--color-bg: #020617; /* Slate 950 - Deep space */
+	--color-text: #f8fafc; /* Slate 50 */
+	--color-muted: #94a3b8; /* Slate 400 */
+	--color-muted-strong: #cbd5e1; /* Slate 300 */
 
 	--glass-border: rgba(255, 255, 255, 0.08);
-	--glass-surface: rgba(15, 23, 42, 0.6);
-	--glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+	--glass-surface: rgba(15, 23, 42, 0.7);
+	--glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 
-	--accent: #38bdf8;
-	--accent-glow: rgba(56, 189, 248, 0.4);
+	--accent: #38bdf8; /* Sky 400 */
+	--accent-glow: rgba(56, 189, 248, 0.3);
 
-	--stage-bg: rgba(30, 41, 59, 0.7);
-	--stage-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+	--stage-bg: rgba(30, 41, 59, 0.4); /* More transparent in dark mode */
+	--stage-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.5);
 }
 
 *,
@@ -50,15 +58,17 @@ body {
 	height: 100%;
 	width: 100%;
 	overflow: hidden; /* Prevent body scroll, layout handles it */
-	font-family: "Inter", system-ui, -apple-system, sans-serif;
+	font-family: var(--font-sans);
 	background-color: var(--color-bg);
 	color: var(--color-text);
 	transition:
-		background-color 0.3s ease,
-		color 0.3s ease;
+		background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+		color 0.4s ease;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
-/* Dynamic Animated Background */
+/* Dynamic Animated Background - Refined */
 body::before {
 	content: "";
 	position: fixed;
@@ -67,16 +77,17 @@ body::before {
 	width: 200%;
 	height: 200%;
 	background:
-		radial-gradient(circle at center, var(--accent-glow) 0%, transparent 40%),
+		radial-gradient(circle at center, var(--accent-glow) 0%, transparent 45%),
 		radial-gradient(
 			circle at 80% 20%,
 			rgba(99, 102, 241, 0.15) 0%,
-			transparent 40%
-		);
-	filter: blur(80px);
-	animation: meshFlow 20s ease-in-out infinite alternate;
+			transparent 45%
+		); /* Indigo hint */
+	filter: blur(100px);
+	animation: meshFlow 25s ease-in-out infinite alternate;
 	z-index: -1;
-	opacity: 0.6;
+	opacity: 0.5;
+	pointer-events: none;
 }
 
 @keyframes meshFlow {
@@ -84,7 +95,7 @@ body::before {
 		transform: translate(0, 0) rotate(0deg);
 	}
 	100% {
-		transform: translate(-50px, -50px) rotate(5deg);
+		transform: translate(-30px, -30px) rotate(3deg);
 	}
 }
 
@@ -111,14 +122,16 @@ body::before {
 
 .app-router-shell > div {
 	flex: 1;
-	overflow: hidden; /* Let internal apps handle scrolling */
+	overflow: hidden;
 	display: flex;
 	flex-direction: column;
-	background: transparent; /* Force transparency to show stage */
+	background: transparent !important; /* Force transparency */
+	border-radius: 24px; /* Match Main Stage */
 }
 
 iframe {
 	border: none;
 	width: 100%;
 	height: 100%;
+	border-radius: 24px;
 }
