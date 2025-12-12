@@ -1,238 +1,114 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUser } from '../../../../context/UserContext';
 import { client as httpClient } from '../../../../services/httpClient';
 import { clearAuthArtifacts } from '../../../../utils/authCleanup';
 import * as styles from './index.module.css';
 
-type Theme = 'light' | 'dark';
-
-const THEME_STORAGE_KEY = 'main-app-theme';
-const THEME_ATTRIBUTE = 'data-theme';
-
-const isTheme = (value: string | null): value is Theme => value === 'light' || value === 'dark';
-
-const readStoredTheme = (): Theme | null => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-  try {
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    return isTheme(stored) ? stored : null;
-  } catch {
-    return null;
-  }
-};
-
-const systemPrefersDark = (): boolean => {
-  if (typeof window === 'undefined' || !window.matchMedia) {
-    return false;
-  }
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
-};
-
-const resolveInitialTheme = (): Theme => {
-  if (typeof document !== 'undefined') {
-    const attrTheme = document.documentElement.getAttribute(THEME_ATTRIBUTE);
-    if (isTheme(attrTheme)) {
-      return attrTheme;
-    }
-  }
-  return readStoredTheme() ?? (systemPrefersDark() ? 'dark' : 'light');
-};
-
-const applyTheme = (nextTheme: Theme) => {
-  if (typeof document === 'undefined') {
-    return;
-  }
-  document.documentElement.setAttribute(THEME_ATTRIBUTE, nextTheme);
-  try {
-    window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
-  } catch {
-    // ignore storage failures (e.g. private mode)
-  }
-};
-
-const SunIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.icon}>
-    <path
-      fill="currentColor"
-      d="M12 5.25a.75.75 0 0 1-.75-.75V2.5a.75.75 0 0 1 1.5 0V4.5a.75.75 0 0 1-.75.75Zm0 16.25a.75.75 0 0 1-.75-.75V19.5a.75.75 0 0 1 1.5 0v1.25a.75.75 0 0 1-.75.75Zm9-8.5a.75.75 0 0 1-.75.75H19a.75.75 0 0 1 0-1.5h1.25a.75.75 0 0 1 .75.75ZM5.75 12a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1 0-1.5H5a.75.75 0 0 1 .75.75Zm12.15 6.1a.75.75 0 0 1-1.06-1.06l.88-.88a.75.75 0 0 1 1.06 1.06l-.88.88Zm-11.78-11.8a.75.75 0 0 1-1.06-1.06l.88-.88a.75.75 0 0 1 1.06 1.06l-.88.88Zm11.78 0-.88-.88a.75.75 0 0 1 1.06-1.06l.88.88a.75.75 0 0 1-1.06 1.06Zm-11.78 11.8-.88-.88a.75.75 0 1 1 1.06-1.06l.88.88a.75.75 0 0 1-1.06 1.06ZM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z"
-    />
-  </svg>
-);
-
-const MoonIcon = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.icon}>
-    <path
-      fill="currentColor"
-      d="M12.5 2a.75.75 0 0 1 .74.62 8.75 8.75 0 0 0 8.14 7.13.75.75 0 0 1 .12 1.48A9.76 9.76 0 0 1 12 21.75 9.75 9.75 0 0 1 11.78 2.63 8.98 8.98 0 0 0 12.5 2Zm-2.72 2.39A8.25 8.25 0 1 0 19.61 14a10.26 10.26 0 0 1-9.83-9.61Z"
-    />
-  </svg>
-);
-
 type HeaderBarProps = {
   isMobile?: boolean;
-  isNavOpen?: boolean;
   onMenuToggle?: () => void;
-  onDesktopNavToggle?: () => void;
-  isNavCollapsed?: boolean;
 };
 
-const HeaderBar = ({
-  isMobile = false,
-  isNavOpen = false,
-  onMenuToggle,
-  onDesktopNavToggle,
-  isNavCollapsed = false,
-}: HeaderBarProps) => {
-  const [theme, setTheme] = useState<Theme>(() => resolveInitialTheme());
-  const [hasManualOverride, setHasManualOverride] = useState<boolean>(() => readStoredTheme() !== null);
-  const [menuOpen, setMenuOpen] = useState(false);
+const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, clearUser } = useUser();
 
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+    // Initial Theme Sync
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    setTheme(isDark ? 'dark' : 'light');
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) {
-      return;
-    }
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (event: MediaQueryListEvent) => {
-      if (hasManualOverride) {
-        return;
-      }
-      setTheme(event.matches ? 'dark' : 'light');
-    };
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+          setTheme(isDark ? 'dark' : 'light');
+        }
+      });
+    });
 
-    if (typeof media.addEventListener === 'function') {
-      media.addEventListener('change', handleChange);
-    } else if (typeof media.addListener === 'function') {
-      media.addListener(handleChange);
-    }
-
-    return () => {
-      if (typeof media.removeEventListener === 'function') {
-        media.removeEventListener('change', handleChange);
-      } else if (typeof media.removeListener === 'function') {
-        media.removeListener(handleChange);
-      }
-    };
-  }, [hasManualOverride]);
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   const toggleTheme = () => {
-    setHasManualOverride(true);
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
-  };
-
-  const nextThemeLabel = useMemo(() => (theme === 'dark' ? '切换至亮色' : '切换至暗色'), [theme]);
-  const ThemeIcon = theme === 'dark' ? SunIcon : MoonIcon;
-
-  const goLogin = () => {
-    const current = typeof window === 'undefined' ? '/' : window.location.href;
-    const url =
-      process.env.NODE_ENV === 'development'
-        ? `http://localhost:5183/#/login?redirect=${encodeURIComponent(current)}`
-        : `https://zxkws.nyc.mn/auth-app/#/login?redirect=${encodeURIComponent(current)}`;
-    window.location.href = url;
+    const next = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('main-app-theme', next);
+    setTheme(next);
   };
 
   const handleLogout = async () => {
-    if (typeof window === 'undefined') return;
-
     await httpClient('/auth/logout', {}, { method: 'POST' });
-
     clearAuthArtifacts();
     clearUser();
-    setMenuOpen(false);
-    window.dispatchEvent(new CustomEvent('main-logout'));
-
-    const current = window.location.href.split('#')[0];
-    const loginUrl =
-      process.env.NODE_ENV === 'development'
-        ? `http://localhost:5183/#/login?redirect=${encodeURIComponent(current)}`
-        : `https://zxkws.nyc.mn/auth-app/#/login?redirect=${encodeURIComponent(current)}`;
-    window.location.replace(loginUrl);
+    window.location.reload();
   };
 
   return (
     <header className={styles.headerBar}>
-      <div className={styles.brandArea}>
+      <div className={styles.leftArea}>
         {isMobile && (
-          <button
-            type="button"
-            className={styles.menuButton}
-            aria-label={isNavOpen ? '关闭导航' : '打开导航'}
-            aria-expanded={isNavOpen}
-            data-open={isNavOpen || undefined}
-            onClick={onMenuToggle}
-          >
-            <span className={styles.menuIcon} aria-hidden="true" />
+          <button className={styles.menuToggle} onClick={onMenuToggle} type="button">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-labelledby="menuIconTitle"
+            >
+              <title id="menuIconTitle">Menu</title>
+              <path d="M3 12h18M3 6h18M3 18h18" />
+            </svg>
           </button>
         )}
         <div className={styles.brand}>
-          <span className={styles.brandMark}>ZXKWS</span>
-          <span className={styles.brandTagline}>A Hub</span>
+          <div className={styles.brandIcon}>Z</div>
+          <span>ZXKWS Hub</span>
         </div>
       </div>
+
       <div className={styles.actions}>
-        {!isMobile && (
+        <button className={styles.themeBtn} onClick={toggleTheme} aria-label="Toggle Theme" type="button">
+          {theme === 'dark' ? '🌙' : '☀️'}
+        </button>
+
+        {user ? (
+          <div className={styles.userProfile}>
+            <button className={styles.userBtn} onClick={() => setIsMenuOpen(!isMenuOpen)} type="button">
+              <img
+                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces"
+                className={styles.avatar}
+                alt="User"
+              />
+              <span className={styles.username}>{user.username}</span>
+            </button>
+
+            {isMenuOpen && (
+              <div className={styles.dropdown} onMouseLeave={() => setIsMenuOpen(false)} role="menu" tabIndex={-1}>
+                <a href="/profile" className={styles.menuItem} role="menuitem">
+                  个人资料
+                </a>
+                <button onClick={handleLogout} className={styles.menuItem} type="button" role="menuitem">
+                  退出登录
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
           <button
+            className={styles.loginBtn}
+            onClick={() => {
+              window.location.href = 'https://zxkws.nyc.mn/auth-app/#/login';
+            }}
             type="button"
-            onClick={onDesktopNavToggle}
-            className={styles.collapseBtn}
-            aria-label={isNavCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            title={isNavCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            data-collapsed={isNavCollapsed || undefined}
           >
-            <span className={styles.collapseIcon} aria-hidden="true" />
-            <span className={styles.collapseText}>{isNavCollapsed ? 'Expand' : 'Collapse'}</span>
+            登录
           </button>
         )}
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className={styles.themeToggle}
-          aria-label={nextThemeLabel}
-          title={nextThemeLabel}
-        >
-          <span className={styles.themeIcon}>
-            <ThemeIcon />
-          </span>
-          <span className={styles.themeText}>{theme === 'dark' ? '暗色模式' : '亮色模式'}</span>
-        </button>
-        <div className={styles.avatarBox}>
-          {user?.username ? (
-            <div className={styles.avatarWrapper}>
-              <button type="button" className={styles.avatarBtn} onClick={() => setMenuOpen((v) => !v)}>
-                <img
-                  className={styles.avatarImg}
-                  src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=120&h=120&fit=crop&auto=format"
-                  alt="avatar"
-                />
-                <span className={styles.avatarName}>{user.username}</span>
-              </button>
-              {menuOpen && (
-                <div className={styles.avatarMenu}>
-                  <a className={styles.menuItem} href="/profile" onClick={() => setMenuOpen(false)}>
-                    个人资料
-                  </a>
-                  <a className={styles.menuItem} href="/app/user-admin" onClick={() => setMenuOpen(false)}>
-                    用户管理
-                  </a>
-                  <button className={styles.menuItem} type="button" onClick={handleLogout}>
-                    退出登录
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <button className={styles.loginBtn} type="button" onClick={goLogin}>
-              登录
-            </button>
-          )}
-        </div>
       </div>
     </header>
   );

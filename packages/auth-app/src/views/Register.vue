@@ -68,39 +68,47 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="page">
-    <div class="panel">
-      <h1 class="title">注册</h1>
-      <p class="subtitle">创建账号后自动登录</p>
-      <p v-if="error" class="error">{{ error }}</p>
-      <div class="field">
-        <label class="label">用户名</label>
-        <input v-model="form.username" type="text" placeholder="your name" autocomplete="username" />
-      </div>
-      <div class="field">
-        <label class="label">邮箱</label>
-        <input v-model="form.email" type="email" placeholder="you@example.com" autocomplete="email" />
-      </div>
-      <div class="field">
-        <label class="label">密码</label>
-        <div class="input-wrap">
-          <input
-            v-model="form.password"
-            :type="showPassword ? 'text' : 'password'"
-            placeholder="••••••••"
-            autocomplete="new-password"
-          />
-          <button type="button" class="toggle-eye" @click="showPassword = !showPassword">
-            {{ showPassword ? '🙈' : '👁' }}
-          </button>
+    <div class="visual-side">
+      <h1 class="hero-text">Join the<br>Revolution.</h1>
+      <p class="hero-sub">Create your account and start building the impossible. It's free and open.</p>
+    </div>
+
+    <div class="form-side">
+      <div class="panel">
+        <h1 class="title">注册</h1>
+        <p class="subtitle">创建账号后自动登录</p>
+        <p v-if="error" class="error">{{ error }}</p>
+        <div class="field">
+          <label class="label">用户名</label>
+          <input v-model="form.username" type="text" placeholder="your name" autocomplete="username" />
+        </div>
+        <div class="field">
+          <label class="label">邮箱</label>
+          <input v-model="form.email" type="email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label class="label">密码</label>
+          <div class="input-wrap">
+            <input
+              v-model="form.password"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="••••••••"
+              autocomplete="new-password"
+            />
+            <button type="button" class="toggle-eye" @click="showPassword = !showPassword">
+              {{ showPassword ? '🙈' : '👁' }}
+            </button>
+          </div>
+        </div>
+        <button class="btn" :disabled="loading" @click="onSubmit">{{ loading ? '注册中...' : '注册并登录' }}</button>
+        <button class="btn ghost" type="button" @click="onGithubLogin">使用 GitHub 登录</button>
+        <div class="link-row">
+          <router-link class="link" to="/login" :query="route.query">返回登录</router-link>
+          <span></span>
         </div>
       </div>
-      <button class="btn" :disabled="loading" @click="onSubmit">{{ loading ? '注册中...' : '注册并登录' }}</button>
-      <button class="btn ghost" type="button" @click="onGithubLogin">使用 GitHub 登录</button>
-      <div class="link-row">
-        <router-link class="link" to="/login" :query="route.query">返回登录</router-link>
-        <span></span>
-      </div>
     </div>
+
     <transition name="fade">
       <div v-if="toast" class="toast" :data-type="toast.type">
         {{ toast.text }}

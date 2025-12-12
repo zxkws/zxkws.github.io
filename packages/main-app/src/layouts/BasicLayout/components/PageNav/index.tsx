@@ -1,308 +1,95 @@
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import SafeAppLink from '../../../../components/SafeAppLink';
 import type { MenuItem } from '../../../../types/menu';
 import * as styles from './index.module.css';
-
-type MenuGroupState = Set<string>;
-
-const CX = (...classes: Array<string | false | null | undefined>) => classes.filter(Boolean).join(' ');
-
-const getCurrentPath = () => {
-  if (typeof window === 'undefined') {
-    return '/';
-  }
-  const { pathname, hash } = window.location;
-  if (hash?.startsWith('#/')) {
-    return hash.slice(1);
-  }
-  return pathname || '/';
-};
-
-const isPathMatch = (target: string | undefined, current: string) => {
-  if (!target) {
-    return false;
-  }
-  if (target === '/') {
-    return current === '/';
-  }
-  return current === target || current.startsWith(`${target}/`);
-};
-
-const menuItemHasActive = (item: MenuItem, current: string): boolean => {
-  if (isPathMatch(item.path, current)) {
-    return true;
-  }
-  if (item.children && item.children.length > 0) {
-    return item.children.some((child) => menuItemHasActive(child, current));
-  }
-  return false;
-};
-
-const createKey = (item: MenuItem, parentKey: string, index: number) => {
-  if (item.path) {
-    return `${parentKey}::${item.path}`;
-  }
-  return `${parentKey}::${item.name ?? 'item'}-${index}`;
-};
-
-const collectExpandedKeys = (items: MenuItem[], current: string, parentKey = 'root'): string[] => {
-  const collected: string[] = [];
-  items.forEach((item, index) => {
-    if (!item.children || item.children.length === 0) {
-      return;
-    }
-    const key = createKey(item, parentKey, index);
-    if (menuItemHasActive(item, current)) {
-      collected.push(key);
-    }
-    const nested = collectExpandedKeys(item.children, current, key);
-    collected.push(...nested);
-  });
-  return collected;
-};
-
-const getIconSymbol = (item: MenuItem) => {
-  const firstLetter = item.name?.trim().charAt(0);
-  return firstLetter ? firstLetter.toUpperCase() : '•';
-};
-
-const isMicroAppEntry = (path?: string) => {
-  if (!path) {
-    return false;
-  }
-  return ['/v-app', '/v-react', '/textdiff', '/curlconverter'].some((prefix) => path.startsWith(prefix));
-};
-
-const hijackHistory = (onChange: () => void) => {
-  if (typeof window === 'undefined') {
-    return () => undefined;
-  }
-
-  const historyRef = window.history;
-  const originalPush = historyRef.pushState.bind(historyRef);
-  const originalReplace = historyRef.replaceState.bind(historyRef);
-
-  historyRef.pushState = ((...args) => {
-    originalPush(...args);
-    onChange();
-  }) as History['pushState'];
-
-  historyRef.replaceState = ((...args) => {
-    originalReplace(...args);
-    onChange();
-  }) as History['replaceState'];
-
-  return () => {
-    historyRef.pushState = originalPush;
-    historyRef.replaceState = originalReplace;
-  };
-};
-
-const registerMenuEvents = (onPathChange: () => void) => {
-  if (typeof window === 'undefined') {
-    return () => undefined;
-  }
-
-  const pathHandler = () => onPathChange();
-
-  window.addEventListener('popstate', pathHandler);
-  window.addEventListener('hashchange', pathHandler);
-
-  return () => {
-    window.removeEventListener('popstate', pathHandler);
-    window.removeEventListener('hashchange', pathHandler);
-  };
-};
-
-const useMenuState = (menus: MenuItem[]) => {
-  const [activePath, setActivePath] = useState(getCurrentPath());
-  const menuConfig = useMemo(() => menus, [menus]);
-  const [expandedGroups, setExpandedGroups] = useState<MenuGroupState>(
-    () => new Set(collectExpandedKeys(menuConfig, getCurrentPath())),
-  );
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const restoreHistory = hijackHistory(() => setActivePath(getCurrentPath()));
-    const unregisterEvents = registerMenuEvents(() => setActivePath(getCurrentPath()));
-    const routeChangeHandler = (event: Event) => {
-      const detail = (event as CustomEvent<string>).detail;
-      if (detail) {
-        setActivePath(detail);
-      } else {
-        setActivePath(getCurrentPath());
-      }
-    };
-
-    window.addEventListener('main-route-change', routeChangeHandler);
-
-    setActivePath(getCurrentPath());
-
-    return () => {
-      restoreHistory();
-      unregisterEvents();
-      window.removeEventListener('main-route-change', routeChangeHandler);
-    };
-  }, []);
-
-  useEffect(() => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      for (const key of collectExpandedKeys(menuConfig, activePath)) {
-        next.add(key);
-      }
-      return next;
-    });
-  }, [activePath, menuConfig]);
-
-  const toggleGroup = useCallback((key: string) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
-  }, []);
-
-  return { activePath, menuConfig, expandedGroups, toggleGroup };
-};
 
 type PageNavProps = {
   isMobile: boolean;
   isOpen: boolean;
   onClose: () => void;
   menus: MenuItem[];
-  isCollapsed: boolean;
-  onToggleCollapse: () => void;
 };
 
-const PageNav = ({ isMobile, isOpen, onClose, menus, isCollapsed, onToggleCollapse }: PageNavProps) => {
-  const { activePath, menuConfig, expandedGroups, toggleGroup } = useMenuState(menus);
+const getIcon = (name: string) => {
+  const map: Record<string, string> = {
+    首页: '🏠',
+    Vue应用: '⚡',
+    React应用: '⚛️',
+    用户管理: '👥',
+    个人资料: '👤',
+    Agent任务: '🤖',
+    文本比对: '📝',
+    Curl转换: '🔄',
+  };
+  return map[name] || '📌';
+};
 
-  const renderMenuItems = useCallback(
-    (items: MenuItem[], parentKey = 'root'): ReactNode =>
-      items.map((item, index) => {
-        const key = createKey(item, parentKey, index);
-        const hasChildren = !!item.children && item.children.length > 0;
-        const isExpanded = expandedGroups.has(key);
-        const active = isPathMatch(item.path, activePath);
-        const hasActiveChild = hasChildren
-          ? item.children?.some((child) => menuItemHasActive(child, activePath))
-          : false;
-        const emblem = getIconSymbol(item);
+const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
+  const [activePath, setActivePath] = useState('');
 
-        if (hasChildren && !isCollapsed) {
-          return (
-            <div key={key} className={styles.menuNode}>
-              <button
-                type="button"
-                className={CX(
-                  styles.groupToggle,
-                  isExpanded && styles.groupToggleExpanded,
-                  (active || hasActiveChild) && styles.groupToggleActive,
-                )}
-                onClick={() => toggleGroup(key)}
-                aria-expanded={isExpanded}
-                aria-controls={`${key}-children`}
-              >
-                <span className={styles.groupLabel}>
-                  <span className={styles.emblem} aria-hidden="true">
-                    {emblem}
-                  </span>
-                  {item.name}
-                </span>
-                <span className={CX(styles.chevron, isExpanded && styles.chevronOpen)} aria-hidden="true" />
-              </button>
-              <div
-                id={`${key}-children`}
-                className={CX(styles.childContainer, isExpanded && styles.childContainerVisible)}
-              >
-                {renderMenuItems(item.children ?? [], key)}
-              </div>
-            </div>
-          );
-        }
+  useEffect(() => {
+    setActivePath(window.location.pathname);
+    const handler = () => setActivePath(window.location.pathname);
+    window.addEventListener('popstate', handler);
+    window.addEventListener('main-route-change', ((e: CustomEvent) => setActivePath(e.detail)) as EventListener);
+    return () => {
+      window.removeEventListener('popstate', handler);
+      window.removeEventListener('main-route-change', ((e: CustomEvent) => setActivePath(e.detail)) as EventListener);
+    };
+  }, []);
 
-        if (!item.path) {
-          return null;
-        }
+  const isActive = (path?: string) => {
+    if (!path) return false;
+    if (path === '/' && activePath === '/') return true;
+    return path !== '/' && activePath.startsWith(path);
+  };
 
-        const handleLinkClick = () => {
-          if (isMobile) {
-            onClose();
-          }
-        };
-
+  const renderItems = (items: MenuItem[]) => {
+    return items.map((item) => {
+      if (item.children?.length) {
+        // Flatten children for Dock style simplicity, or use a popover (simplified here to flatten)
         return (
-          <SafeAppLink
-            key={key}
-            to={item.path}
-            className={CX(styles.navLink, active && styles.navLinkActive, isCollapsed && styles.navLinkCollapsed)}
-            title={item.name}
-            onClick={handleLinkClick}
-          >
-            <span className={styles.linkContent}>
-              <span className={styles.emblem} aria-hidden="true">
-                {emblem}
-              </span>
-              {!isCollapsed && <span className={styles.linkText}>{item.name}</span>}
-            </span>
-            {!isCollapsed && isMicroAppEntry(item.path) && <span className={styles.microBadge}>Micro</span>}
-          </SafeAppLink>
+          <div key={item.name} style={{ display: 'contents' }}>
+            {renderItems(item.children)}
+          </div>
         );
-      }),
-    [activePath, expandedGroups, toggleGroup, isMobile, onClose, isCollapsed],
-  );
+      }
+      if (!item.path) return null;
 
-  const menuContent = useMemo(() => renderMenuItems(menuConfig), [renderMenuItems, menuConfig]);
+      const active = isActive(item.path);
 
-  const navClassName = CX(
-    styles.navContainer,
-    isMobile && styles.navContainerMobile,
-    isMobile && isOpen && styles.navContainerMobileOpen,
-    !isMobile && isCollapsed && styles.navContainerCollapsed,
-  );
-
-  const overlayClassName = CX(styles.mobileOverlay, isOpen && styles.mobileOverlayVisible);
-
-  const nav = (
-    <nav className={navClassName} aria-label="主导航" aria-hidden={isMobile && !isOpen}>
-      <div className={styles.navInner}>{menuContent}</div>
-      {isMobile && (
-        <button type="button" className={styles.mobileClose} onClick={onClose}>
-          关闭
-        </button>
-      )}
-      {!isMobile && (
-        <button
-          type="button"
-          className={CX(styles.collapseHandle, isCollapsed && styles.collapseHandleCollapsed)}
-          onClick={onToggleCollapse}
-          aria-label={isCollapsed ? '展开侧边栏' : '收起侧边栏'}
-          title={isCollapsed ? '展开侧边栏' : '收起侧边栏'}
+      return (
+        <SafeAppLink
+          key={item.path}
+          to={item.path}
+          className={`${styles.dockItem} ${active ? styles.dockItemActive : ''}`}
+          onClick={isMobile ? onClose : undefined}
         >
-          <span aria-hidden="true">{isCollapsed ? '›' : '‹'}</span>
-        </button>
-      )}
-    </nav>
-  );
+          <div className={styles.iconBox}>{getIcon(item.name || '')}</div>
+          <span className={styles.label}>{item.name}</span>
+        </SafeAppLink>
+      );
+    });
+  };
 
-  if (!isMobile) {
-    return nav;
+  if (isMobile) {
+    return (
+      <>
+        <button
+          className={`${styles.mobileOverlay} ${isOpen ? styles.mobileOverlayOpen : ''}`}
+          onClick={onClose}
+          type="button"
+          aria-label="Close menu"
+        />
+        <nav className={`${styles.mobileDrawer} ${isOpen ? styles.mobileDrawerOpen : ''}`}>
+          <div style={{ marginBottom: 24, fontSize: 18, fontWeight: 700 }}>Menu</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{renderItems(menus)}</div>
+        </nav>
+      </>
+    );
   }
 
-  return (
-    <>
-      <div className={overlayClassName} onClick={onClose} aria-hidden={!isOpen} />
-      {nav}
-    </>
-  );
+  return <nav className={styles.dockContainer}>{renderItems(menus)}</nav>;
 };
 
 export default PageNav;
