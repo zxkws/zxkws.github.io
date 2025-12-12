@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useUser } from '../../context/UserContext';
 import { fetchRemoteMenus } from '../../services/menuService';
 import type { MenuItem } from '../../types/menu';
@@ -6,14 +6,27 @@ import HeaderBar from './components/HeaderBar';
 import PageNav from './components/PageNav';
 import { builtInAsideMenus } from './menuConfig';
 
-// 游客模式下需要隐藏的敏感菜单路径
-const GUEST_HIDDEN_PATHS = ['/app/user-admin', '/app/permission-admin'];
-
 export default function BasicLayout({ children }: { children: ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
-  const { user, isGuest } = useUser();
+  const { user, loading } = useUser();
   const [menus, setMenus] = useState<MenuItem[]>(builtInAsideMenus);
+
+  // 核心鉴权逻辑：如果没有用户信息且加载已完成，强制跳转登录
+  useEffect(() => {
+    if (!loading && !user) {
+      // 记录当前 URL 以便登录后跳转回来
+      const currentUrl = window.location.href;
+      const loginUrl = `https://zxkws.nyc.mn/auth-app/#/login?redirect=${encodeURIComponent(currentUrl)}`;
+
+      // 在开发环境跳转到本地
+      if (process.env.NODE_ENV === 'development') {
+        window.location.href = `http://localhost:5183/#/login?redirect=${encodeURIComponent(currentUrl)}`;
+      } else {
+        window.location.href = loginUrl;
+      }
+    }
+  }, [user, loading]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -24,14 +37,6 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
 
   // 菜单加载逻辑
   useEffect(() => {
-    // 游客模式：使用内置菜单，过滤掉管理员页面
-    if (isGuest) {
-      const guestMenus = builtInAsideMenus.filter((m) => !m.path || !GUEST_HIDDEN_PATHS.includes(m.path));
-      setMenus(guestMenus);
-      return;
-    }
-
-    // 正式用户：尝试拉取远程菜单
     if (user) {
       let mounted = true;
       fetchRemoteMenus(true)
@@ -50,12 +55,12 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
         mounted = false;
       };
     }
+  }, [user]);
 
-    // 未登录：仅显示公开页面 (这里可以根据需求调整，比如未登录只给看 Home)
-    // 但因为我们想推 PLG，未登录时可能只有 Home 和 Demo App
-    // 简单起见，未登录时展示基础菜单供浏览
-    setMenus(builtInAsideMenus.filter((m) => !GUEST_HIDDEN_PATHS.includes(m.path || '')));
-  }, [user, isGuest]);
+  // 如果正在检查登录状态，或者未登录（即将跳转），显示全屏 Loading 或空状态，避免闪屏
+  if (loading || !user) {
+    return null; // 或者返回一个全屏 Loading 组件
+  }
 
   return (
     <div className="flex w-full h-full relative overflow-hidden">

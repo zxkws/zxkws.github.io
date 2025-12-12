@@ -12,7 +12,7 @@ type HeaderBarProps = {
 const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, clearUser, isGuest } = useUser();
+  const { user, clearUser } = useUser();
 
   useEffect(() => {
     // Initial Theme Sync
@@ -40,22 +40,13 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
   };
 
   const handleLogout = async () => {
-    // 如果是游客，直接清理本地存储即可，不需要调用后端 logout
-    if (isGuest) {
-      clearUser(); // UserContext 内部会清理 localStorage
-      window.location.reload();
-      return;
-    }
-
     await httpClient('/auth/logout', {}, { method: 'POST' });
     clearAuthArtifacts();
     clearUser();
-    window.location.reload();
+    // BasicLayout 的 useEffect 会捕捉到 user 为空，并执行跳转
   };
 
-  const handleLoginRedirect = () => {
-    window.location.href = 'https://zxkws.nyc.mn/auth-app/#/login';
-  };
+  if (!user) return null;
 
   return (
     <header className={styles.headerBar}>
@@ -87,46 +78,30 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
           {theme === 'dark' ? '🌙' : '☀️'}
         </button>
 
-        {user ? (
-          <div className={styles.userProfile}>
-            <button className={styles.userBtn} onClick={() => setIsMenuOpen(!isMenuOpen)} type="button">
-              <img
-                src={
-                  user.avatar ||
-                  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces'
-                }
-                className={styles.avatar}
-                alt="User"
-              />
-              <span className={styles.username}>
-                {user.username}
-                {isGuest && <span style={{ opacity: 0.5, marginLeft: 4, fontSize: 12 }}>(Guest)</span>}
-              </span>
-            </button>
-
-            {isMenuOpen && (
-              <div className={styles.dropdown} onMouseLeave={() => setIsMenuOpen(false)} role="menu" tabIndex={-1}>
-                {isGuest ? (
-                  <button onClick={handleLoginRedirect} className={styles.menuItem} type="button" role="menuitem">
-                    👉 立即登录
-                  </button>
-                ) : (
-                  <a href="/profile" className={styles.menuItem} role="menuitem">
-                    个人资料
-                  </a>
-                )}
-
-                <button onClick={handleLogout} className={styles.menuItem} type="button" role="menuitem">
-                  {isGuest ? '退出体验' : '退出登录'}
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <button className={styles.loginBtn} onClick={handleLoginRedirect} type="button">
-            登录
+        <div className={styles.userProfile}>
+          <button className={styles.userBtn} onClick={() => setIsMenuOpen(!isMenuOpen)} type="button">
+            <img
+              src={
+                user.avatar ||
+                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces'
+              }
+              className={styles.avatar}
+              alt="User"
+            />
+            <span className={styles.username}>{user.username}</span>
           </button>
-        )}
+
+          {isMenuOpen && (
+            <div className={styles.dropdown} onMouseLeave={() => setIsMenuOpen(false)} role="menu" tabIndex={-1}>
+              <a href="/profile" className={styles.menuItem} role="menuitem">
+                个人资料
+              </a>
+              <button onClick={handleLogout} className={styles.menuItem} type="button" role="menuitem">
+                退出登录
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
