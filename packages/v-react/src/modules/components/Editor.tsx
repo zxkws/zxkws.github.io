@@ -25,7 +25,7 @@ export const Editor = ({
       <div className="preview">
         <ReactMarkdown
           remarkPlugins={[remarkGfm as any]}
-          rehypePlugins={[rehypeHighlight as any]}
+          rehypePlugins={[[rehypeHighlight as any, { ignoreMissing: true }]]}
         >
           {value}
         </ReactMarkdown>
