@@ -26,21 +26,28 @@ export interface TodoResponse {
 
 interface AccountDto {
   id: number;
+  name: string;
+  platform: string;
   account: string;
-  password: string;
-  remark?: string;
+  secret?: string; // usually not returned or hidden
+  extra?: any;
+  uts: string;
 }
 
 interface CreateAccountDto {
-  account: string;
-  password: string;
-  remark?: string;
+  name: string;
+  platform: string;
+  account?: string;
+  secret?: string;
+  extra?: any;
 }
 
 interface UpdateAccountDto {
+  name?: string;
+  platform?: string;
   account?: string;
-  password?: string;
-  remark?: string;
+  secret?: string;
+  extra?: any;
 }
 
 export const login = (params: LoginParams) => {
