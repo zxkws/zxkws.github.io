@@ -11,6 +11,7 @@ type PageNavProps = {
 };
 
 const getIcon = (name: string) => {
+  const cleaned = name.trim();
   const map: Record<string, string> = {
     首页: '🏠',
     Vue应用: '⚡',
@@ -21,7 +22,11 @@ const getIcon = (name: string) => {
     文本比对: '📝',
     Curl转换: '🔄',
   };
-  return map[name] || '📌';
+  if (map[cleaned]) {
+    return map[cleaned];
+  }
+  const first = cleaned.charAt(0);
+  return first || '📌';
 };
 
 const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {

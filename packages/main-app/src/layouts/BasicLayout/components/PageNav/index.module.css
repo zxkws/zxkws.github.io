@@ -16,10 +16,31 @@
 	box-shadow: var(--glass-shadow);
 	z-index: 30;
 	transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	overflow-y: auto;
+	overflow-x: hidden;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(148, 163, 184, 0.6) transparent;
 }
 
 .dockContainer:hover {
 	width: 240px;
+}
+
+.dockContainer::-webkit-scrollbar {
+	width: 6px;
+}
+
+.dockContainer::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.dockContainer::-webkit-scrollbar-thumb {
+	background: rgba(148, 163, 184, 0.5);
+	border-radius: 999px;
+}
+
+.dockContainer:hover::-webkit-scrollbar-thumb {
+	background: rgba(148, 163, 184, 0.7);
 }
 
 .dockItem {
@@ -93,6 +114,7 @@
 	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	padding: 24px;
 	box-shadow: 20px 0 50px rgba(0, 0, 0, 0.3);
+	overflow-y: auto;
 }
 
 .mobileDrawerOpen {
