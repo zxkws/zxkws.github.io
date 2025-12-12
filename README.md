@@ -11,7 +11,6 @@ packages/
 ├── pdf-editor-app/       # PDF 编辑器（React + Vite）
 ├── textDifference/       # 文本对比工具微应用
 ├── config-center/        # 微应用配置中心（静态配置）
-├── config-hub/           # 配置管理微应用
 ├── vue-learning-app/     # Vue 学习示例（部署路径 /vue/）
 ├── react-learning-app/   # React 学习示例（部署路径 /react/）
 ├── knowledge-hub-app/    # 知识中台
@@ -36,7 +35,6 @@ packages/
 
 > 说明：Vue/React 学习示例已改为独立站点，不再出现在主应用菜单或微应用配置中，直接通过 `/vue/`、`/react/` 访问。
 
-> 说明：`config-hub` 已加入自动部署矩阵，推送到 `development` 分支会自动发布。
 
 ## 本地开发
 
@@ -60,7 +58,6 @@ pnpm dev
 - v-app 微应用：`http://localhost:5173`
 - textDifference 微应用：`http://localhost:5174`
 - config-center 微应用：`http://localhost:5175`
-- config-hub 微应用：`http://localhost:5176`
 - pdf-editor-app 微应用：`http://localhost:5177`
 - vue 微应用：`http://localhost:5178`
 - react 微应用：`http://localhost:5179`
@@ -98,7 +95,6 @@ pnpm dev:resume
 | v-app             | 5173     | http://localhost:5173 |
 | textDifference    | 5174     | http://localhost:5174 |
 | config-center     | 5175     | http://localhost:5175 |
-| config-hub        | 5176     | http://localhost:5176 |
 | pdf-editor-app    | 5177     | http://localhost:5177 |
 | vue               | 5178     | http://localhost:5178 |
 | react             | 5179     | http://localhost:5179 |

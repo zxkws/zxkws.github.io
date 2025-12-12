@@ -70,9 +70,7 @@ const isMicroAppEntry = (path?: string) => {
   if (!path) {
     return false;
   }
-  return ['/v-app', '/v-react', '/textdiff', '/curlconverter', '/app/config-hub'].some((prefix) =>
-    path.startsWith(prefix),
-  );
+  return ['/v-app', '/v-react', '/textdiff', '/curlconverter'].some((prefix) => path.startsWith(prefix));
 };
 
 const hijackHistory = (onChange: () => void) => {

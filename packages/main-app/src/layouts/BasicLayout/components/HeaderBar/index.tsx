@@ -221,9 +221,6 @@ const HeaderBar = ({
                   <a className={styles.menuItem} href="/app/user-admin" onClick={() => setMenuOpen(false)}>
                     用户管理
                   </a>
-                  <a className={styles.menuItem} href="/app/config-hub" onClick={() => setMenuOpen(false)}>
-                    菜单管理
-                  </a>
                   <button className={styles.menuItem} type="button" onClick={handleLogout}>
                     退出登录
                   </button>

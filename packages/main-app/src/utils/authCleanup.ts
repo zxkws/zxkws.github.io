@@ -1,12 +1,11 @@
-// Helper to remove auth-related storage and cookies.
-// It is intentionally defensive to cover different domains/paths the app might have been served from.
 export const clearAuthArtifacts = () => {
   if (typeof window === 'undefined' || typeof document === 'undefined') {
     return;
   }
 
-  // 1) Clear storage items that may keep the user "logged in" locally.
-  ['auth_token', 'token', 'jwt', 'id'].forEach((key) => {
+  // Clear local storage items that may keep the user "logged in" locally.
+  const storageKeys = ['auth_token', 'token', 'jwt', 'id'] as const;
+  storageKeys.forEach((key) => {
     try {
       localStorage.removeItem(key);
     } catch {
@@ -19,35 +18,19 @@ export const clearAuthArtifacts = () => {
     /* ignore */
   }
 
-  // 2) Expire cookies as broadly as possible (current host + parent domains, common paths).
-  const cookieNames = new Set<string>(
-    document.cookie
-      .split(';')
-      .map((c) => c.split('=')[0]?.trim())
-      .filter(Boolean) as string[],
-  );
-  // Ensure critical auth cookie names are also covered even if HttpOnly (cannot be read).
-  const criticalCookies = ['jwt', 'connect.sid', 'auth_token', 'token', 'sid'];
-  for (const name of criticalCookies) {
-    cookieNames.add(name);
-  }
+  // Expire known auth cookies. Backend should clear session, this is a safe client fallback.
+  const cookieNames = ['jwt', 'connect.sid', 'auth_token', 'token', 'sid'] as const;
 
   const domains = (() => {
     const host = window.location.hostname;
-    const parts = host.split('.');
     const list = ['']; // current host (no explicit domain attribute)
-    if (parts.length >= 2) {
-      list.push(`.${parts.slice(-2).join('.')}`);
+    if (host === 'zxkws.nyc.mn' || host.endsWith('.zxkws.nyc.mn')) {
+      list.push('.zxkws.nyc.mn');
     }
-    if (parts.length >= 3) {
-      list.push(`.${parts.slice(-3).join('.')}`);
-    }
-    // Known production apex for safety.
-    list.push('.zxkws.nyc.mn');
-    return Array.from(new Set(list.filter(Boolean)));
+    return list;
   })();
 
-  const paths = ['/', '/auth-app', '/app', '/v-app', '/config-hub'];
+  const paths = ['/', '/auth-app', '/app', '/v-app', '/v-react'];
 
   const expireCookie = (name: string, domain: string, path: string, extra: string[] = []) => {
     const attrs = [
