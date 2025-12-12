@@ -70,7 +70,7 @@ const isMicroAppEntry = (path?: string) => {
   if (!path) {
     return false;
   }
-  return ['/v-app', '/app/pdf-editor', '/textdiff', '/curlconverter', '/app/config-hub'].some((prefix) =>
+  return ['/v-app', '/v-react', '/textdiff', '/curlconverter', '/app/config-hub'].some((prefix) =>
     path.startsWith(prefix),
   );
 };

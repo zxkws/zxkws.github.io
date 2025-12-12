@@ -74,6 +74,10 @@ body {
   height: 100vh;
 }
 
+.main.no-padding {
+  padding: 0;
+}
+
 .tabs {
   display: flex;
   gap: 4px;

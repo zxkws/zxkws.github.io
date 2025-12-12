@@ -45,6 +45,7 @@ export function convertToIceStarkApps(config: SystemConfig) {
         entry: resolveEntry(app),
         path: app.activeRule?.[0] ?? '/',
         activePath: app.activeRule,
+        basename: app.basename,
         sandbox: app.sandbox ?? true,
         loadScriptMode: app.loadScriptMode || 'import',
         renderType,

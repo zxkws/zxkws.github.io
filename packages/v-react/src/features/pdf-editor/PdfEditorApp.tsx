@@ -9,6 +9,7 @@ import styles from './PdfEditor.module.css';
 import PageCanvas from './components/PageCanvas';
 import type { Annotation, EditorTool, PageMetrics, HighlightAnnotation, TextAnnotation } from './types';
 import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import './styles.css';
 
 GlobalWorkerOptions.workerSrc = pdfWorkerSrc;
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import client from './http/client';
 import GlobalLoading from './components/GlobalLoading';
+import './styles.css';
 
 type DbType = 'mysql' | 'redis' | 'mongodb';
 

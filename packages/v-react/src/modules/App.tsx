@@ -1,59 +1,38 @@
-import { useEffect } from 'react';
-import { useNotes } from './useNotes';
-import { NoteList } from './components/NoteList';
-import { Tabs } from './components/Tabs';
-import { Editor } from './components/Editor';
-import { StatusBar } from './components/StatusBar';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import getBasename from '@ice/stark-app/lib/getBasename';
+import PdfEditorApp from '../features/pdf-editor/PdfEditorApp';
+import KnowledgeHubApp from '../features/knowledge-hub/KnowledgeHubApp';
+import CodexChatApp from '../features/codex-chat/App';
+import DbOpsApp from '../features/db-ops/App';
+import { NotesApp } from './notes/NotesApp';
 
 export const App = ({ basename }: { basename?: string }) => {
-  const {
-    listQuery,
-    notes,
-    ui,
-    activeNote,
-    saving,
-    setActive,
-    createToday,
-    createBlank,
-    updateContent,
-  } = useNotes();
-
-  useEffect(() => {
-    if (!ui.activeId && ui.openTabs.length === 0 && listQuery.data?.[0]) {
-      setActive(listQuery.data[0].id);
-    }
-  }, [ui.activeId, ui.openTabs.length, listQuery.data, setActive]);
+  // icestark 会为子应用下发 basename；当前项目统一以 /v-react 作为基准路径
+  const routerBasename = basename ?? getBasename() ?? '/';
 
   return (
-    <div className="layout" data-basename={basename}>
-      <aside className="sidebar">
-        <div className="toolbar">
-          <button onClick={createToday}>今日</button>
-          <button onClick={createBlank}>新建</button>
-        </div>
-        <NoteList
-          notes={Object.values(notes)}
-          activeId={ui.activeId}
-          onSelect={setActive}
+    <BrowserRouter basename={routerBasename}>
+      <Routes>
+        {/* 功能路由：主应用通过 /v-react/xxx 映射为子应用内部的 /xxx */}
+        <Route path="pdf-editor" element={<PdfEditorApp basename={basename} />} />
+        <Route path="codex-chat" element={<CodexChatApp basename={basename} />} />
+        <Route path="knowledge-hub" element={<KnowledgeHubApp basename={basename} />} />
+        <Route path="db-ops" element={<DbOpsApp basename={basename} />} />
+
+        {/* Obsidian 笔记菜单（/v-react/notes） */}
+        <Route path="notes" element={<NotesApp basename={basename} />} />
+        {/* 访问 /v-react 时默认进入笔记 */}
+        <Route index element={<Navigate to="notes" replace />} />
+        {/* 未匹配时展示 404 */}
+        <Route
+          path="*"
+          element={
+            <div style={{ padding: 16, fontSize: 14, color: 'var(--color-text, #666)' }}>
+              页面不存在
+            </div>
+          }
         />
-      </aside>
-      <main className="main">
-        <Tabs
-          notes={notes}
-          openTabs={ui.openTabs}
-          activeId={ui.activeId}
-          onSelect={setActive}
-        />
-        {activeNote ? (
-          <Editor
-            note={activeNote}
-            onChange={(md) => updateContent(activeNote.id, md, activeNote.version)}
-          />
-        ) : (
-          <div className="empty">选择或创建一条笔记</div>
-        )}
-        <StatusBar saving={saving} loading={listQuery.isFetching} />
-      </main>
-    </div>
+      </Routes>
+    </BrowserRouter>
   );
 };

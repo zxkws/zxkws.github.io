@@ -10,6 +10,12 @@ export interface MicroAppConfig {
 
   entry: string;
   activeRule: string[];
+  /**
+   * Optional basename passed to micro app.
+   * If provided, icestark will deliver this basename to child apps
+   * instead of deriving from activeRule.
+   */
+  basename?: string;
 
   devEntry?: string;
   prodEntry?: string;

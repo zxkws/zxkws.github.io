@@ -155,136 +155,6 @@ importers:
         specifier: ^3.1.1
         version: 3.1.1(typescript@5.9.3)
 
-  packages/codex-chat-app:
-    dependencies:
-      '@ice/stark-app':
-        specifier: ^1.5.0
-        version: 1.5.0
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
-      react:
-        specifier: ^19.2.0
-        version: 19.2.0
-      react-dom:
-        specifier: ^19.2.0
-        version: 19.2.0(react@19.2.0)
-    devDependencies:
-      '@types/react':
-        specifier: ^19.2.2
-        version: 19.2.2
-      '@types/react-dom':
-        specifier: ^19.2.2
-        version: 19.2.2(@types/react@19.2.2)
-      '@vitejs/plugin-react':
-        specifier: ^4.3.4
-        version: 4.7.0(vite@7.1.10)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-      vite:
-        specifier: ^7.1.10
-        version: 7.1.10(@types/node@24.8.1)(less@4.4.2)
-      vite-plugin-index-html:
-        specifier: ^2.0.2
-        version: 2.0.2
-
-  packages/config-hub:
-    dependencies:
-      '@ice/stark-app':
-        specifier: ^1.5.0
-        version: 1.5.0
-      react:
-        specifier: ^19.2.0
-        version: 19.2.0
-      react-dom:
-        specifier: ^19.2.0
-        version: 19.2.0(react@19.2.0)
-    devDependencies:
-      '@types/react':
-        specifier: ^19.2.2
-        version: 19.2.2
-      '@types/react-dom':
-        specifier: ^19.2.2
-        version: 19.2.2(@types/react@19.2.2)
-      '@vitejs/plugin-react':
-        specifier: ^4.3.4
-        version: 4.7.0(vite@7.1.10)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-      vite:
-        specifier: ^7.1.10
-        version: 7.1.10(@types/node@24.8.1)(less@4.4.2)
-      vite-plugin-index-html:
-        specifier: ^2.0.2
-        version: 2.0.2
-
-  packages/db-ops-app:
-    dependencies:
-      '@ice/stark-app':
-        specifier: ^1.5.0
-        version: 1.5.0
-      '@zxkws/shared-fetch':
-        specifier: workspace:*
-        version: link:../shared-fetch
-      react:
-        specifier: ^19.2.0
-        version: 19.2.0
-      react-dom:
-        specifier: ^19.2.0
-        version: 19.2.0(react@19.2.0)
-    devDependencies:
-      '@types/react':
-        specifier: ^19.2.2
-        version: 19.2.2
-      '@types/react-dom':
-        specifier: ^19.2.2
-        version: 19.2.2(@types/react@19.2.2)
-      '@vitejs/plugin-react':
-        specifier: ^4.3.4
-        version: 4.7.0(vite@7.1.10)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-      vite:
-        specifier: ^7.1.10
-        version: 7.1.10(@types/node@24.8.1)(less@4.4.2)
-      vite-plugin-index-html:
-        specifier: ^2.0.2
-        version: 2.0.2
-
-  packages/knowledge-hub-app:
-    dependencies:
-      '@ice/stark-app':
-        specifier: ^1.5.0
-        version: 1.5.0
-      react:
-        specifier: ^19.2.0
-        version: 19.2.0
-      react-dom:
-        specifier: ^19.2.0
-        version: 19.2.0(react@19.2.0)
-    devDependencies:
-      '@types/react':
-        specifier: ^19.2.2
-        version: 19.2.2
-      '@types/react-dom':
-        specifier: ^19.2.2
-        version: 19.2.2(@types/react@19.2.2)
-      '@vitejs/plugin-react':
-        specifier: ^4.3.4
-        version: 4.7.0(vite@7.1.10)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-      vite:
-        specifier: ^7.1.10
-        version: 7.1.10(@types/node@24.8.1)(less@4.4.2)
-      vite-plugin-index-html:
-        specifier: ^2.0.2
-        version: 2.0.2
-
   packages/main-app:
     dependencies:
       '@ice/stark':
@@ -327,49 +197,6 @@ importers:
       tailwindcss:
         specifier: ^4.1.17
         version: 4.1.17
-
-  packages/pdf-editor-app:
-    dependencies:
-      '@ice/stark-app':
-        specifier: ^1.5.0
-        version: 1.5.0
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
-      pdf-lib:
-        specifier: ^1.17.1
-        version: 1.17.1
-      pdfjs-dist:
-        specifier: ^5.4.296
-        version: 5.4.296
-      react:
-        specifier: ^19.2.0
-        version: 19.2.0
-      react-dom:
-        specifier: ^19.2.0
-        version: 19.2.0(react@19.2.0)
-      uuid:
-        specifier: ^13.0.0
-        version: 13.0.0
-    devDependencies:
-      '@types/react':
-        specifier: ^19.2.2
-        version: 19.2.2
-      '@types/react-dom':
-        specifier: ^19.2.2
-        version: 19.2.2(@types/react@19.2.2)
-      '@vitejs/plugin-react':
-        specifier: ^4.3.4
-        version: 4.7.0(vite@7.1.10)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-      vite:
-        specifier: ^7.1.10
-        version: 7.1.10(@types/node@24.8.1)(less@4.4.2)
-      vite-plugin-index-html:
-        specifier: ^2.0.2
-        version: 2.0.2
 
   packages/person-resume-app:
     dependencies:
@@ -519,12 +346,21 @@ importers:
       '@zxkws/shared-fetch':
         specifier: workspace:*
         version: link:../shared-fetch
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
       dayjs:
         specifier: ^1.11.13
         version: 1.11.18
       lodash.debounce:
         specifier: ^4.0.8
         version: 4.0.8
+      pdf-lib:
+        specifier: ^1.17.1
+        version: 1.17.1
+      pdfjs-dist:
+        specifier: ^5.4.296
+        version: 5.4.296
       react:
         specifier: ^19.2.0
         version: 19.2.0
@@ -540,6 +376,9 @@ importers:
       remark-gfm:
         specifier: ^4.0.0
         version: 4.0.1
+      uuid:
+        specifier: ^13.0.0
+        version: 13.0.0
       zustand:
         specifier: ^4.5.5
         version: 4.5.7(@types/react@19.2.2)(react@19.2.0)
@@ -574,6 +413,9 @@ importers:
       eslint-plugin-react-hooks:
         specifier: ^5.0.0
         version: 5.2.0(eslint@9.38.0)
+      react-router-dom:
+        specifier: ^6.30.2
+        version: 6.30.2(react-dom@19.2.0)(react@19.2.0)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -2195,6 +2037,11 @@ packages:
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
     dev: false
+
+  /@remix-run/router@1.23.1:
+    resolution: {integrity: sha512-vDbaOzF7yT2Qs4vO6XV1MHcJv+3dgR1sT+l3B8xxOVhUC336prMvqrvsLL/9Dnw2xr6Qhz4J0dmS0llNAbnUmQ==}
+    engines: {node: '>=14.0.0'}
+    dev: true
 
   /@rolldown/pluginutils@1.0.0-beta.27:
     resolution: {integrity: sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA==}
@@ -9793,7 +9640,6 @@ packages:
     dependencies:
       react: 19.2.0
       scheduler: 0.27.0
-    dev: false
 
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -9831,10 +9677,32 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /react-router-dom@6.30.2(react-dom@19.2.0)(react@19.2.0):
+    resolution: {integrity: sha512-l2OwHn3UUnEVUqc6/1VMmR1cvZryZ3j3NzapC2eUXO1dB0sYp5mvwdjiXhpUbRb21eFow3qSxpP8Yv6oAU824Q==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
+    dependencies:
+      '@remix-run/router': 1.23.1
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+      react-router: 6.30.2(react@19.2.0)
+    dev: true
+
+  /react-router@6.30.2(react@19.2.0):
+    resolution: {integrity: sha512-H2Bm38Zu1bm8KUE5NVWRMzuIyAV8p/JrOaBJAwVmp37AXG72+CZJlEBw6pdn9i5TBgLMhNDgijS4ZlblpHyWTA==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: '>=16.8'
+    dependencies:
+      '@remix-run/router': 1.23.1
+      react: 19.2.0
+    dev: true
+
   /react@19.2.0:
     resolution: {integrity: sha512-tmbWg6W31tQLeB5cdIBOicJDJRR2KzXsV7uSK9iNfLWQ5bIZfxuPEHp7M8wiHyHnn0DD1i7w3Zmin0FtkrwoCQ==}
     engines: {node: '>=0.10.0'}
-    dev: false
 
   /read-pkg-up@7.0.1:
     resolution: {integrity: sha512-zK0TB7Xd6JpCLmlLmufqykGE+/TlOePD6qKClNW7hHDKFh/J7/7gCWGR7joEQEW1bKq3a3yUZSObOoWLFQ4ohg==}
@@ -10208,7 +10076,6 @@ packages:
 
   /scheduler@0.27.0:
     resolution: {integrity: sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==}
-    dev: false
 
   /schema-utils@4.3.3:
     resolution: {integrity: sha512-eflK8wEtyOE6+hsaRVPxvUKYCpRgzLqDTb8krvAsRIwOGlHoSgYLgBXoubGgLd2fT41/OUYdb48v4k4WWHQurA==}
