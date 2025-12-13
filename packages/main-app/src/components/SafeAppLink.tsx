@@ -1,5 +1,5 @@
-import appHistory from '@ice/stark/lib/appHistory';
 import { type AnchorHTMLAttributes, type MouseEvent, useCallback } from 'react';
+import { pushUrl, replaceUrl } from '../utils/safeHistory';
 
 type HashType = 'slash' | 'hashbang' | 'noslash' | boolean;
 
@@ -38,9 +38,9 @@ const SafeAppLink = ({ to, hashType, replace, message, onClick, ...rest }: SafeA
       }
 
       if (replace) {
-        appHistory.replace(href);
+        replaceUrl(href);
       } else {
-        appHistory.push(href);
+        pushUrl(href);
       }
     },
     [href, message, onClick, replace],

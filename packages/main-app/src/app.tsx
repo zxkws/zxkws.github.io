@@ -1,5 +1,4 @@
 import { AppRoute, AppRouter } from '@ice/stark';
-import appHistory from '@ice/stark/lib/appHistory';
 import { Suspense, useEffect, useState } from 'react';
 import ReactDom from 'react-dom/client';
 
@@ -24,6 +23,7 @@ import PermissionAdmin from './pages/PermissionAdmin';
 import Profile from './pages/Profile';
 import UserAdmin from './pages/UserAdmin';
 import { subscribeLoading } from './services/networkLoading';
+import { ensureHistoryIdx, replaceUrl } from './utils/safeHistory';
 
 const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
 
@@ -104,6 +104,9 @@ function App() {
     const bootstrap = async () => {
       try {
         setConfigError(null);
+        // Ensure history.state contains a stable idx/key shape so React Router
+        // inside micro-apps won't be broken by host navigation.
+        ensureHistoryIdx();
         await loadConfig();
         const apps = resolveMicroApps();
         ensureIcestarkAppsRegistered(apps);
@@ -113,7 +116,7 @@ function App() {
           const current =
             (window.location?.pathname ?? '') + (window.location?.search ?? '') + (window.location?.hash ?? '');
           setTimeout(() => {
-            appHistory.replace(current || '/');
+            replaceUrl(current || '/');
           }, 0);
         }
         setConfigLoaded(true);
