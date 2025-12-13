@@ -67,6 +67,7 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
         <SafeAppLink
           key={item.path}
           to={item.path}
+          title={item.name}
           className={`${styles.dockItem} ${active ? styles.dockItemActive : ''}`}
           onClick={isMobile ? onClose : undefined}
         >

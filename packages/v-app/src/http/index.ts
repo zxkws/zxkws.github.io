@@ -1,17 +1,5 @@
 import fetch from './fetch';
 
-interface LoginParams {
-  username?: string;
-  email?: string;
-  password: string;
-}
-
-interface RegisterParams {
-  username: string;
-  password: string;
-  email?: string;
-}
-
 interface TodoParams {
   id?: string | number;
   description: string;
@@ -49,14 +37,6 @@ interface UpdateAccountDto {
   secret?: string;
   extra?: any;
 }
-
-export const login = (params: LoginParams) => {
-  return fetch<string>('/v1/user/login', params);
-};
-
-export const register = (params: RegisterParams) => {
-  return fetch<string>('/v1/user/register', params);
-};
 
 export const queryTodos = (params: Record<string, unknown> = {}) => {
   return fetch<TodoResponse[]>('/v1/todos', params);
