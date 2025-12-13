@@ -2,6 +2,7 @@ const { resolve } = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const WorkboxPlugin = require('workbox-webpack-plugin');
+const { SimpleCopyPlugin } = require('../../packages/build-tools'); // 引入我们自己写的插件
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
@@ -49,6 +50,13 @@ module.exports = {
       template: './public/index.html',
       inject: true,
       minify: isProd,
+    }),
+    // 使用我们自己写的 SimpleCopyPlugin 来复制 public 目录下的静态文件
+    // 这样 PWA 的 manifest.json, favicon.ico 等文件才能被复制到 dist 目录
+    new SimpleCopyPlugin({
+      from: resolve(__dirname, '../public'), // 源目录是当前项目的 public 文件夹
+      to: '', // 目标目录为空，表示直接复制到 output.path 根目录
+      ignore: ['index.html'], // 忽略 index.html，因为它由 HtmlWebpackPlugin 处理
     }),
     new webpack.DefinePlugin({
       'process.env': JSON.stringify({
