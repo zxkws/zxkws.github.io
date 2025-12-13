@@ -120,19 +120,35 @@ body::before {
 .ice-stark-loaded {
 	width: 100%;
 	height: 100%;
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
 	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.ice-stark-loaded > * {
+	width: 100%;
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
 }
 
 .app-router-shell {
 	width: 100%;
 	height: 100%;
+	min-width: 0;
+	min-height: 0;
 	display: flex;
 	flex-direction: column;
 }
 
 .app-router-shell > div {
 	flex: 1;
-	overflow: hidden;
+	min-width: 0;
+	min-height: 0;
+	overflow: auto;
 	display: flex;
 	flex-direction: column;
 	background: transparent !important; /* Force transparency */
