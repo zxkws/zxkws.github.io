@@ -68,10 +68,24 @@ module.exports = {
         cleanupOutdatedCaches: true,
 
         // 预缓存过滤
-        exclude: [/\.map$/, /asset-manifest\.json$/],
+        // index.html 不预缓存：保证刷新时优先走网络拿到最新构建（避免“刷新还看到旧版本”）
+        exclude: [/\.map$/, /asset-manifest\.json$/, /index\.html$/],
 
         // 运行时缓存策略 (Runtime Caching)
         runtimeCaching: [
+          // 0. HTML/导航请求：NetworkFirst，确保刷新优先拿最新的 index.html（同时可作为离线兜底）
+          {
+            urlPattern: ({ request, url }) => url.origin === self.location.origin && request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'app-pages',
+              networkTimeoutSeconds: 3,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 24 * 60 * 60, // 1 Day
+              },
+            },
+          },
           // 1. 静态资源（尤其是微应用的 entry.js / 非 hash 资源）用 NetworkFirst，避免发布后需要多次刷新才能生效
           {
             urlPattern: ({ url }) => {

@@ -60,29 +60,54 @@ const resolveIframeSrc = (app: IframeMicroApp) => {
 // --- Service Worker Registration ---
 if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
+    const pageLoadedAt = Date.now();
+    let updateInstalled = false;
+    let reloading = false;
+
+    const reload = () => {
+      if (reloading) return;
+      reloading = true;
+      window.location.reload();
+    };
+
+    const maybeReloadForUpdate = () => {
+      const elapsed = Date.now() - pageLoadedAt;
+      // 刷新后的首屏阶段不弹窗，直接自动刷新一次以拿到最新资源（避免“刷新后还要再点一次确认/再刷一次”）
+      if (elapsed < 5000) {
+        reload();
+        return;
+      }
+      if (window.confirm('检测到新版本，是否立即刷新体验？')) {
+        reload();
+      }
+    };
+
+    // 当新 SW 接管页面时触发；配合 workbox 的 clientsClaim/skipWaiting 实现平滑升级
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!updateInstalled) return;
+      maybeReloadForUpdate();
+    });
+
     navigator.serviceWorker
       .register('/service-worker.js')
       .then((registration) => {
         console.log('SW registered: ', registration);
 
-        // 监听更新
+        // 监听更新：新 SW 安装完成后，等待其接管（controllerchange）再做刷新处理
         registration.addEventListener('updatefound', () => {
           const installingWorker = registration.installing;
-          if (installingWorker == null) {
-            return;
-          }
+          if (!installingWorker) return;
+
           installingWorker.addEventListener('statechange', () => {
-            if (installingWorker.state === 'installed') {
-              if (navigator.serviceWorker.controller) {
-                // 有新版本，提示用户刷新
-                console.log('New content is available and will be used when all tabs for this page are closed.');
-                if (window.confirm('检测到新版本，是否立即刷新体验？')) {
-                  window.location.reload();
-                }
-              } else {
-                console.log('Content is cached for offline use.');
-              }
+            if (installingWorker.state !== 'installed') return;
+
+            // 首次安装（没有 controller）不需要刷新
+            if (!navigator.serviceWorker.controller) {
+              console.log('Content is cached for offline use.');
+              return;
             }
+
+            updateInstalled = true;
           });
         });
       })
