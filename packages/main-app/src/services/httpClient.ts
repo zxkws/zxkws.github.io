@@ -1,7 +1,7 @@
 import { createFetchClient, type FetchRequestConfig, type FetchResponse } from '@zxkws/shared-fetch';
 import { popLoading, pushLoading } from './networkLoading';
 
-const BASE_URL = process.env.NODE_ENV === 'development' ? '/api' : 'https://system.zxkws.nyc.mn/api';
+const BASE_URL = process.env.API_BASE_URL || '/api';
 
 const client = createFetchClient({
   baseURL: BASE_URL,

@@ -23,7 +23,7 @@
 	"scripts": {
 		"dev": "webpack serve -c ./config/webpack.config.js --mode development",
 		"dev:prod": "SERVER_ENV=prod webpack serve -c ./config/webpack.config.js --mode development",
-		"build": "NODE_ENV=production webpack -c ./config/webpack.config.js --mode=production",
+		"build": "API_BASE_URL=https://system.zxkws.nyc.mn/api NODE_ENV=production webpack -c ./config/webpack.config.js --mode=production",
 		"lint": "npm run biome:check && npm run stylelint",
 		"biome:check": "biome check src",
 		"biome:fix": "biome check --apply src",

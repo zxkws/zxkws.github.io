@@ -1,29 +1,9 @@
 import { createFetchClient, type FetchRequestConfig, type FetchResponse } from '@zxkws/shared-fetch';
-import { startLoading, stopLoading } from './loading';
-
-const apiBase = import.meta.env.MODE === 'development' ? '/api' : 'https://system.zxkws.nyc.mn/api';
+import { API_BASE } from '../config';
 
 const client = createFetchClient({
-  baseURL: apiBase,
+  baseURL: API_BASE,
   persistToken: (token) => localStorage.setItem('auth_token', token),
-  requestInterceptors: [
-    (cfg: FetchRequestConfig) => {
-      startLoading();
-      return cfg;
-    },
-  ],
-  responseInterceptors: [
-    {
-      onFulfilled: (res: FetchResponse<unknown>) => {
-        stopLoading();
-        return res;
-      },
-      onRejected: (err: unknown) => {
-        stopLoading();
-        throw err;
-      },
-    },
-  ],
 });
 
 export default client;

@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
   const serverEnv = process.env.SERVER_ENV === 'prod' ? 'prod' : 'dev';
   const apiProxyTarget = serverEnv === 'prod' ? 'https://system.zxkws.nyc.mn' : 'http://localhost:3333';
   return {
+    envPrefix: ['VITE_', 'API_BASE_URL'],
     plugins: [
       vue(),
       htmlPlugin({

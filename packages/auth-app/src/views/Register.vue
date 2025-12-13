@@ -2,6 +2,8 @@
 import { onBeforeUnmount, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import client from '../http/client';
+import { buildRedirectHref } from '../utils/redirect';
+import { initiateGithubLogin } from '../utils/auth';
 
 const route = useRoute();
 const form = ref({ username: '', email: '', password: '' });
@@ -13,15 +15,13 @@ let timer: number | null = null;
 const apiBase = import.meta.env.MODE === 'development' ? '/api' : 'https://system.zxkws.nyc.mn/api';
 
 const redirectTo = () => {
-  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/v-app/navList';
-  window.location.href = redirect;
+  const token = typeof window === 'undefined' ? null : window.localStorage.getItem('auth_token');
+  const href = buildRedirectHref(route.query.redirect, token);
+  window.location.href = href;
 };
 
 const onGithubLogin = () => {
-  const redirect =
-    typeof route.query.redirect === 'string'
-      ? route.query.redirect
-      : `${window.location.origin}/`;
+  const redirect = resolveRedirectUrl(route.query.redirect).toString();
   const target = `${apiBase}/auth/github?redirect=${encodeURIComponent(redirect)}`;
   window.location.href = target;
 };
@@ -104,7 +104,13 @@ onBeforeUnmount(() => {
           </div>
         </div>
         <button class="btn" :disabled="loading" @click="onSubmit">{{ loading ? '注册中...' : '注册并登录' }}</button>
-        <button class="btn ghost" type="button" @click="onGithubLogin">使用 GitHub 登录</button>
+        
+        <div class="social-login-group">
+          <button class="social-btn github" type="button" @click="onGithubLogin">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 0C5.372 0 0 5.372 0 12c0 5.309 3.438 9.793 8.207 11.387.6.11.82-.26.82-.577 0-.28-.01-1.026-.015-2.015-3.338.725-4.043-1.608-4.043-1.608-.546-1.387-1.332-1.758-1.332-1.758-1.09-.742.082-.728.082-.728 1.205.085 1.838 1.237 1.838 1.237 1.07 1.833 2.809 1.304 3.493.996.108-.775.418-1.304.762-1.605-2.665-.304-5.466-1.334-5.466-5.93 0-1.31.465-2.383 1.235-3.224-.123-.304-.535-1.524.117-3.176 0 0 1.008-.323 3.3-1.23.957-.266 1.98-.399 2.992-.399 1.012 0 2.035.133 2.992.399 2.292.907 3.3 1.23 3.3 1.23.652 1.652.24 2.872.117 3.176.77.84 1.235 1.913 1.235 3.224 0 4.608-2.804 5.62-5.474 5.92.428.369.812 1.102.812 2.22 0 1.605-.015 2.896-.015 3.284 0 .318.21.692.828.577C20.565 21.793 24 17.309 24 12c0-6.628-5.372-12-12-12z"/></svg>
+            GitHub
+          </button>
+        </div>
         <div class="link-row">
           <router-link class="link" to="/login" :query="route.query">返回登录</router-link>
           <span></span>

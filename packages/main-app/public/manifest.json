@@ -1,0 +1,29 @@
+{
+  "short_name": "ZXKWS",
+  "name": "ZXKWS Space",
+  "description": "Personal Workspace & Dashboard",
+  "icons": [
+    {
+      "src": "tech-favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "tech-favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "tech-favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0ea5e9",
+  "background_color": "#f8fafc",
+  "orientation": "portrait-primary"
+}

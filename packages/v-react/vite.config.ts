@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
     serverEnv === 'prod' ? 'https://system.zxkws.nyc.mn' : 'http://localhost:3333';
 
   return {
+    envPrefix: ['VITE_', 'API_BASE_URL'],
     plugins: [
       react(),
       htmlPlugin({

@@ -54,6 +54,8 @@ module.exports = {
       'process.env': JSON.stringify({
         NODE_ENV: process.env.NODE_ENV,
         VITE_VAPID_PUBLIC_KEY: process.env.VITE_VAPID_PUBLIC_KEY,
+        IS_DESKTOP: process.env.IS_DESKTOP,
+        API_BASE_URL: process.env.API_BASE_URL,
       }),
     }),
     // PWA Service Worker Configuration

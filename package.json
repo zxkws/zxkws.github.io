@@ -74,7 +74,16 @@
     }
   },
   "lint-staged": {
-    "packages/main-app/**/*.{js,jsx,ts,tsx,css,scss,json,md}": [
+    "packages/main-app/src/**/*.{js,jsx,ts,tsx,css,scss,json,md}": [
+      "pnpm --filter main-app exec biome check --write"
+    ],
+    "packages/main-app/config/**/*.{js,jsx,ts,tsx,css,scss,json,md}": [
+      "pnpm --filter main-app exec biome check --write"
+    ],
+    "packages/main-app/public/agent-sw.js": [
+      "pnpm --filter main-app exec biome check --write"
+    ],
+    "packages/main-app/package.json": [
       "pnpm --filter main-app exec biome check --write"
     ]
   }
