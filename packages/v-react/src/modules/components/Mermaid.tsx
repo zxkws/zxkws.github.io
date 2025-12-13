@@ -1,11 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
 
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'default',
-  securityLevel: 'loose',
-});
+// We don't initialize globally anymore to allow dynamic theme switching
+// or we initialize with a base config.
 
 export const Mermaid = ({ content }: { content: string }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -16,6 +13,14 @@ export const Mermaid = ({ content }: { content: string }) => {
     
     const renderChart = async () => {
       try {
+        const isDark = document.documentElement.classList.contains('dark');
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: isDark ? 'dark' : 'default',
+          securityLevel: 'loose',
+          fontFamily: 'inherit',
+        });
+        
         // Generate a unique ID for each render to avoid collisions
         const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
         const { svg } = await mermaid.render(id, content);
@@ -24,17 +29,23 @@ export const Mermaid = ({ content }: { content: string }) => {
         }
       } catch (error) {
         console.error('Mermaid render error:', error);
-        // Fallback or error message could be rendered here
         if (mounted) {
-          setSvg(`<pre class="error">Mermaid Error: ${error instanceof Error ? error.message : String(error)}</pre>`);
+          setSvg(`<pre class="error" style="color:red">Mermaid Error: ${error instanceof Error ? error.message : String(error)}</pre>`);
         }
       }
     };
 
     renderChart();
 
+    // Optional: Listen for theme changes if your app toggles the 'dark' class on html
+    const observer = new MutationObserver(() => {
+      renderChart();
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
     return () => {
       mounted = false;
+      observer.disconnect();
     };
   }, [content]);
 

@@ -46,6 +46,7 @@ export const Editor = ({
   const wikiLinkPlugin = useMemo(() => {
     return [remarkWikiLink, { 
       hrefTemplate: (permalink: string) => `note:${permalink}`,
+      pageResolver: (name: string) => [name],
       aliasDivider: '|'
     }];
   }, []);
@@ -323,21 +324,11 @@ export const Editor = ({
                     <div 
                       className="callout" 
                       style={{
-                        borderLeft: `4px solid ${variant.color}`,
-                        backgroundColor: `${variant.color}1a`, // 10% opacity
-                        padding: '12px',
-                        margin: '1em 0',
-                        borderRadius: '4px'
+                        borderLeftColor: variant.color,
+                        backgroundColor: `${variant.color}1a`, // 10% opacity fallback
                       }}
                     >
-                      <div className="callout-title" style={{ 
-                        fontWeight: 'bold', 
-                        color: variant.color,
-                        marginBottom: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}>
+                      <div className="callout-title" style={{ color: variant.color }}>
                         <span>{variant.icon}</span>
                         {title || type.toUpperCase()}
                       </div>
