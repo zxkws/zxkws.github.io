@@ -63,24 +63,27 @@ module.exports = {
         // 不允许遗留的 SW 控制页面
         clientsClaim: true,
         skipWaiting: true,
+        cleanupOutdatedCaches: true,
 
         // 预缓存过滤
         exclude: [/\.map$/, /asset-manifest\.json$/],
 
         // 运行时缓存策略 (Runtime Caching)
         runtimeCaching: [
-          // 1. 缓存子应用的资源 (JS/CSS)
+          // 1. 静态资源（尤其是微应用的 entry.js / 非 hash 资源）用 NetworkFirst，避免发布后需要多次刷新才能生效
           {
-            // 匹配子应用路径，例如 /v-react/assets/xxx.js 或 localhost:5185/xxx.js
             urlPattern: ({ url }) => {
-              return url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|gif)$/);
+              // 仅缓存同源资源；跨域资源交给浏览器自身缓存策略
+              if (url.origin !== self.location.origin) return false;
+              return url.pathname.match(/\.(js|mjs|css)$/);
             },
-            handler: 'StaleWhileRevalidate', // 策略：优先用旧的，后台更新
+            handler: 'NetworkFirst',
             options: {
-              cacheName: 'sub-apps-assets',
+              cacheName: 'app-static-assets',
+              networkTimeoutSeconds: 3,
               expiration: {
                 maxEntries: 200,
-                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
+                maxAgeSeconds: 7 * 24 * 60 * 60, // 7 Days
               },
             },
           },

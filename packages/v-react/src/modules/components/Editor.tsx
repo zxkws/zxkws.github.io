@@ -1,14 +1,36 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import remarkWikiLink from 'remark-wiki-link';
+import remarkFrontmatter from 'remark-frontmatter';
 import rehypeHighlight from 'rehype-highlight';
-import { Note } from '../store';
-import { useEffect, useRef, useState } from 'react';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
+import 'highlight.js/styles/atom-one-dark.css';
+import { Mermaid } from './Mermaid';
+import { Note, useNoteStore } from '../store';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { uploadFile } from '../api';
 
 const MAX_INLINE_FILE_SIZE = 5 * 1024 * 1024; // 5MB, avoid accidental huge embeds
 const SPLIT_STORAGE_KEY = 'v-react-notes-split';
 const MIN_SPLIT = 0.25;
 const MAX_SPLIT = 0.75;
+
+// Callout Types Mapping
+const CALLOUT_VARIANTS: Record<string, { color: string; icon: string }> = {
+  note: { color: '#0969da', icon: '📝' },
+  info: { color: '#0969da', icon: 'ℹ️' },
+  tip: { color: '#1a7f37', icon: '💡' },
+  success: { color: '#1a7f37', icon: '✅' },
+  question: { color: '#8250df', icon: '❓' },
+  warning: { color: '#9a6700', icon: '⚠️' },
+  failure: { color: '#d1242f', icon: '❌' },
+  danger: { color: '#d1242f', icon: '⚡' },
+  bug: { color: '#d1242f', icon: '🐞' },
+  example: { color: '#8250df', icon: '🟣' },
+  quote: { color: '#6e7781', icon: '💬' },
+};
 
 export const Editor = ({
   note,
@@ -18,6 +40,16 @@ export const Editor = ({
   onChange: (md: string) => void;
 }) => {
   const [value, setValue] = useState(note.contentMd);
+  const { notes, setActive } = useNoteStore();
+  
+  // Memoize the wiki link plugin to avoid re-creation on render
+  const wikiLinkPlugin = useMemo(() => {
+    return [remarkWikiLink, { 
+      hrefTemplate: (permalink: string) => `note:${permalink}`,
+      aliasDivider: '|'
+    }];
+  }, []);
+
   const [split, setSplit] = useState<number>(() => {
     if (typeof window === 'undefined') return 0.5;
     const raw = window.localStorage.getItem(SPLIT_STORAGE_KEY);
@@ -182,8 +214,142 @@ export const Editor = ({
       <div className="splitter" onPointerDown={handleSplitterPointerDown} />
       <div className="preview">
         <ReactMarkdown
-          remarkPlugins={[remarkGfm as any]}
-          rehypePlugins={[[rehypeHighlight as any, { ignoreMissing: true }]]}
+          remarkPlugins={[remarkGfm as any, remarkMath, remarkFrontmatter, wikiLinkPlugin]}
+          rehypePlugins={[
+            [rehypeHighlight as any, { ignoreMissing: true }],
+            rehypeKatex,
+          ]}
+          components={{
+            code(props) {
+              const { children, className, node, ...rest } = props;
+              const match = /language-(\w+)/.exec(className || '');
+              if (match && match[1] === 'mermaid') {
+                return (
+                  <Mermaid content={String(children).replace(/\n$/, '')} />
+                );
+              }
+              return (
+                <code className={className} {...rest}>
+                  {children}
+                </code>
+              );
+            },
+            a(props) {
+              const { href, children, ...rest } = props;
+              if (href?.startsWith('note:')) {
+                const targetName = href.slice(5);
+                const isMissing = !Object.values(notes).some(n => n.title === targetName);
+                return (
+                  <a 
+                    {...rest}
+                    className={`wiki-link ${isMissing ? 'is-missing' : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // Find note by title
+                      const targetNote = Object.values(notes).find(n => n.title === targetName);
+                      if (targetNote) {
+                        setActive(targetNote.id);
+                      } else {
+                        alert(`Note "${targetName}" not found.`);
+                      }
+                    }}
+                    style={{ 
+                      cursor: 'pointer',
+                      color: isMissing ? '#999' : undefined,
+                      textDecoration: 'none'
+                    }}
+                  >
+                    {children}
+                  </a>
+                );
+              }
+              return <a href={href} {...rest}>{children}</a>;
+            },
+            blockquote(props) {
+              // Simple check for Callout syntax: > [!INFO] Title
+              const { children } = props;
+              // ReactMarkdown structure for blockquote often wraps content in p
+              // We need to inspect the first child to see if it's a paragraph containing the trigger
+              const firstChild = Array.isArray(children) ? children[0] : children;
+              
+              if (
+                typeof firstChild === 'object' && 
+                firstChild && 
+                'props' in firstChild &&
+                typeof firstChild.props.children === 'string'
+              ) {
+                const text = firstChild.props.children as string;
+                const match = text.match(/^\[!(\w+)\](?: (.*))?$/);
+                
+                if (match) {
+                  const type = match[1].toLowerCase();
+                  const title = match[2];
+                  const variant = CALLOUT_VARIANTS[type] || CALLOUT_VARIANTS.note;
+                  
+                  // Content excluding the first line (the title line)
+                  // But wait, ReactMarkdown splits by blocks. 
+                  // If "text" is just the first line, subsequent lines might be in other children.
+                  // However, common mark usually keeps the paragraph together if not separated by newline.
+                  // For robust implementation in React without a plugin, we just handle the simplest case:
+                  // The blockquote contains one or more paragraphs. We style the whole blockquote box.
+                  
+                  // Removing the trigger text from the first paragraph
+                  const cleanChildren = [
+                    <div key="callout-content" className="callout-content">
+                      {/* We can't easily modify the children props here without cloning. 
+                          For a perfect solution, a remark plugin is better, 
+                          but here we just apply the style to the container 
+                          and maybe hide the trigger text via CSS or just leave it for now 
+                          (Obsidian renders the title separately). 
+                      */}
+                       {/* Better approach: Clone the first paragraph and replace its text? 
+                           Or simpler: Just render the Box style. The User sees [!INFO] text, 
+                           which is acceptable as a fallback, or we can use CSS to hide it if we wrap it?
+                       */}
+                       {/* Let's try to remove the trigger string from display if possible */}
+                       {Array.isArray(children) ? children.map((child, idx) => {
+                         if (idx === 0 && typeof child?.props?.children === 'string') {
+                            const remainingText = child.props.children.replace(/^\[!(\w+)\](?: (.*))?(\n|$)/, '');
+                            if (!remainingText.trim() && !title) return null; // Empty body
+                            // If title exists, we already used it.
+                            return <p key={idx} {...child.props}>{remainingText}</p>;
+                         }
+                         return child;
+                       }) : children}
+                    </div>
+                  ];
+
+                  return (
+                    <div 
+                      className="callout" 
+                      style={{
+                        borderLeft: `4px solid ${variant.color}`,
+                        backgroundColor: `${variant.color}1a`, // 10% opacity
+                        padding: '12px',
+                        margin: '1em 0',
+                        borderRadius: '4px'
+                      }}
+                    >
+                      <div className="callout-title" style={{ 
+                        fontWeight: 'bold', 
+                        color: variant.color,
+                        marginBottom: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
+                        <span>{variant.icon}</span>
+                        {title || type.toUpperCase()}
+                      </div>
+                      {cleanChildren}
+                    </div>
+                  );
+                }
+              }
+              
+              return <blockquote {...props} />;
+            }
+          }}
         >
           {value}
         </ReactMarkdown>
