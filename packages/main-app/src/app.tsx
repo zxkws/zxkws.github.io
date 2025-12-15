@@ -1,6 +1,10 @@
 import { AppRoute, AppRouter } from '@ice/stark';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import ReactDom from 'react-dom/client';
+
+// Expose React and ReactDOM for micro-apps (Shared Dependency Strategy)
+(window as any).React = React;
+(window as any).ReactDOM = ReactDom;
 
 import PageLoading from './components/PageLoading';
 import './global.css';

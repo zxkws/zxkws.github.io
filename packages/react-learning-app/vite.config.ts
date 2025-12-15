@@ -66,8 +66,13 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       target: 'esnext',
       rollupOptions: {
+        external: ['react', 'react-dom/client'],
         preserveEntrySignatures: 'exports-only',
         output: {
+          globals: {
+            react: 'React',
+            'react-dom/client': 'ReactDOM',
+          },
           entryFileNames: 'entry.js',
           chunkFileNames: 'chunks/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash][extname]',

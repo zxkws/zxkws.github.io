@@ -3,6 +3,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const WorkboxPlugin = require('workbox-webpack-plugin');
 const { SimpleCopyPlugin } = require('../../build-tools'); // 引入我们自己写的插件
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
@@ -21,7 +23,7 @@ module.exports = {
       {
         test: /\.css$/,
         use: [
-          'style-loader',
+          isProd ? MiniCssExtractPlugin.loader : 'style-loader',
           {
             loader: 'css-loader', // 处理 CSS 文件
             options: {
@@ -46,6 +48,12 @@ module.exports = {
     ],
   },
   plugins: [
+    process.env.ANALYZE && new BundleAnalyzerPlugin(),
+    isProd &&
+      new MiniCssExtractPlugin({
+        filename: 'css/[name].[contenthash:8].css',
+        chunkFilename: 'css/[name].[contenthash:8].chunk.css',
+      }),
     new HtmlWebpackPlugin({
       template: './public/index.html',
       inject: true,
