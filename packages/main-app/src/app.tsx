@@ -7,15 +7,7 @@ import './global.css';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import { UserProvider } from './context/UserContext';
-import {
-  ensureIcestarkAppsRegistered,
-  ensureIcestarkStarted,
-  loadConfig,
-  notifyMicroAppLoading,
-  notifyMicroAppMounted,
-  resolveMicroApps,
-  subscribeMicroAppLoading,
-} from './core/icestark';
+import { ensureIcestarkAppsRegistered, loadConfig, resolveMicroApps } from './core/icestark';
 import BasicLayout from './layouts/BasicLayout';
 import AgentTaskPage from './pages/AgentTask';
 import Home from './pages/Home';
@@ -26,6 +18,22 @@ import { subscribeLoading } from './services/networkLoading';
 import { ensureHistoryIdx, replaceUrl } from './utils/safeHistory';
 
 const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
+
+const MicroAppLoading = () => (
+  <div className="absolute inset-0 z-[2000] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="flex flex-col items-center gap-3 rounded-lg bg-[var(--color-bg)] px-6 py-4 text-[var(--color-text)] shadow-lg">
+      <span
+        className="inline-flex h-8 w-8 animate-spin rounded-full border-4"
+        style={{
+          borderColor: 'var(--spinner-track)',
+          borderTopColor: 'var(--spinner-head)',
+        }}
+        aria-hidden="true"
+      />
+      <span className="text-sm font-medium tracking-wide">Loading...</span>
+    </div>
+  </div>
+);
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -119,7 +127,6 @@ if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
 // -----------------------------------
 
 function App() {
-  const [isMicroAppLoading, setIsMicroAppLoading] = useState(false);
   const [isFetchLoading, setIsFetchLoading] = useState(false);
   const [configLoaded, setConfigLoaded] = useState(false);
   const [microApps, setMicroApps] = useState<ReturnType<typeof resolveMicroApps>>([]);
@@ -157,45 +164,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = subscribeMicroAppLoading(setIsMicroAppLoading);
     const unsubscribeFetch = subscribeLoading(setIsFetchLoading);
     return () => {
-      unsubscribe();
       unsubscribeFetch();
-    };
-  }, []);
-
-  // 安全兜底：若微应用在 3 秒内未完成加载（或入口 404/未启动），强制关闭全局 loading，防止遮罩卡死
-  useEffect(() => {
-    if (!isMicroAppLoading) {
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      console.warn('[MainApp] micro app load timeout, closing loading overlay');
-      notifyMicroAppLoading(false);
-    }, 3000);
-    return () => window.clearTimeout(timer);
-  }, [isMicroAppLoading]);
-
-  // 当微应用加载失败（例如 dev server 未启动或网络错误）时，确保关闭全局 Loading，避免界面被遮罩锁死。
-  useEffect(() => {
-    const handleLoadError = (event: PromiseRejectionEvent | ErrorEvent) => {
-      const detail =
-        'reason' in event
-          ? (event as PromiseRejectionEvent).reason
-          : 'error' in event
-            ? (event as ErrorEvent).error
-            : event;
-      console.error('[MainApp] micro app load failed', detail);
-      notifyMicroAppLoading(false);
-    };
-
-    window.addEventListener('unhandledrejection', handleLoadError);
-    window.addEventListener('error', handleLoadError);
-
-    return () => {
-      window.removeEventListener('unhandledrejection', handleLoadError);
-      window.removeEventListener('error', handleLoadError);
     };
   }, []);
 
@@ -204,13 +175,6 @@ function App() {
       ensureIcestarkAppsRegistered(microApps);
     }
   }, [microApps]);
-
-  useEffect(() => {
-    if (!configLoaded) {
-      return;
-    }
-    ensureIcestarkStarted();
-  }, [configLoaded]);
 
   if (configError) {
     return (
@@ -236,8 +200,8 @@ function App() {
     <Suspense fallback={<PageLoading loading />}>
       <AppRouter
         NotFoundComponent={NotFound}
-        onLoadingApp={() => notifyMicroAppLoading(true)}
-        onFinishLoading={() => notifyMicroAppMounted()}
+        LoadingComponent={<MicroAppLoading />}
+        onError={(error) => console.error('[MainApp] micro app load failed', error)}
         onRouteChange={(pathname) => {
           const nextPath = pathname || (typeof window !== 'undefined' ? window.location.pathname : '/');
           if (typeof window !== 'undefined') {
@@ -280,8 +244,8 @@ function App() {
     <AuthProvider>
       <UserProvider>
         <BasicLayout>
-          <PageLoading loading={isMicroAppLoading || isFetchLoading}>
-            <div className="app-router-shell flex flex-1 min-h-0 flex-col">{routerContent}</div>
+          <PageLoading loading={isFetchLoading}>
+            <div className="app-router-shell relative flex flex-1 min-h-0 flex-col">{routerContent}</div>
           </PageLoading>
         </BasicLayout>
       </UserProvider>

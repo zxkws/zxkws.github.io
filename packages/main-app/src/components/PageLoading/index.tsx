@@ -5,8 +5,12 @@ type PageLoadingProps = PropsWithChildren<{
 }>;
 
 const PageLoading = ({ children, loading = false }: PageLoadingProps) => {
+  const isEmpty = !children;
+  const overlayClassName = isEmpty ? 'fixed' : 'absolute';
   const overlay = loading ? (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div
+      className={`${overlayClassName} inset-0 z-[2000] flex items-center justify-center bg-black/40 backdrop-blur-sm`}
+    >
       <div className="flex flex-col items-center gap-3 rounded-lg bg-[var(--color-bg)] px-6 py-4 text-[var(--color-text)] shadow-lg">
         <span
           className="inline-flex h-8 w-8 animate-spin rounded-full border-4"
@@ -21,15 +25,15 @@ const PageLoading = ({ children, loading = false }: PageLoadingProps) => {
     </div>
   ) : null;
 
-  if (!children) {
+  if (isEmpty) {
     return overlay;
   }
 
   return (
-    <>
+    <div className="relative flex flex-1 min-h-0 flex-col">
       {children}
       {overlay}
-    </>
+    </div>
   );
 };
 
