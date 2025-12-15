@@ -100,8 +100,8 @@ class SimpleCopyPlugin {
                 const content = fs.readFileSync(fullPath);
                 
                 // assetPath 是最终在输出目录中的路径
-                // path.join 会处理不同操作系统的路径分隔符，然后 .replace(/\/g, '/') 统一为 Unix 风格
-                const assetPath = path.join(this.to, assetRelativePath).replace(/\/g, '/');
+                // path.join 会处理不同操作系统的路径分隔符，然后将路径分隔符统一为 Unix 风格
+                const assetPath = path.join(this.to, assetRelativePath).replace(/\\/g, '/');
                 
                 // compilation.emitAsset 用于将资源添加到 Webpack 的输出中
                 // RawSource 是 Webpack 提供的用于包装原始文件内容的 Source 类型

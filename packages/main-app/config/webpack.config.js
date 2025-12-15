@@ -2,7 +2,7 @@ const { resolve } = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const WorkboxPlugin = require('workbox-webpack-plugin');
-const { SimpleCopyPlugin } = require('../../packages/build-tools'); // 引入我们自己写的插件
+const { SimpleCopyPlugin } = require('../../build-tools'); // 引入我们自己写的插件
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
