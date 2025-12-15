@@ -1,5 +1,5 @@
 import { AppRoute, AppRouter } from '@ice/stark';
-import { Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import ReactDom from 'react-dom/client';
 
 import PageLoading from './components/PageLoading';
@@ -9,15 +9,16 @@ import { AuthProvider } from './context/AuthContext';
 import { UserProvider } from './context/UserContext';
 import { ensureIcestarkAppsRegistered, loadConfig, resolveMicroApps } from './core/icestark';
 import BasicLayout from './layouts/BasicLayout';
-import AgentTaskPage from './pages/AgentTask';
 import Home from './pages/Home';
-import PermissionAdmin from './pages/PermissionAdmin';
-import Profile from './pages/Profile';
-import UserAdmin from './pages/UserAdmin';
 import { subscribeLoading } from './services/networkLoading';
 import { ensureHistoryIdx, replaceUrl } from './utils/safeHistory';
 
 const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
+
+const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
+const UserAdmin = lazy(() => import('./pages/UserAdmin'));
+const AgentTaskPage = lazy(() => import('./pages/AgentTask'));
+const Profile = lazy(() => import('./pages/Profile'));
 
 const MicroAppLoading = () => (
   <div className="absolute inset-0 z-[2000] flex items-center justify-center bg-black/40 backdrop-blur-sm">

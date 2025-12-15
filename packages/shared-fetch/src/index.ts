@@ -116,7 +116,9 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
       ...headers,
     };
 
-    if (!file && !(body instanceof FormData)) {
+    const shouldSetJsonContentType =
+      method !== 'GET' && body !== undefined && !file && !(body instanceof FormData);
+    if (shouldSetJsonContentType) {
       finalHeaders['Content-Type'] = finalHeaders['Content-Type'] ?? 'application/json';
     }
     if (token) {

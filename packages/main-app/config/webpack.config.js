@@ -162,6 +162,14 @@ module.exports = {
       '@': resolve(__dirname, '../src'),
     },
   },
+  optimization: isProd
+    ? {
+        splitChunks: {
+          chunks: 'all',
+        },
+        runtimeChunk: 'single',
+      }
+    : undefined,
   devServer: {
     port: 3000,
     historyApiFallback: true,

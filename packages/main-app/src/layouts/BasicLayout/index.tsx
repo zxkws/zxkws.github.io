@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useState } from 'react';
+import PageLoading from '../../components/PageLoading';
 import { useUser } from '../../context/UserContext';
 import { fetchRemoteMenus } from '../../services/menuService';
 import type { MenuItem } from '../../types/menu';
@@ -54,7 +55,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
 
   // 如果正在检查登录状态，或者未登录（即将跳转），显示全屏 Loading 或空状态，避免闪屏
   if (loading || !user) {
-    return null; // 或者返回一个全屏 Loading 组件
+    return <PageLoading loading />; // 避免首屏空白，同时给跳转登录留出过渡
   }
 
   return (

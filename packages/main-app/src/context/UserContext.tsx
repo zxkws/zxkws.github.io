@@ -1,11 +1,18 @@
 import { createContext, type PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { clearCachedUser, fetchCurrentUser, saveCurrentUser, type UserProfile } from '../services/userService';
+import {
+  clearCachedUser,
+  fetchCurrentUser,
+  loadCachedUser,
+  saveCurrentUser,
+  setCachedUser,
+  type UserProfile,
+} from '../services/userService';
 
 type UserContextValue = {
   user: UserProfile | null;
   loading: boolean;
   /** 获取当前用户；force=true 时跳过缓存重新请求 */
-  refreshUser: (opts?: { force?: boolean }) => Promise<UserProfile | null>;
+  refreshUser: (opts?: { force?: boolean; silent?: boolean }) => Promise<UserProfile | null>;
   /** 调用后台保存并刷新本地缓存 */
   saveUser: (payload: Partial<UserProfile> & { password?: string }) => Promise<UserProfile | null>;
   /** 登出/清空时调用 */
@@ -21,8 +28,8 @@ const UserContext = createContext<UserContextValue>({
 });
 
 export const UserProvider = ({ children }: PropsWithChildren) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<UserProfile | null>(() => loadCachedUser());
+  const [loading, setLoading] = useState(() => !loadCachedUser());
 
   // 处理从 OAuth 回跳带 ?token= 的场景：落地存储并清理地址栏
   useEffect(() => {
@@ -47,8 +54,10 @@ export const UserProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   const refreshUser = useCallback(
-    async ({ force = false }: { force?: boolean } = {}) => {
-      setLoading(true);
+    async ({ force = false, silent = false }: { force?: boolean; silent?: boolean } = {}) => {
+      if (!silent) {
+        setLoading(true);
+      }
       try {
         const profile = await fetchCurrentUser(force);
         // 如果后端返回 null (未登录)，这里就是 null
@@ -78,6 +87,12 @@ export const UserProvider = ({ children }: PropsWithChildren) => {
 
   // 初始化时尝试拉取一次用户信息
   useEffect(() => {
+    const cached = loadCachedUser();
+    if (cached) {
+      setCachedUser(cached);
+      refreshUser({ force: true, silent: true }).catch(() => undefined);
+      return;
+    }
     refreshUser().catch(() => undefined);
   }, [refreshUser]);
 

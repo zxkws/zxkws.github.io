@@ -14,7 +14,20 @@ export type UserProfile = {
 let cachedProfile: UserProfile | null = null;
 let inFlight: Promise<UserProfile | null> | null = null;
 const USER_CACHE_KEY = 'main-app:user';
-const AUTH_TOKEN_KEY = 'auth_token';
+
+export const loadCachedUser = (): UserProfile | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(USER_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as unknown;
+    const safe = sanitizeUser(parsed);
+    if (!safe || (!safe.id && !safe.userId && !safe.username)) return null;
+    return safe;
+  } catch {
+    return null;
+  }
+};
 
 const sanitizeUser = (raw: unknown): UserProfile => {
   if (!raw || typeof raw !== 'object') return {};
@@ -87,13 +100,7 @@ export const setCachedUser = (profile: UserProfile | null) => {
  * Ensures password / sensitive fields are dropped on the frontend.
  */
 export const fetchCurrentUser = async (forceRefresh = false): Promise<UserProfile | null> => {
-  // 若无本地 token，直接返回 null，避免无意义的 401 请求
-  const token = typeof window === 'undefined' ? null : window.localStorage.getItem(AUTH_TOKEN_KEY) || undefined;
-  if (!token) {
-    cachedProfile = null;
-    inFlight = null;
-    return null;
-  }
+  // NOTE: cookie-based auth works even without localStorage token.
 
   if (cachedProfile && !forceRefresh) {
     return cachedProfile;
@@ -109,7 +116,10 @@ export const fetchCurrentUser = async (forceRefresh = false): Promise<UserProfil
       setCachedUser(safe);
       return cachedProfile;
     })
-    .catch(() => null)
+    .catch(() => {
+      clearCachedUser();
+      return null;
+    })
     .finally(() => {
       inFlight = null;
     });
