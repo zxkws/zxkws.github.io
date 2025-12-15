@@ -87,24 +87,40 @@ module.exports = {
             handler: 'NetworkFirst',
             options: {
               cacheName: 'app-pages',
-              networkTimeoutSeconds: 3,
+              // 线上静态站点（尤其跨区访问）TTFB 可能波动较大；timeout 太长会导致“明明有缓存也要白等”
+              networkTimeoutSeconds: 1,
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 24 * 60 * 60, // 1 Day
               },
             },
           },
-          // 1. 静态资源（尤其是微应用的 entry.js / 非 hash 资源）用 NetworkFirst，避免发布后需要多次刷新才能生效
+          // 1. 带 hash 的静态资源：CacheFirst（hash 变更即 URL 变更，天然 cache-bust），避免 NetworkFirst timeout 带来的额外等待
           {
             urlPattern: ({ url }) => {
-              // 仅缓存同源资源；跨域资源交给浏览器自身缓存策略
               if (url.origin !== self.location.origin) return false;
-              return url.pathname.match(/\.(js|mjs|css)$/);
+              return url.pathname.match(/\.(js|mjs|css)$/) && /[.-][0-9a-f]{8}\./i.test(url.pathname);
+            },
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'app-static-hashed-assets',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 7 * 24 * 60 * 60, // 7 Days
+              },
+            },
+          },
+          // 2. 非 hash 的 JS/CSS（例如微应用 entry.js）：NetworkFirst，避免发布后需要多次刷新才能生效
+          {
+            urlPattern: ({ url }) => {
+              if (url.origin !== self.location.origin) return false;
+              return url.pathname.match(/\.(js|mjs|css)$/) && !/[.-][0-9a-f]{8}\./i.test(url.pathname);
             },
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'app-static-assets',
-              networkTimeoutSeconds: 3,
+              cacheName: 'app-static-nonhashed-assets',
+              // 比页面更短的超时：优先尽快返回缓存，后台再更新缓存
+              networkTimeoutSeconds: 1,
               expiration: {
                 maxEntries: 200,
                 maxAgeSeconds: 7 * 24 * 60 * 60, // 7 Days

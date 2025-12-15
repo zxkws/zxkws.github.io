@@ -1,4 +1,4 @@
-import { client } from './httpClient';
+import { backgroundClient, client } from './httpClient';
 
 export type UserProfile = {
   id?: string | number;
@@ -102,7 +102,7 @@ export const fetchCurrentUser = async (forceRefresh = false): Promise<UserProfil
     return inFlight;
   }
 
-  inFlight = client('/v1/user', undefined, { method: 'GET' })
+  inFlight = backgroundClient('/v1/user', undefined, { method: 'GET' })
     .then((res: unknown) => {
       const data = res && typeof res === 'object' && 'data' in res ? (res as { data: unknown }).data : res;
       const safe = sanitizeUser(data);
