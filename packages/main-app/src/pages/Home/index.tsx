@@ -263,7 +263,6 @@ const Home = () => {
       <header className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">工作台</h1>
-          <p className="mt-1 text-sm text-[var(--color-muted)]">面试展示 + 日常自用：可观测、可导航、可扩展</p>
         </div>
         <div className="flex items-center gap-2">
           <button
