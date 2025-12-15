@@ -108,19 +108,23 @@ const CommandPalette = ({ commands }: CommandPaletteProps) => {
 
   useEffect(() => {
     if (!open) return;
-    if (activeIndex >= filtered.length) {
-      setActiveIndex(0);
+    if (filtered.length === 0) {
+      if (activeIndex !== 0) setActiveIndex(0);
+      return;
     }
+    if (activeIndex < 0 || activeIndex >= filtered.length) setActiveIndex(0);
   }, [activeIndex, filtered.length, open]);
 
   const onKeyDown = async (event: ReactKeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
+      if (filtered.length === 0) return;
       setActiveIndex((idx) => Math.min(filtered.length - 1, idx + 1));
       return;
     }
     if (event.key === 'ArrowUp') {
       event.preventDefault();
+      if (filtered.length === 0) return;
       setActiveIndex((idx) => Math.max(0, idx - 1));
       return;
     }

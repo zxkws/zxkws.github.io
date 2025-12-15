@@ -33,13 +33,24 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
   const [activePath, setActivePath] = useState('');
 
   useEffect(() => {
-    setActivePath(window.location.pathname);
-    const handler = () => setActivePath(window.location.pathname);
-    window.addEventListener('popstate', handler);
-    window.addEventListener('main-route-change', ((e: CustomEvent) => setActivePath(e.detail)) as EventListener);
+    const readPathname = () => window.location.pathname;
+
+    setActivePath(readPathname());
+    const onPopState = () => setActivePath(readPathname());
+    const onMainRouteChange = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      if (typeof detail === 'string') {
+        setActivePath(detail);
+        return;
+      }
+      setActivePath(readPathname());
+    };
+
+    window.addEventListener('popstate', onPopState);
+    window.addEventListener('main-route-change', onMainRouteChange as EventListener);
     return () => {
-      window.removeEventListener('popstate', handler);
-      window.removeEventListener('main-route-change', ((e: CustomEvent) => setActivePath(e.detail)) as EventListener);
+      window.removeEventListener('popstate', onPopState);
+      window.removeEventListener('main-route-change', onMainRouteChange as EventListener);
     };
   }, []);
 
