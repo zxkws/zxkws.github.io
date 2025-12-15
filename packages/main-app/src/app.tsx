@@ -1,10 +1,18 @@
 import { AppRoute, AppRouter } from '@ice/stark';
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import ReactDom from 'react-dom/client';
 
 // Expose React and ReactDOM for micro-apps (Shared Dependency Strategy)
-(window as any).React = React;
-(window as any).ReactDOM = ReactDom;
+type MicroFrontendGlobals = Window & {
+  React?: typeof React;
+  ReactDOM?: typeof ReactDom;
+};
+
+if (typeof window !== 'undefined') {
+  const globals = window as MicroFrontendGlobals;
+  globals.React = React;
+  globals.ReactDOM = ReactDom;
+}
 
 import PageLoading from './components/PageLoading';
 import './global.css';
@@ -13,7 +21,9 @@ import { AuthProvider } from './context/AuthContext';
 import { UserProvider } from './context/UserContext';
 import { ensureIcestarkAppsRegistered, loadConfig, resolveMicroApps } from './core/icestark';
 import BasicLayout from './layouts/BasicLayout';
+import { builtInAsideMenus } from './layouts/BasicLayout/menuConfig';
 import Home from './pages/Home';
+import { addMicroAppLoadMetric, recordRecentRoute } from './services/dashboardStorage';
 import { subscribeLoading } from './services/networkLoading';
 import { ensureHistoryIdx, replaceUrl } from './utils/safeHistory';
 
@@ -136,6 +146,23 @@ function App() {
   const [configLoaded, setConfigLoaded] = useState(false);
   const [microApps, setMicroApps] = useState<ReturnType<typeof resolveMicroApps>>([]);
   const [configError, setConfigError] = useState<string | null>(null);
+  const microAppLoadingStarts = useRef<Map<string, number>>(new Map());
+
+  const routeLabelIndex = useMemo(() => {
+    const entries: Array<{ path: string; label: string }> = [];
+    builtInAsideMenus.forEach((item) => {
+      if (item.path && item.name) {
+        entries.push({ path: item.path, label: item.name });
+      }
+    });
+    entries.push({ path: '/profile', label: '个人资料' });
+    return entries.sort((a, b) => b.path.length - a.path.length);
+  }, []);
+
+  const resolveRouteLabel = useMemo(() => {
+    return (pathname: string) =>
+      routeLabelIndex.find((item) => pathname === item.path || pathname.startsWith(`${item.path}/`))?.label;
+  }, [routeLabelIndex]);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -206,12 +233,34 @@ function App() {
       <AppRouter
         NotFoundComponent={NotFound}
         LoadingComponent={<MicroAppLoading />}
+        onLoadingApp={(app) => {
+          if (app?.name) {
+            microAppLoadingStarts.current.set(app.name, Date.now());
+          }
+        }}
+        onFinishLoading={(app) => {
+          if (!app?.name) return;
+          const startedAt = microAppLoadingStarts.current.get(app.name);
+          if (!startedAt) return;
+          microAppLoadingStarts.current.delete(app.name);
+
+          const durationMs = Date.now() - startedAt;
+          const path =
+            typeof (app as { path?: string }).path === 'string'
+              ? (app as { path?: string }).path
+              : Array.isArray((app as { activePath?: string[] }).activePath)
+                ? (app as { activePath?: string[] }).activePath?.[0]
+                : undefined;
+
+          addMicroAppLoadMetric({ name: app.name, path, durationMs });
+        }}
         onError={(error) => console.error('[MainApp] micro app load failed', error)}
         onRouteChange={(pathname) => {
           const nextPath = pathname || (typeof window !== 'undefined' ? window.location.pathname : '/');
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('main-route-change', { detail: nextPath }));
           }
+          recordRecentRoute({ path: nextPath, label: resolveRouteLabel(nextPath) });
         }}
       >
         <AppRoute exact activePath="/" component={<Home />} />

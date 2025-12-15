@@ -1,4 +1,6 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import CommandPalette, { type CommandItem } from '../../components/CommandPalette';
+import ErrorBoundary from '../../components/ErrorBoundary';
 import PageLoading from '../../components/PageLoading';
 import { useUser } from '../../context/UserContext';
 import { fetchRemoteMenus } from '../../services/menuService';
@@ -12,6 +14,54 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const { user, loading } = useUser();
   const [menus, setMenus] = useState<MenuItem[]>(builtInAsideMenus);
+
+  const commandItems = useMemo<CommandItem[]>(() => {
+    const flatten = (items: MenuItem[], prefix: string[] = []) => {
+      const out: CommandItem[] = [];
+      items.forEach((item) => {
+        const title = item.name || '';
+        const path = item.path;
+        const keywords = [...prefix, title].filter(Boolean);
+        if (path) {
+          out.push({
+            id: `route:${path}`,
+            title,
+            subtitle: path,
+            href: path,
+            keywords,
+          });
+        }
+        const children = item.children;
+        if (children?.length) {
+          out.push(...flatten(children, [...keywords]));
+        }
+      });
+      return out;
+    };
+
+    const routes = flatten(menus);
+    const actions: CommandItem[] = [
+      {
+        id: 'action:reload',
+        title: '刷新页面',
+        subtitle: 'window.location.reload()',
+        action: () => window.location.reload(),
+      },
+      {
+        id: 'action:open-devtools-help',
+        title: '打开性能面板（提示）',
+        subtitle: 'DevTools → Performance / Application',
+        action: () => window.alert('DevTools → Performance / Application（Service Worker）'),
+      },
+    ];
+
+    const seen = new Set<string>();
+    return [...routes, ...actions].filter((item) => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+  }, [menus]);
 
   // 核心鉴权逻辑：如果没有用户信息且加载已完成，强制跳转登录
   useEffect(() => {
@@ -60,6 +110,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="w-full h-full relative overflow-hidden flex flex-col">
+      <CommandPalette commands={commandItems} />
       {/* 1) Header always on top */}
       <HeaderBar isMobile={isMobile} onMenuToggle={() => setIsNavOpen(true)} />
 
@@ -71,7 +122,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
           {/* The "Main Stage" - A floating glass card */}
           <main className="flex-1 p-4 md:p-6 overflow-hidden relative">
             <div className="w-full h-full rounded-[24px] bg-[var(--stage-bg)] backdrop-blur-xl border border-[var(--glass-border)] shadow-[var(--stage-shadow)] overflow-hidden flex flex-col transition-all duration-300">
-              {children}
+              <ErrorBoundary>{children}</ErrorBoundary>
             </div>
           </main>
         </div>
