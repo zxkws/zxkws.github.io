@@ -7,6 +7,7 @@ import {
   setCachedUser,
   type UserProfile,
 } from '../services/userService';
+import { replaceUrl } from '../utils/safeHistory';
 
 type UserContextValue = {
   user: UserProfile | null;
@@ -43,7 +44,7 @@ export const UserProvider = ({ children }: PropsWithChildren) => {
         // ignore
       }
       url.searchParams.delete('token');
-      window.history.replaceState({}, '', url.toString());
+      replaceUrl(url.pathname + url.search + url.hash);
     }
   }, []);
 
