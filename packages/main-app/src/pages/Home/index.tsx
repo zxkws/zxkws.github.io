@@ -13,6 +13,7 @@ import {
   subscribeRecentRoutes,
   togglePinnedRoute,
 } from '../../services/dashboardStorage';
+import { clearPwaCachesAndReload } from '../../utils/pwa';
 
 type PerfSnapshot = {
   ttfbMs?: number;
@@ -198,17 +199,7 @@ const Home = () => {
 
   const openPalette = () => window.dispatchEvent(new Event('main-app:open-command-palette'));
 
-  const clearRuntimeCaches = async () => {
-    if (!('caches' in window)) return;
-    if (window.confirm('确认清理缓存并刷新？（会导致离线缓存失效）') === false) return;
-    const names = await caches.keys();
-    await Promise.all(names.map((name) => caches.delete(name)));
-    if ('serviceWorker' in navigator) {
-      const reg = await navigator.serviceWorker.getRegistration();
-      await reg?.unregister();
-    }
-    window.location.reload();
-  };
+  const clearRuntimeCaches = () => clearPwaCachesAndReload();
 
   const microSummary = useMemo(() => {
     const latest = microAppLoads[0];

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from '../../../../context/UserContext';
 import { client as httpClient } from '../../../../services/httpClient';
 import { clearAuthArtifacts } from '../../../../utils/authCleanup';
+import { clearPwaCachesAndReload } from '../../../../utils/pwa';
 import * as styles from './index.module.css';
 
 type HeaderBarProps = {
@@ -44,6 +45,11 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
     clearAuthArtifacts();
     clearUser();
     // BasicLayout 的 useEffect 会捕捉到 user 为空，并执行跳转
+  };
+
+  const handleClearCaches = () => {
+    setIsMenuOpen(false);
+    void clearPwaCachesAndReload();
   };
 
   if (!user) return null;
@@ -92,6 +98,9 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
               <a href="/profile" className={styles.menuItem} role="menuitem">
                 个人资料
               </a>
+              <button onClick={handleClearCaches} className={styles.menuItem} type="button" role="menuitem">
+                清理缓存并刷新
+              </button>
               <button onClick={handleLogout} className={styles.menuItem} type="button" role="menuitem">
                 退出登录
               </button>

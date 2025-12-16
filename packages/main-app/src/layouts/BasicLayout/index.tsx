@@ -4,6 +4,7 @@ import PageLoading from '../../components/PageLoading';
 import { useUser } from '../../context/UserContext';
 import { fetchRemoteMenus } from '../../services/menuService';
 import type { MenuItem } from '../../types/menu';
+import { clearPwaCachesAndReload } from '../../utils/pwa';
 import HeaderBar from './components/HeaderBar';
 import PageNav from './components/PageNav';
 import { builtInAsideMenus } from './menuConfig';
@@ -45,6 +46,12 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
         title: '刷新页面',
         subtitle: 'window.location.reload()',
         action: () => window.location.reload(),
+      },
+      {
+        id: 'action:clear-cache-reload',
+        title: '清理缓存并刷新',
+        subtitle: 'Service Worker / Cache Storage',
+        action: () => clearPwaCachesAndReload(),
       },
       {
         id: 'action:open-devtools-help',

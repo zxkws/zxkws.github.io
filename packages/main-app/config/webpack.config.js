@@ -95,8 +95,7 @@ module.exports = {
             handler: 'NetworkFirst',
             options: {
               cacheName: 'app-pages',
-              // 线上静态站点（尤其跨区访问）TTFB 可能波动较大；timeout 太长会导致“明明有缓存也要白等”
-              networkTimeoutSeconds: 1,
+              // 不设置 networkTimeout：避免网络慢时回退到旧 index.html（导致“刷新还看到旧版本”）
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 24 * 60 * 60, // 1 Day
@@ -127,8 +126,7 @@ module.exports = {
             handler: 'NetworkFirst',
             options: {
               cacheName: 'app-static-nonhashed-assets',
-              // 比页面更短的超时：优先尽快返回缓存，后台再更新缓存
-              networkTimeoutSeconds: 1,
+              // 不设置 networkTimeout：避免发布后因网络慢而继续使用旧 entry（导致“更新不生效”）
               expiration: {
                 maxEntries: 200,
                 maxAgeSeconds: 7 * 24 * 60 * 60, // 7 Days

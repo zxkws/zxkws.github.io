@@ -142,9 +142,10 @@ if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
     });
 
     navigator.serviceWorker
-      .register('/service-worker.js')
+      .register('/service-worker.js', { updateViaCache: 'none' })
       .then((registration) => {
         console.log('SW registered: ', registration);
+        registration.update().catch(() => undefined);
 
         // 监听更新：新 SW 安装完成后，等待其接管（controllerchange）再做刷新处理
         registration.addEventListener('updatefound', () => {

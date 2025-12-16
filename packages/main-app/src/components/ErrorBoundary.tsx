@@ -1,4 +1,5 @@
 import React, { type ReactNode } from 'react';
+import { clearPwaCachesAndReload } from '../utils/pwa';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -34,6 +35,12 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     window.location.reload();
   };
 
+  handleClearCaches = () => {
+    void clearPwaCachesAndReload({
+      confirmMessage: '可能是旧版本缓存导致异常，是否清理缓存并刷新？（会导致离线缓存失效）',
+    });
+  };
+
   render() {
     if (this.state.hasError) {
       return (
@@ -43,13 +50,22 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
             <div className="mt-2 text-sm text-[var(--color-muted)]">
               {this.state.error?.message || 'Sorry, something went wrong.'}
             </div>
-            <button
-              type="button"
-              onClick={this.handleReload}
-              className="mt-4 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-            >
-              刷新重试
-            </button>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={this.handleReload}
+                className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                刷新重试
+              </button>
+              <button
+                type="button"
+                onClick={this.handleClearCaches}
+                className="rounded-lg border border-[var(--glass-border)] bg-transparent px-4 py-2 text-sm font-semibold text-[var(--color-text)] hover:bg-black/5"
+              >
+                清理缓存并刷新
+              </button>
+            </div>
           </div>
         </div>
       );
