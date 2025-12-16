@@ -63,13 +63,14 @@ type IframeMicroApp = {
 const IFRAME_MICRO_APPS: IframeMicroApp[] = [
   {
     name: 'textdiff',
-    path: '/textdiff',
+    // /textdiff/ 是子应用静态目录（独立站）。主应用内嵌用 /tools/textdiff，避免刷新时被静态目录劫持。
+    path: '/tools/textdiff',
     devSrc: 'http://localhost:5174',
     prodSrc: '/textdiff/',
   },
   {
     name: 'curlconverter',
-    path: '/curlconverter',
+    path: '/tools/curlconverter',
     prodSrc: 'https://curlconverter.com/',
   },
 ];
@@ -82,7 +83,45 @@ const resolveIframeSrc = (app: IframeMicroApp) => {
 };
 
 const LocalRoutes = () => {
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const normalizePathname = (value: string) => (value.length > 1 && value.endsWith('/') ? value.slice(0, -1) : value);
+  const [pathname, setPathname] = useState(() =>
+    typeof window !== 'undefined' ? normalizePathname(window.location.pathname) : '/',
+  );
+
+  useEffect(() => {
+    const readPathname = () => normalizePathname(window.location.pathname);
+    setPathname(readPathname());
+
+    const onMainRouteChange = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      if (typeof detail === 'string') {
+        setPathname(normalizePathname(detail));
+        return;
+      }
+      setPathname(readPathname());
+    };
+    window.addEventListener('main-route-change', onMainRouteChange as EventListener);
+    return () => window.removeEventListener('main-route-change', onMainRouteChange as EventListener);
+  }, []);
+
+  // 兼容旧路径：/textdiff -> /tools/textdiff（否则刷新会被 /textdiff/ 目录劫持成独立站）
+  useEffect(() => {
+    if (pathname === '/textdiff') {
+      const next = '/tools/textdiff';
+      replaceUrl(next);
+      setPathname(next);
+    }
+    if (pathname === '/curlconverter') {
+      const next = '/tools/curlconverter';
+      replaceUrl(next);
+      setPathname(next);
+    }
+  }, [pathname]);
+
+  if (pathname === '/textdiff' || pathname === '/curlconverter') {
+    return <PageLoading loading />;
+  }
+
   const content = (() => {
     if (pathname === '/') return <Home />;
     if (pathname === '/profile') return <Profile />;
@@ -90,7 +129,7 @@ const LocalRoutes = () => {
     if (pathname === '/app/user-admin') return <UserAdmin />;
     if (pathname === '/app/agent-tasks') return <AgentTaskPage />;
 
-    const iframe = IFRAME_MICRO_APPS.find((app) => pathname === app.path || pathname === `${app.path}/`);
+    const iframe = IFRAME_MICRO_APPS.find((app) => pathname === app.path);
     if (iframe) {
       return (
         <iframe
@@ -316,5 +355,9 @@ function App() {
 
 const root = document.getElementById('main-app-container');
 if (root) {
-  ReactDom.createRoot(root).render(<App />);
+  ReactDom.createRoot(root).render(
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>,
+  );
 }

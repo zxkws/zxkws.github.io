@@ -1,7 +1,7 @@
 [
 	{ "name": "首页", "path": "/" },
-	{ "name": "文本对比", "path": "/textdiff" },
-	{ "name": "Curl Converter", "path": "/curlconverter" },
+	{ "name": "文本对比", "path": "/tools/textdiff" },
+	{ "name": "Curl Converter", "path": "/tools/curlconverter" },
 	{ "name": "知识中台", "path": "/v-react/knowledge-hub" },
 	{ "name": "PDF 编辑器", "path": "/v-react/pdf-editor" },
 	{ "name": "模型对话", "path": "/v-react/codex-chat" },
