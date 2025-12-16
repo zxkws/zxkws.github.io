@@ -2,6 +2,7 @@ import React, { type ReactNode } from 'react';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
+  resetKey?: string | number;
 }
 
 interface ErrorBoundaryState {
@@ -17,6 +18,12 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
+  }
+
+  componentDidUpdate(prevProps: ErrorBoundaryProps) {
+    if (this.state.hasError && this.props.resetKey !== prevProps.resetKey) {
+      this.setState({ hasError: false, error: undefined });
+    }
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {

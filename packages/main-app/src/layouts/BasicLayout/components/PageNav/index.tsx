@@ -36,7 +36,6 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
     const readPathname = () => window.location.pathname;
 
     setActivePath(readPathname());
-    const onPopState = () => setActivePath(readPathname());
     const onMainRouteChange = (event: Event) => {
       const detail = (event as CustomEvent<string>).detail;
       if (typeof detail === 'string') {
@@ -46,10 +45,8 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
       setActivePath(readPathname());
     };
 
-    window.addEventListener('popstate', onPopState);
     window.addEventListener('main-route-change', onMainRouteChange as EventListener);
     return () => {
-      window.removeEventListener('popstate', onPopState);
       window.removeEventListener('main-route-change', onMainRouteChange as EventListener);
     };
   }, []);

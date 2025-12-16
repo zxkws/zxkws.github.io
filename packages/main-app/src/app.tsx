@@ -14,6 +14,7 @@ if (typeof window !== 'undefined') {
   globals.ReactDOM = ReactDom;
 }
 
+import ErrorBoundary from './components/ErrorBoundary';
 import PageLoading from './components/PageLoading';
 import './global.css';
 import './index.css';
@@ -27,7 +28,7 @@ import { addMicroAppLoadMetric, recordRecentRoute } from './services/dashboardSt
 import { subscribeLoading } from './services/networkLoading';
 import { ensureHistoryIdx, replaceUrl } from './utils/safeHistory';
 
-const NotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
+const RouteNotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
 
 const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
 const UserAdmin = lazy(() => import('./pages/UserAdmin'));
@@ -78,6 +79,35 @@ const resolveIframeSrc = (app: IframeMicroApp) => {
     return app.devSrc;
   }
   return app.prodSrc;
+};
+
+const LocalRoutes = () => {
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const content = (() => {
+    if (pathname === '/') return <Home />;
+    if (pathname === '/profile') return <Profile />;
+    if (pathname === '/app/permission-admin') return <PermissionAdmin />;
+    if (pathname === '/app/user-admin') return <UserAdmin />;
+    if (pathname === '/app/agent-tasks') return <AgentTaskPage />;
+
+    const iframe = IFRAME_MICRO_APPS.find((app) => pathname === app.path || pathname === `${app.path}/`);
+    if (iframe) {
+      return (
+        <iframe
+          src={resolveIframeSrc(iframe)}
+          title={iframe.name}
+          className="h-full w-full border-0"
+          loading="lazy"
+          allow="clipboard-write; clipboard-read"
+          referrerPolicy="strict-origin-when-cross-origin"
+        />
+      );
+    }
+
+    return <RouteNotFound />;
+  })();
+
+  return <ErrorBoundary resetKey={pathname}>{content}</ErrorBoundary>;
 };
 
 // --- Service Worker Registration ---
@@ -231,7 +261,7 @@ function App() {
   const routerContent = (
     <Suspense fallback={<PageLoading loading />}>
       <AppRouter
-        NotFoundComponent={NotFound}
+        NotFoundComponent={LocalRoutes}
         LoadingComponent={<MicroAppLoading />}
         onLoadingApp={(app) => {
           if (app?.name) {
@@ -263,32 +293,8 @@ function App() {
           recordRecentRoute({ path: nextPath, label: resolveRouteLabel(nextPath) });
         }}
       >
-        <AppRoute exact activePath="/" component={<Home />} />
-        <AppRoute exact activePath="/app/permission-admin" component={<PermissionAdmin />} />
-        <AppRoute exact activePath="/app/user-admin" component={<UserAdmin />} />
-        <AppRoute exact activePath="/app/agent-tasks" component={<AgentTaskPage />} />
-        <AppRoute exact activePath="/profile" component={<Profile />} />
         {microApps.map((app) => (
           <AppRoute key={app.name} {...app} {...(app.render ? {} : app)} />
-        ))}
-        {IFRAME_MICRO_APPS.map((app) => (
-          <AppRoute
-            key={app.name}
-            name={app.name}
-            exact
-            path={app.path}
-            activePath={[app.path]}
-            render={() => (
-              <iframe
-                src={resolveIframeSrc(app)}
-                title={app.name}
-                className="h-full w-full border-0"
-                loading="lazy"
-                allow="clipboard-write; clipboard-read"
-                referrerPolicy="strict-origin-when-cross-origin"
-              />
-            )}
-          />
         ))}
       </AppRouter>
     </Suspense>
