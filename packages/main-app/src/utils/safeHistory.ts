@@ -6,6 +6,16 @@ type HistoryStateLike = Record<string, unknown> & {
 
 const createKey = () => Math.random().toString(36).slice(2, 10);
 
+const dispatchMainRouteChange = (url: string) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const resolved = new URL(url, window.location.origin);
+    window.dispatchEvent(new CustomEvent('main-route-change', { detail: resolved.pathname }));
+  } catch {
+    window.dispatchEvent(new CustomEvent('main-route-change', { detail: window.location.pathname }));
+  }
+};
+
 const readState = (): HistoryStateLike => {
   if (typeof window === 'undefined') return {};
   const raw = window.history.state;
@@ -43,9 +53,11 @@ export const ensureHistoryIdx = () => {
 export const pushUrl = (url: string) => {
   if (typeof window === 'undefined') return;
   window.history.pushState(buildNextState(false), '', url);
+  dispatchMainRouteChange(url);
 };
 
 export const replaceUrl = (url: string) => {
   if (typeof window === 'undefined') return;
   window.history.replaceState(buildNextState(true), '', url);
+  dispatchMainRouteChange(url);
 };

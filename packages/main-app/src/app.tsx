@@ -29,6 +29,7 @@ import { subscribeLoading } from './services/networkLoading';
 import { ensureHistoryIdx, replaceUrl } from './utils/safeHistory';
 
 const RouteNotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
+const normalizePathname = (value: string) => (value.length > 1 && value.endsWith('/') ? value.slice(0, -1) : value);
 
 const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
 const UserAdmin = lazy(() => import('./pages/UserAdmin'));
@@ -82,46 +83,7 @@ const resolveIframeSrc = (app: IframeMicroApp) => {
   return app.prodSrc;
 };
 
-const LocalRoutes = () => {
-  const normalizePathname = (value: string) => (value.length > 1 && value.endsWith('/') ? value.slice(0, -1) : value);
-  const [pathname, setPathname] = useState(() =>
-    typeof window !== 'undefined' ? normalizePathname(window.location.pathname) : '/',
-  );
-
-  useEffect(() => {
-    const readPathname = () => normalizePathname(window.location.pathname);
-    setPathname(readPathname());
-
-    const onMainRouteChange = (event: Event) => {
-      const detail = (event as CustomEvent<string>).detail;
-      if (typeof detail === 'string') {
-        setPathname(normalizePathname(detail));
-        return;
-      }
-      setPathname(readPathname());
-    };
-    window.addEventListener('main-route-change', onMainRouteChange as EventListener);
-    return () => window.removeEventListener('main-route-change', onMainRouteChange as EventListener);
-  }, []);
-
-  // 兼容旧路径：/textdiff -> /tools/textdiff（否则刷新会被 /textdiff/ 目录劫持成独立站）
-  useEffect(() => {
-    if (pathname === '/textdiff') {
-      const next = '/tools/textdiff';
-      replaceUrl(next);
-      setPathname(next);
-    }
-    if (pathname === '/curlconverter') {
-      const next = '/tools/curlconverter';
-      replaceUrl(next);
-      setPathname(next);
-    }
-  }, [pathname]);
-
-  if (pathname === '/textdiff' || pathname === '/curlconverter') {
-    return <PageLoading loading />;
-  }
-
+const LocalRoutes = ({ pathname }: { pathname: string }) => {
   const content = (() => {
     if (pathname === '/') return <Home />;
     if (pathname === '/profile') return <Profile />;
@@ -217,6 +179,9 @@ function App() {
   const [microApps, setMicroApps] = useState<ReturnType<typeof resolveMicroApps>>([]);
   const [configError, setConfigError] = useState<string | null>(null);
   const microAppLoadingStarts = useRef<Map<string, number>>(new Map());
+  const [pathname, setPathname] = useState(() =>
+    typeof window !== 'undefined' ? normalizePathname(window.location.pathname) : '/',
+  );
 
   const routeLabelIndex = useMemo(() => {
     const entries: Array<{ path: string; label: string }> = [];
@@ -233,6 +198,68 @@ function App() {
     return (pathname: string) =>
       routeLabelIndex.find((item) => pathname === item.path || pathname.startsWith(`${item.path}/`))?.label;
   }, [routeLabelIndex]);
+
+  const microAppPrefixes = useMemo(() => {
+    const list = microApps
+      .map((app) => {
+        const path =
+          typeof (app as { path?: string }).path === 'string'
+            ? (app as { path?: string }).path
+            : Array.isArray((app as { activePath?: string[] }).activePath)
+              ? (app as { activePath?: string[] }).activePath?.[0]
+              : undefined;
+        return typeof path === 'string' ? normalizePathname(path) : undefined;
+      })
+      .filter(Boolean) as string[];
+    return list.sort((a, b) => b.length - a.length);
+  }, [microApps]);
+
+  const isMicroAppRoute = useMemo(() => {
+    return microAppPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+  }, [microAppPrefixes, pathname]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const read = () => normalizePathname(window.location.pathname);
+    setPathname(read());
+
+    const onMainRouteChange = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      if (typeof detail === 'string') {
+        setPathname(normalizePathname(detail));
+        return;
+      }
+      setPathname(read());
+    };
+
+    const onPopState = () => {
+      window.dispatchEvent(new CustomEvent('main-route-change', { detail: read() }));
+    };
+
+    window.addEventListener('main-route-change', onMainRouteChange as EventListener);
+    window.addEventListener('popstate', onPopState);
+    window.addEventListener('hashchange', onPopState);
+    return () => {
+      window.removeEventListener('main-route-change', onMainRouteChange as EventListener);
+      window.removeEventListener('popstate', onPopState);
+      window.removeEventListener('hashchange', onPopState);
+    };
+  }, []);
+
+  // 兼容旧路径：/textdiff -> /tools/textdiff（否则刷新会被 /textdiff/ 目录劫持成独立站）
+  useEffect(() => {
+    if (pathname === '/textdiff') {
+      replaceUrl('/tools/textdiff');
+      return;
+    }
+    if (pathname === '/curlconverter') {
+      replaceUrl('/tools/curlconverter');
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    recordRecentRoute({ path: pathname, label: resolveRouteLabel(pathname) });
+  }, [pathname, resolveRouteLabel]);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -300,43 +327,45 @@ function App() {
 
   const routerContent = (
     <Suspense fallback={<PageLoading loading />}>
-      <AppRouter
-        NotFoundComponent={LocalRoutes}
-        LoadingComponent={<MicroAppLoading />}
-        onLoadingApp={(app) => {
-          if (app?.name) {
-            microAppLoadingStarts.current.set(app.name, Date.now());
-          }
-        }}
-        onFinishLoading={(app) => {
-          if (!app?.name) return;
-          const startedAt = microAppLoadingStarts.current.get(app.name);
-          if (!startedAt) return;
-          microAppLoadingStarts.current.delete(app.name);
+      {isMicroAppRoute ? (
+        <AppRouter
+          LoadingComponent={<MicroAppLoading />}
+          onLoadingApp={(app) => {
+            if (app?.name) {
+              microAppLoadingStarts.current.set(app.name, Date.now());
+            }
+          }}
+          onFinishLoading={(app) => {
+            if (!app?.name) return;
+            const startedAt = microAppLoadingStarts.current.get(app.name);
+            if (!startedAt) return;
+            microAppLoadingStarts.current.delete(app.name);
 
-          const durationMs = Date.now() - startedAt;
-          const path =
-            typeof (app as { path?: string }).path === 'string'
-              ? (app as { path?: string }).path
-              : Array.isArray((app as { activePath?: string[] }).activePath)
-                ? (app as { activePath?: string[] }).activePath?.[0]
-                : undefined;
+            const durationMs = Date.now() - startedAt;
+            const path =
+              typeof (app as { path?: string }).path === 'string'
+                ? (app as { path?: string }).path
+                : Array.isArray((app as { activePath?: string[] }).activePath)
+                  ? (app as { activePath?: string[] }).activePath?.[0]
+                  : undefined;
 
-          addMicroAppLoadMetric({ name: app.name, path, durationMs });
-        }}
-        onError={(error) => console.error('[MainApp] micro app load failed', error)}
-        onRouteChange={(pathname) => {
-          const nextPath = pathname || (typeof window !== 'undefined' ? window.location.pathname : '/');
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('main-route-change', { detail: nextPath }));
-          }
-          recordRecentRoute({ path: nextPath, label: resolveRouteLabel(nextPath) });
-        }}
-      >
-        {microApps.map((app) => (
-          <AppRoute key={app.name} {...app} {...(app.render ? {} : app)} />
-        ))}
-      </AppRouter>
+            addMicroAppLoadMetric({ name: app.name, path, durationMs });
+          }}
+          onError={(error) => console.error('[MainApp] micro app load failed', error)}
+          onRouteChange={(next) => {
+            const nextPath = next || (typeof window !== 'undefined' ? window.location.pathname : '/');
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('main-route-change', { detail: nextPath }));
+            }
+          }}
+        >
+          {microApps.map((app) => (
+            <AppRoute key={app.name} {...app} {...(app.render ? {} : app)} />
+          ))}
+        </AppRouter>
+      ) : (
+        <LocalRoutes pathname={pathname} />
+      )}
     </Suspense>
   );
 
