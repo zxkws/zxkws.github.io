@@ -17,6 +17,21 @@ interface MonitorEvent {
 let SDK_OPTIONS: Options;
 let USER_ID: string;
 
+function resolveUrl(input: string): string {
+  try {
+    return new URL(input, window.location.href).toString();
+  } catch {
+    return input;
+  }
+}
+
+function isReportEndpoint(url: string): boolean {
+  if (!SDK_OPTIONS?.endpoint) return false;
+  const endpointAbs = resolveUrl(SDK_OPTIONS.endpoint);
+  const urlAbs = resolveUrl(url);
+  return urlAbs === endpointAbs || urlAbs.startsWith(`${endpointAbs}?`) || urlAbs.startsWith(endpointAbs);
+}
+
 function getUserId(): string {
   if (!USER_ID) {
     let userId = localStorage.getItem('web_monitor_user_id');
@@ -125,6 +140,8 @@ function setupPerformanceTracking() {
   const observer = new PerformanceObserver((list) => {
     list.getEntries().forEach((entry) => {
       if (!SDK_OPTIONS) return;
+      // Prevent a feedback loop: reporting itself can generate "resource" entries.
+      if (typeof entry.name === 'string' && isReportEndpoint(entry.name)) return;
       const perfEvent: MonitorEvent = {
         type: 'performance',
         data: {
@@ -145,7 +162,8 @@ function setupPerformanceTracking() {
   });
 
   // Observe common performance metrics
-  observer.observe({ entryTypes: ['paint', 'largest-contentful-paint', 'layout-shift', 'navigation', 'resource'], buffered: true });
+  // Avoid observing "resource" by default: too noisy and can include beacon/fetch, causing recursive reporting.
+  observer.observe({ entryTypes: ['paint', 'largest-contentful-paint', 'layout-shift', 'navigation'], buffered: true });
 
   // White Screen Time (approximation - FCP can be a good proxy)
   // More accurate white screen time typically requires monitoring DOM changes
