@@ -1,4 +1,5 @@
 import { AppRoute, AppRouter } from '@ice/stark';
+import { init as initWebMonitor } from '@zxkws/web-monitor-sdk';
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import ReactDom from 'react-dom/client';
 
@@ -35,6 +36,7 @@ const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
 const UserAdmin = lazy(() => import('./pages/UserAdmin'));
 const AgentTaskPage = lazy(() => import('./pages/AgentTask'));
 const Profile = lazy(() => import('./pages/Profile'));
+const MonitorDashboard = lazy(() => import('./pages/MonitorDashboard')); // Import MonitorDashboard
 
 const MicroAppLoading = () => (
   <div className="absolute inset-0 z-[2000] flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -90,6 +92,7 @@ const LocalRoutes = ({ pathname }: { pathname: string }) => {
     if (pathname === '/app/permission-admin') return <PermissionAdmin />;
     if (pathname === '/app/user-admin') return <UserAdmin />;
     if (pathname === '/app/agent-tasks') return <AgentTaskPage />;
+    if (pathname === '/monitor-dashboard') return <MonitorDashboard />; // New Monitor Dashboard Route
 
     const iframe = IFRAME_MICRO_APPS.find((app) => pathname === app.path);
     if (iframe) {
@@ -104,7 +107,6 @@ const LocalRoutes = ({ pathname }: { pathname: string }) => {
         />
       );
     }
-
     return <RouteNotFound />;
   })();
 
@@ -182,6 +184,19 @@ function App() {
   const [pathname, setPathname] = useState(() =>
     typeof window !== 'undefined' ? normalizePathname(window.location.pathname) : '/',
   );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const base = String(process.env.API_BASE_URL || '/api').replace(/\/$/, '');
+      initWebMonitor({
+        appId: 'main-app',
+        endpoint: `${base}/monitor/report`,
+      });
+    } catch (error) {
+      console.warn('[web-monitor-sdk] init failed', error);
+    }
+  }, []);
 
   const routeLabelIndex = useMemo(() => {
     const entries: Array<{ path: string; label: string }> = [];
