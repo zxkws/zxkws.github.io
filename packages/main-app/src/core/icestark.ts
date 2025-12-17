@@ -1,4 +1,4 @@
-import { type AppConfig, registerMicroApps, start } from '@ice/stark';
+import { type AppConfig, registerMicroApps } from '@ice/stark';
 import type { AppRouteProps } from '@ice/stark/lib/AppRoute';
 import { convertToIceStarkApps, loadSystemConfig } from '../services/configService';
 import type { SystemConfig } from '../types/config';
@@ -9,7 +9,6 @@ type RuntimeMicroApp = MicroAppConfig & { url?: string | string[] };
 let systemConfig: SystemConfig | null = null;
 
 const registeredAppNames = new Set<string>();
-let started = false;
 
 const hydrateRegisteredNames = () => {
   if (typeof window === 'undefined') {
@@ -25,8 +24,6 @@ const hydrateRegisteredNames = () => {
     }
   });
 };
-
-const loadingEventTarget = typeof window !== 'undefined' ? new EventTarget() : undefined;
 
 const normalizeUrl = (url?: string | string[]): string[] | undefined => {
   if (!url) {
@@ -62,20 +59,6 @@ const mergeMicroApps = (runtime: RuntimeMicroApp[] = []): MicroAppConfig[] => {
   });
 
   return Array.from(merged.values());
-};
-
-const emitLoading = (loading: boolean) => {
-  if (!loadingEventTarget) {
-    return;
-  }
-  loadingEventTarget.dispatchEvent(new CustomEvent('micro-app-loading', { detail: loading }));
-};
-
-const dispatchMicroAppMounted = () => {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  window.dispatchEvent(new CustomEvent('micro-app-mounted'));
 };
 
 export const loadConfig = async (): Promise<SystemConfig> => {
@@ -123,44 +106,6 @@ const ensureAppsRegistered = (apps: MicroAppConfig[]) => {
   });
 };
 
-export const ensureIcestarkStarted = () => {
-  ensureAppsRegistered(resolveMicroApps());
-  if (started) {
-    return;
-  }
-  start({
-    onLoadingApp: () => emitLoading(true),
-    onFinishLoading: () => {
-      emitLoading(false);
-      dispatchMicroAppMounted();
-    },
-    onError: (error) => {
-      console.error('[MainApp] micro app load error', error);
-      emitLoading(false);
-    },
-  });
-  started = true;
-};
-
 export const ensureIcestarkAppsRegistered = (apps: MicroAppConfig[]) => {
   ensureAppsRegistered(apps);
-};
-
-export const notifyMicroAppLoading = (loading: boolean) => emitLoading(loading);
-
-export const notifyMicroAppMounted = () => {
-  emitLoading(false);
-  dispatchMicroAppMounted();
-};
-
-export const subscribeMicroAppLoading = (listener: (_loading: boolean) => void): (() => void) => {
-  if (!loadingEventTarget) {
-    return () => undefined;
-  }
-  const handler = (event: Event) => {
-    const { detail } = event as CustomEvent<boolean>;
-    listener(detail);
-  };
-  loadingEventTarget.addEventListener('micro-app-loading', handler);
-  return () => loadingEventTarget.removeEventListener('micro-app-loading', handler);
 };
