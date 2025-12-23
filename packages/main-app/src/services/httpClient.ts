@@ -1,13 +1,10 @@
-import { createFetchClient, type FetchRequestConfig, type FetchResponse } from '@zxkws/shared-fetch';
+import { createFetchClient, type FetchRequestConfig, type FetchResponse, resolveApiBase } from '@zxkws/shared-fetch';
 import { popLoading, pushLoading } from './networkLoading';
 
-const resolveBaseUrl = (raw: string) => {
-  const fallback = process.env.NODE_ENV === 'development' ? '/api' : raw || '/api';
-  if (typeof window === 'undefined') return fallback;
-  return window.location.hostname === 'zxkws.nyc.mn' ? '/api' : raw || fallback;
-};
-
-const BASE_URL = resolveBaseUrl(process.env.API_BASE_URL || '');
+const BASE_URL = resolveApiBase({
+  rawBase: process.env.API_BASE_URL,
+  dev: process.env.NODE_ENV === 'development',
+});
 const shouldSendAuthHeader = (() => {
   if (typeof window === 'undefined') return true;
   if (!BASE_URL || typeof BASE_URL !== 'string') return true;
@@ -20,7 +17,7 @@ const shouldSendAuthHeader = (() => {
     }
 
     const isZxkwsSite = (hostname: string) => hostname === 'zxkws.nyc.mn' || hostname.endsWith('.zxkws.nyc.mn');
-    // Cross-origin but same-site (e.g. zxkws.nyc.mn -> system.zxkws.nyc.mn): prefer cookie auth to avoid OPTIONS.
+    // Cross-origin but same-site: prefer cookie auth to avoid OPTIONS.
     if (isZxkwsSite(window.location.hostname) && isZxkwsSite(apiUrl.hostname)) {
       return false;
     }
@@ -35,7 +32,7 @@ const shouldSendAuthHeader = (() => {
 const createClient = ({ withLoading }: { withLoading: boolean }) =>
   createFetchClient({
     baseURL: BASE_URL,
-    // Cross-origin requests (e.g. system.zxkws.nyc.mn) will trigger CORS preflight when sending Authorization.
+    // Cross-origin requests will trigger CORS preflight when sending Authorization.
     // Prefer cookie-based auth in those cases to keep GETs "simple" and avoid OPTIONS latency.
     getToken: () =>
       typeof window === 'undefined' || !shouldSendAuthHeader ? null : localStorage.getItem('auth_token'),

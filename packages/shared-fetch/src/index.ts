@@ -41,6 +41,32 @@ export type FetchResponse<T> = {
   data: T;
 };
 
+export type ResolveApiBaseOptions = {
+  rawBase?: string;
+  dev?: boolean;
+  hostname?: string;
+  defaultBase?: string;
+  zxkwsHost?: string;
+};
+
+export const resolveApiBase = (options: ResolveApiBaseOptions = {}): string => {
+  const {
+    rawBase,
+    dev = false,
+    hostname,
+    defaultBase = '/api',
+    zxkwsHost = 'zxkws.nyc.mn',
+  } = options;
+
+  const trimmedRaw = typeof rawBase === 'string' ? rawBase.trim() : '';
+  const fallback = dev ? defaultBase : trimmedRaw || defaultBase;
+  const host = hostname ?? (typeof window !== 'undefined' ? window.location.hostname : undefined);
+
+  if (!host) return fallback;
+  if (host === zxkwsHost) return defaultBase;
+  return trimmedRaw || fallback;
+};
+
 const appendQuery = (url: string, params?: Record<string, unknown>) => {
   if (!params || Object.keys(params).length === 0) return url;
   const search = new URLSearchParams();

@@ -8,7 +8,10 @@ import { resolve } from 'path';
 export default defineConfig(({ mode }) => {
   const isProd = mode === 'production';
   const serverEnv = process.env.SERVER_ENV === 'prod' ? 'prod' : 'dev';
-  const apiProxyTarget = serverEnv === 'prod' ? 'https://system.zxkws.nyc.mn' : 'http://localhost:3333';
+  const apiProxyTarget =
+    process.env.API_PROXY_TARGET ||
+    process.env.API_BASE_URL ||
+    (serverEnv === 'prod' ? '' : 'http://localhost:3333');
 
   return {
     plugins: [

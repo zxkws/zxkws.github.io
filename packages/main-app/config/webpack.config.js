@@ -10,7 +10,8 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 // 运行时后端目标：默认走本地开发服务，必要时可以通过 SERVER_ENV=prod 切换到线上网关
 const SERVER_ENV = process.env.SERVER_ENV === 'prod' ? 'prod' : 'dev';
-const API_PROXY_TARGET = SERVER_ENV === 'prod' ? 'https://system.zxkws.nyc.mn' : 'http://localhost:3333';
+const API_PROXY_TARGET =
+  process.env.API_PROXY_TARGET || process.env.API_BASE_URL || (SERVER_ENV === 'prod' ? '' : 'http://localhost:3333');
 
 const isProd = process.env.NODE_ENV === 'production';
 

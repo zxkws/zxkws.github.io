@@ -1,4 +1,5 @@
 import { AppRoute, AppRouter } from '@ice/stark';
+import { resolveApiBase } from '@zxkws/shared-fetch';
 import { init as initWebMonitor } from '@zxkws/web-monitor-sdk';
 import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import ReactDom from 'react-dom/client';
@@ -188,7 +189,12 @@ function App() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      const base = String(process.env.API_BASE_URL || '/api').replace(/\/$/, '');
+      const base = String(
+        resolveApiBase({
+          rawBase: process.env.API_BASE_URL,
+          dev: process.env.NODE_ENV === 'development',
+        }),
+      ).replace(/\/$/, '');
       initWebMonitor({
         appId: 'main-app',
         endpoint: `${base}/monitor/report`,
