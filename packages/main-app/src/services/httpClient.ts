@@ -1,7 +1,13 @@
 import { createFetchClient, type FetchRequestConfig, type FetchResponse } from '@zxkws/shared-fetch';
 import { popLoading, pushLoading } from './networkLoading';
 
-const BASE_URL = process.env.API_BASE_URL || '/api';
+const resolveBaseUrl = (raw: string) => {
+  const fallback = process.env.NODE_ENV === 'development' ? '/api' : raw || '/api';
+  if (typeof window === 'undefined') return fallback;
+  return window.location.hostname === 'zxkws.nyc.mn' ? '/api' : raw || fallback;
+};
+
+const BASE_URL = resolveBaseUrl(process.env.API_BASE_URL || '');
 const shouldSendAuthHeader = (() => {
   if (typeof window === 'undefined') return true;
   if (!BASE_URL || typeof BASE_URL !== 'string') return true;

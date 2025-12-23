@@ -2,6 +2,7 @@
 import { onBeforeUnmount, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import client from '../http/client';
+import { API_BASE } from '../config';
 import { buildRedirectHref } from '../utils/redirect';
 import { initiateGithubLogin } from '../utils/auth';
 
@@ -12,7 +13,7 @@ const error = ref('');
 const showPassword = ref(false);
 const toast = ref<{ text: string; type: 'error' | 'success' } | null>(null);
 let timer: number | null = null;
-const apiBase = import.meta.env.MODE === 'development' ? '/api' : 'https://system.zxkws.nyc.mn/api';
+const apiBase = API_BASE;
 
 const redirectTo = () => {
   const token = typeof window === 'undefined' ? null : window.localStorage.getItem('auth_token');
