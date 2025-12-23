@@ -1,4 +1,5 @@
 const { resolve } = require('path');
+const { execSync } = require('child_process');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const WorkboxPlugin = require('workbox-webpack-plugin');
@@ -14,6 +15,18 @@ const API_PROXY_TARGET =
   process.env.API_PROXY_TARGET || process.env.API_BASE_URL || (SERVER_ENV === 'prod' ? '' : 'http://localhost:3333');
 
 const isProd = process.env.NODE_ENV === 'production';
+const safeExec = (cmd) => {
+  try {
+    return execSync(cmd, { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    return '';
+  }
+};
+
+const BUILD_VERSION = safeExec('git log -1 --format=%cI');
+const BUILD_TIME = new Date().toISOString();
 
 module.exports = {
   // 开启生产环境 source map，便于线上错误定位；如需隐藏源码可改为 'hidden-source-map'
@@ -73,6 +86,8 @@ module.exports = {
         VITE_VAPID_PUBLIC_KEY: process.env.VITE_VAPID_PUBLIC_KEY,
         IS_DESKTOP: process.env.IS_DESKTOP,
         API_BASE_URL: process.env.API_BASE_URL,
+        BUILD_VERSION: BUILD_VERSION || 'unknown',
+        BUILD_TIME,
       }),
     }),
     // PWA Service Worker Configuration

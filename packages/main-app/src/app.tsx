@@ -189,6 +189,11 @@ function App() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
+      if (process.env.NODE_ENV === 'production') {
+        console.info(
+          `[build] version=${process.env.BUILD_VERSION ?? 'unknown'} time=${process.env.BUILD_TIME ?? 'unknown'}`,
+        );
+      }
       const base = String(
         resolveApiBase({
           rawBase: process.env.API_BASE_URL,
