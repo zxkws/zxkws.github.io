@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "dev:prod": "SERVER_ENV=prod vite",
-    "build": "vite build",
+    "build": "API_BASE_URL=https://system.zxkws.nyc.mn/api vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --fix"
   },
