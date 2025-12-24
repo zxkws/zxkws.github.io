@@ -163,7 +163,19 @@ function setupPerformanceTracking() {
 
   // Observe common performance metrics
   // Avoid observing "resource" by default: too noisy and can include beacon/fetch, causing recursive reporting.
-  observer.observe({ entryTypes: ['paint', 'largest-contentful-paint', 'layout-shift', 'navigation'], buffered: true });
+  // Some browsers throw if "buffered" is used with "entryTypes"; observe per-type with a fallback.
+  const entryTypes = ['paint', 'largest-contentful-paint', 'layout-shift', 'navigation'] as const;
+  entryTypes.forEach((type) => {
+    try {
+      observer.observe({ type, buffered: true });
+    } catch (error) {
+      try {
+        observer.observe({ type });
+      } catch (observeError) {
+        console.warn(`[web-monitor-sdk] PerformanceObserver type not supported: ${type}`, observeError);
+      }
+    }
+  });
 
   // White Screen Time (approximation - FCP can be a good proxy)
   // More accurate white screen time typically requires monitoring DOM changes
