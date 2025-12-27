@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getErrorStatus } from '@zxkws/shared-fetch';
 import client from './http/client';
 import GlobalLoading from './components/GlobalLoading';
+import Tabs from './components/Tabs';
 import './styles.css';
 
 type DbType = 'mysql' | 'redis' | 'mongodb';
@@ -83,6 +84,9 @@ type UserProfile = {
 
 type AuthState = 'pending' | 'ok' | 'need-login' | 'forbidden' | 'error';
 
+type ConsoleTab = 'assets' | 'tasks';
+type RunStatusFilter = 'all' | 'running' | 'success' | 'failed';
+
 type FilterState = {
   type: 'all' | DbType;
   keyword: string;
@@ -145,6 +149,44 @@ const maskSecret = (value?: string) => {
   return value.length <= 3 ? '***' : `${value.slice(0, 2)}***${value.slice(-1)}`;
 };
 
+const buildAssetAddress = (asset: DbAsset) => {
+  if (asset.connectionUri) return asset.connectionUri;
+  const host = asset.host?.trim();
+  if (!host) return '';
+  const portPart = asset.port ? `:${asset.port}` : '';
+  const dbPart = asset.databaseName ? `/${asset.databaseName}` : '';
+  return `${host}${portPart}${dbPart}`;
+};
+
+const maskAddressForDisplay = (address: string) => {
+  if (!address) return address;
+  const schemeIndex = address.indexOf('://');
+  if (schemeIndex < 0) return address;
+  const afterScheme = address.slice(schemeIndex + 3);
+  const atIndex = afterScheme.indexOf('@');
+  if (atIndex < 0) return address;
+  const auth = afterScheme.slice(0, atIndex);
+  const rest = afterScheme.slice(atIndex);
+  const colonIndex = auth.indexOf(':');
+  if (colonIndex < 0) return address;
+  const user = auth.slice(0, colonIndex);
+  return `${address.slice(0, schemeIndex + 3)}${user}:***${rest}`;
+};
+
+const formatDuration = (startedAt?: string | Date, finishedAt?: string | Date) => {
+  if (!startedAt || !finishedAt) return '--';
+  const start = typeof startedAt === 'string' ? new Date(startedAt) : startedAt;
+  const finish = typeof finishedAt === 'string' ? new Date(finishedAt) : finishedAt;
+  const ms = finish.getTime() - start.getTime();
+  if (Number.isNaN(ms) || ms < 0) return '--';
+  if (ms < 1000) return `${ms}ms`;
+  const sec = Math.round(ms / 1000);
+  if (sec < 60) return `${sec}s`;
+  const min = Math.floor(sec / 60);
+  const rest = sec % 60;
+  return `${min}m${rest}s`;
+};
+
 const unwrap = <T,>(payload: unknown): T => {
   if (payload && typeof payload === 'object' && 'data' in (payload as Record<string, unknown>)) {
     return (payload as { data: T }).data;
@@ -154,12 +196,15 @@ const unwrap = <T,>(payload: unknown): T => {
 
 export default function App({ basename: _basename }: { basename?: string }) {
   const [authState, setAuthState] = useState<AuthState>('pending');
+  const [activeTab, setActiveTab] = useState<ConsoleTab>('assets');
   const [filters, setFilters] = useState<FilterState>({ type: 'all', keyword: '' });
   const [assets, setAssets] = useState<DbAsset[]>([]);
   const [tasks, setTasks] = useState<DbSyncTask[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [editing, setEditing] = useState<DbAsset | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [taskEditing, setTaskEditing] = useState<(Omit<DbSyncTask, 'id'> & { id?: string }) | null>(null);
@@ -169,13 +214,13 @@ export default function App({ basename: _basename }: { basename?: string }) {
   const [checkingAll, setCheckingAll] = useState(false);
   const [secretVisible, setSecretVisible] = useState<Record<string, boolean>>({});
   const [taskBusyId, setTaskBusyId] = useState<string | null>(null);
-  const [runTask, setRunTask] = useState<DbSyncTask | null>(null);
-  const [isRunModalOpen, setRunModalOpen] = useState(false);
+  const [taskPanelTab, setTaskPanelTab] = useState<'detail' | 'runs'>('detail');
   const [runLoading, setRunLoading] = useState(false);
   const [runItems, setRunItems] = useState<DbSyncRun[]>([]);
   const [runTotal, setRunTotal] = useState(0);
   const [runPageNo, setRunPageNo] = useState(1);
   const [runPageSize] = useState(10);
+  const [runStatusFilter, setRunStatusFilter] = useState<RunStatusFilter>('all');
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -256,6 +301,52 @@ export default function App({ basename: _basename }: { basename?: string }) {
       loadTasks();
     }
   }, [authState, loadAssets, loadTasks]);
+
+  useEffect(() => {
+    if (selectedAssetId && !assets.some((item) => item.id === selectedAssetId)) {
+      setSelectedAssetId(null);
+    }
+  }, [assets, selectedAssetId]);
+
+  useEffect(() => {
+    if (selectedTaskId && !tasks.some((item) => item.id === selectedTaskId)) {
+      setSelectedTaskId(null);
+    }
+  }, [tasks, selectedTaskId]);
+
+  const copyToClipboard = useCallback(
+    async (text: string, okMessage = '已复制') => {
+      if (!text.trim()) {
+        showToast('无可复制内容');
+        return;
+      }
+      try {
+        if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else if (typeof document !== 'undefined') {
+          const input = document.createElement('textarea');
+          input.value = text;
+          input.style.position = 'fixed';
+          input.style.left = '-9999px';
+          input.style.top = '0';
+          input.style.opacity = '0';
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          document.body.removeChild(input);
+        }
+        showToast(okMessage);
+      } catch {
+        showToast('复制失败');
+      }
+    },
+    [showToast],
+  );
+
+  const refreshAll = useCallback(() => {
+    loadAssets();
+    loadTasks();
+  }, [loadAssets, loadTasks]);
 
   const startCreate = () => {
     setEditing({ ...initialForm });
@@ -389,40 +480,52 @@ export default function App({ basename: _basename }: { basename?: string }) {
     setSecretVisible((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const openRunModal = async (task: DbSyncTask) => {
-    setRunTask(task);
-    setRunModalOpen(true);
-    await loadRuns(task.id, 1);
+  const selectAssetRow = (item: DbAsset) => {
+    if (!item.id) return;
+    setSelectedAssetId(item.id);
   };
 
-  const closeRunModal = () => {
-    setRunModalOpen(false);
-    setRunTask(null);
+  const selectTaskRow = (task: DbSyncTask) => {
+    setSelectedTaskId(task.id);
     setRunItems([]);
     setRunTotal(0);
     setRunPageNo(1);
+    setTaskPanelTab('detail');
   };
 
-	  const loadRuns = useCallback(
-    async (taskId: string, pageNo: number) => {
+  const openTaskRuns = async (task: DbSyncTask) => {
+    setActiveTab('tasks');
+    setSelectedTaskId(task.id);
+    setRunItems([]);
+    setRunTotal(0);
+    setRunPageNo(1);
+    setTaskPanelTab('runs');
+    await loadRuns(task.id, 1, runStatusFilter);
+  };
+
+  const loadRuns = useCallback(
+    async (taskId: string, pageNo: number, status: RunStatusFilter) => {
       setRunLoading(true);
       try {
-        const payload = { taskId, pageNo, pageSize: runPageSize };
+        const payload: Record<string, unknown> = { taskId, pageNo, pageSize: runPageSize };
+        if (status !== 'all') {
+          payload.status = status;
+        }
         const data = unwrap<{ items: DbSyncRun[]; total: number; pageNo: number; pageSize: number }>(
           await client('/db-sync/runs/list', payload),
         );
         setRunItems(data.items || []);
         setRunTotal(data.total || 0);
         setRunPageNo(data.pageNo || pageNo);
-	      } catch (err) {
-	        if (getErrorStatus(err) === 401) {
-	          setAuthState('need-login');
-	        }
-	        showToast(err instanceof Error ? err.message : '加载执行记录失败');
-	      } finally {
-	        setRunLoading(false);
-	      }
-	    },
+      } catch (err) {
+        if (getErrorStatus(err) === 401) {
+          setAuthState('need-login');
+        }
+        showToast(err instanceof Error ? err.message : '加载执行记录失败');
+      } finally {
+        setRunLoading(false);
+      }
+    },
     [client, runPageSize, showToast],
   );
 
@@ -574,8 +677,699 @@ export default function App({ basename: _basename }: { basename?: string }) {
 	      );
 	    }
 
-	    return (
-	      <>
+    const useNewLayout: boolean = true;
+
+    if (useNewLayout) {
+      const assetOnlineCount = assets.filter((item) => item.lastStatus === 'online').length;
+      const assetOfflineCount = assets.filter((item) => item.lastStatus === 'offline').length;
+      const taskRunningCount = tasks.filter((item) => item.status === 'running').length;
+      const taskPausedCount = tasks.filter((item) => item.status === 'paused').length;
+
+      const assetMap = new Map(assets.filter((a) => a.id).map((a) => [a.id as string, a] as const));
+      const selectedAsset = selectedAssetId ? assetMap.get(selectedAssetId) ?? null : null;
+      const selectedTask = selectedTaskId ? tasks.find((t) => t.id === selectedTaskId) ?? null : null;
+
+      const getAssetName = (id?: string) => {
+        if (!id) return '--';
+        return assetMap.get(id)?.name ?? id;
+      };
+
+      const renderAssetsMain = () => (
+        <div className="table-panel">
+          <div className="toolbar">
+            <div className="toolbar-left">
+              <label className="field">
+                <span className="field-label">类型</span>
+                <select
+                  value={filters.type}
+                  onChange={(e) => setFilters((prev) => ({ ...prev, type: e.target.value as FilterState['type'] }))}
+                >
+                  <option value="all">全部</option>
+                  <option value="mysql">MySQL</option>
+                  <option value="redis">Redis</option>
+                  <option value="mongodb">MongoDB</option>
+                </select>
+              </label>
+              <label className="field">
+                <span className="field-label">关键词</span>
+                <input
+                  value={filters.keyword}
+                  placeholder="名称 / 地址 / 标签"
+                  onChange={(e) => setFilters((prev) => ({ ...prev, keyword: e.target.value }))}
+                  onKeyDown={(e) => e.key === 'Enter' && loadAssets()}
+                />
+              </label>
+              <button className="btn" onClick={loadAssets} disabled={loading}>
+                {loading ? '查询中...' : '查询'}
+              </button>
+            </div>
+            <div className="toolbar-right">
+              <button className="btn" onClick={() => checkAsset()} disabled={checkingAll || loading || assets.length === 0}>
+                {checkingAll ? '巡检中...' : '全部巡检'}
+              </button>
+              <button className="btn primary" onClick={startCreate}>
+                新增数据源
+              </button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div style={{ padding: 14 }}>
+              <div className="panel muted">加载中...</div>
+            </div>
+          ) : assets.length === 0 ? (
+            <div style={{ padding: 14 }}>
+              <div className="panel muted">暂无数据源，点击「新增数据源」开始配置。</div>
+            </div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 76 }}>状态</th>
+                  <th>名称</th>
+                  <th style={{ width: 86 }}>类型</th>
+                  <th style={{ width: 86 }}>环境</th>
+                  <th>地址 / DB</th>
+                  <th style={{ width: 96 }}>延迟</th>
+                  <th style={{ width: 160 }}>上次检查</th>
+                  <th style={{ width: 160, textAlign: 'right' }}>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {assets.map((item) => {
+                  const selected = item.id && item.id === selectedAssetId;
+                  const addr = buildAssetAddress(item);
+                  const displayAddr = maskAddressForDisplay(addr);
+                  return (
+                    <tr
+                      key={item.id ?? item.name}
+                      className={selected ? 'selected' : ''}
+                      onClick={() => selectAssetRow(item)}
+                    >
+                      <td>
+                        <span className={statusClass(item.lastStatus)}></span>
+                        <span style={{ marginLeft: 8, textTransform: 'uppercase' }}>{item.lastStatus ?? 'unknown'}</span>
+                      </td>
+                      <td>
+                        <div className="ellipsis" title={item.name}>
+                          {item.name}
+                        </div>
+                        {item.tags && (
+                          <div className="sub ellipsis" title={item.tags}>
+                            {item.tags}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <span className={badgeClass(item.type)}>{item.type}</span>
+                      </td>
+                      <td>{item.environment ?? '--'}</td>
+                      <td>
+                        <div className="mono ellipsis" title={displayAddr || '--'}>
+                          {displayAddr || '--'}
+                        </div>
+                      </td>
+                      <td className="mono">{typeof item.lastLatencyMs === 'number' ? `${item.lastLatencyMs}ms` : '--'}</td>
+                      <td className="mono">{formatTime(item.lastCheckedAt)}</td>
+                      <td>
+                        <div className="cell-actions">
+                          <button
+                            className="link"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              checkAsset(item.id);
+                            }}
+                            disabled={checkingId === item.id}
+                          >
+                            {checkingId === item.id ? '检查中' : '检查'}
+                          </button>
+                          <button
+                            className="link"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyToClipboard(addr, '已复制连接信息');
+                            }}
+                          >
+                            复制
+                          </button>
+                          <button
+                            className="link"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEdit(item);
+                            }}
+                          >
+                            编辑
+                          </button>
+                          <button
+                            className="link"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeAsset(item);
+                            }}
+                          >
+                            删除
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      );
+
+      const renderAssetsSide = () => {
+        if (!selectedAsset) {
+          return (
+            <div className="sidepanel">
+              <div className="sidepanel-head">
+                <div className="sidepanel-title">
+                  <h3>数据源详情</h3>
+                </div>
+              </div>
+              <div className="sidepanel-body">
+                <div className="panel muted">从左侧选择一条数据源查看详情。</div>
+              </div>
+            </div>
+          );
+        }
+
+        const addr = buildAssetAddress(selectedAsset);
+        const displayAddr = maskAddressForDisplay(addr);
+        const secretOpen = selectedAsset.id ? secretVisible[selectedAsset.id] : false;
+
+        return (
+          <div className="sidepanel">
+            <div className="sidepanel-head">
+              <div className="sidepanel-title">
+                <span className={badgeClass(selectedAsset.type)}>{selectedAsset.type}</span>
+                <h3 title={selectedAsset.name}>{selectedAsset.name}</h3>
+              </div>
+              <div className="cell-actions">
+                <button className="link" onClick={() => startEdit(selectedAsset)}>
+                  编辑
+                </button>
+                <button className="link" onClick={() => removeAsset(selectedAsset)}>
+                  删除
+                </button>
+              </div>
+            </div>
+            <div className="sidepanel-body">
+              <div className="cell-actions" style={{ justifyContent: 'flex-start', marginBottom: 10 }}>
+                <button
+                  className="btn"
+                  onClick={() => checkAsset(selectedAsset.id)}
+                  disabled={checkingId === selectedAsset.id || checkingAll}
+                >
+                  {checkingId === selectedAsset.id ? '检查中...' : '测试连接'}
+                </button>
+                <button className="btn" onClick={() => copyToClipboard(addr, '已复制连接信息')}>
+                  复制连接
+                </button>
+              </div>
+
+              <div className="kv">
+                <div className="k">状态</div>
+                <div className="v">
+                  <span className={statusClass(selectedAsset.lastStatus)}></span>
+                  <span style={{ marginLeft: 8, textTransform: 'uppercase' }}>{selectedAsset.lastStatus ?? 'unknown'}</span>
+                  {typeof selectedAsset.lastLatencyMs === 'number' && (
+                    <span className="mono" style={{ marginLeft: 8, color: 'var(--muted)' }}>
+                      {selectedAsset.lastLatencyMs}ms
+                    </span>
+                  )}
+                </div>
+
+                <div className="k">地址</div>
+                <div className="v">
+                  <div className="mono ellipsis" title={displayAddr || '--'}>
+                    {displayAddr || '--'}
+                  </div>
+                </div>
+
+                <div className="k">账号</div>
+                <div className="v">{selectedAsset.username || '--'}</div>
+
+                <div className="k">密码</div>
+                <div className="v">
+                  <span className="mono">{secretOpen ? selectedAsset.password || '--' : maskSecret(selectedAsset.password)}</span>
+                  {selectedAsset.id && selectedAsset.password && (
+                    <button className="link" onClick={() => toggleSecret(selectedAsset.id)} style={{ marginLeft: 10 }}>
+                      {secretOpen ? '隐藏' : '显示'}
+                    </button>
+                  )}
+                </div>
+
+                <div className="k">环境</div>
+                <div className="v">{selectedAsset.environment || '--'}</div>
+
+                <div className="k">库 / 命名空间</div>
+                <div className="v">{selectedAsset.databaseName || '--'}</div>
+
+                <div className="k">标签</div>
+                <div className="v">
+                  <div className="ellipsis" title={selectedAsset.tags || '--'}>
+                    {selectedAsset.tags || '--'}
+                  </div>
+                </div>
+
+                <div className="k">备注</div>
+                <div className="v">
+                  <div className="ellipsis" title={selectedAsset.description || '--'}>
+                    {selectedAsset.description || '--'}
+                  </div>
+                </div>
+
+                <div className="k">上次检查</div>
+                <div className="v mono">{formatTime(selectedAsset.lastCheckedAt)}</div>
+              </div>
+
+              {selectedAsset.lastMessage && (
+                <>
+                  <div className="divider"></div>
+                  <div className="panel muted">{selectedAsset.lastMessage}</div>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      const renderTasksMain = () => (
+        <div className="table-panel">
+          <div className="toolbar">
+            <div className="toolbar-left">
+              <button className="btn" onClick={loadTasks} disabled={authState !== 'ok'}>
+                刷新任务
+              </button>
+            </div>
+            <div className="toolbar-right">
+              <button className="btn primary" onClick={startCreateTask} disabled={assets.length < 2}>
+                新增任务
+              </button>
+            </div>
+          </div>
+
+          {tasks.length === 0 ? (
+            <div style={{ padding: 14 }}>
+              <div className="panel muted">暂无同步任务，点击「新增任务」开始配置。</div>
+            </div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 96 }}>状态</th>
+                  <th>任务</th>
+                  <th style={{ width: 86 }}>类型</th>
+                  <th>源 → 目标</th>
+                  <th style={{ width: 160 }}>调度</th>
+                  <th style={{ width: 160 }}>上次 / 下次</th>
+                  <th style={{ width: 110 }}>最近结果</th>
+                  <th style={{ width: 200, textAlign: 'right' }}>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tasks.map((t) => {
+                  const selected = t.id === selectedTaskId;
+                  const busy = taskBusyId === t.id;
+                  const sourceName = getAssetName(t.sourceAssetId);
+                  const targetName = getAssetName(t.targetAssetId);
+                  const scheduleText =
+                    t.scheduleType === 'fixed' ? `每 ${t.scheduleValue || '--'} 分钟` : `Cron：${t.scheduleValue || '--'}`;
+                  return (
+                    <tr key={t.id} className={selected ? 'selected' : ''} onClick={() => selectTaskRow(t)}>
+                      <td>
+                        <span className={`pill ${t.status === 'running' ? 'running' : ''}`}>{t.status}</span>
+                      </td>
+                      <td>
+                        <div className="ellipsis" title={t.name}>
+                          {t.name}
+                        </div>
+                        <div className="sub ellipsis" title={t.id}>
+                          {t.id}
+                        </div>
+                      </td>
+                      <td>
+                        <span className={badgeClass(t.type)}>{t.type}</span>
+                      </td>
+                      <td className="ellipsis" title={`${sourceName} -> ${targetName}`}>
+                        {sourceName} → {targetName}
+                      </td>
+                      <td className="mono ellipsis" title={scheduleText}>
+                        {scheduleText}
+                      </td>
+                      <td className="mono">
+                        <div title={`上次：${formatTime(t.lastRunAt)}`}>{formatTime(t.lastRunAt)}</div>
+                        <div title={`下次：${formatTime(t.nextRunAt)}`}>{formatTime(t.nextRunAt)}</div>
+                      </td>
+                      <td>
+                        <span
+                          className={`pill ${
+                            t.lastRunStatus === 'success' ? 'success' : t.lastRunStatus === 'failed' ? 'failed' : ''
+                          }`}
+                        >
+                          {t.lastRunStatus ?? '--'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="cell-actions">
+                          <button
+                            className="link"
+                            disabled={busy}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              runTaskNow(t);
+                            }}
+                          >
+                            立即同步
+                          </button>
+                          <button
+                            className="link"
+                            disabled={busy}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openTaskRuns(t);
+                            }}
+                          >
+                            记录
+                          </button>
+                          <button
+                            className="link"
+                            disabled={busy}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleTaskStatus(t);
+                            }}
+                          >
+                            {t.status === 'running' ? '暂停' : '启用'}
+                          </button>
+                          <button
+                            className="link"
+                            disabled={busy}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEditTask(t);
+                            }}
+                          >
+                            编辑
+                          </button>
+                          <button
+                            className="link"
+                            disabled={busy}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeTask(t);
+                            }}
+                          >
+                            删除
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      );
+
+      const renderTasksSide = () => {
+        if (!selectedTask) {
+          return (
+            <div className="sidepanel">
+              <div className="sidepanel-head">
+                <div className="sidepanel-title">
+                  <h3>任务详情</h3>
+                </div>
+              </div>
+              <div className="sidepanel-body">
+                <div className="panel muted">从左侧选择一条同步任务查看详情与执行记录。</div>
+              </div>
+            </div>
+          );
+        }
+
+        const busy = taskBusyId === selectedTask.id;
+        const sourceName = getAssetName(selectedTask.sourceAssetId);
+        const targetName = getAssetName(selectedTask.targetAssetId);
+        const totalPages = Math.max(1, Math.ceil(runTotal / runPageSize));
+
+        const openRuns = () => {
+          setTaskPanelTab('runs');
+          loadRuns(selectedTask.id, 1, runStatusFilter);
+        };
+
+        return (
+          <div className="sidepanel">
+            <div className="sidepanel-head">
+              <div className="sidepanel-title">
+                <span className={badgeClass(selectedTask.type)}>{selectedTask.type}</span>
+                <h3 title={selectedTask.name}>{selectedTask.name}</h3>
+              </div>
+              <div className="cell-actions">
+                <button className="link" onClick={() => startEditTask(selectedTask)} disabled={busy}>
+                  编辑
+                </button>
+                <button className="link" onClick={() => removeTask(selectedTask)} disabled={busy}>
+                  删除
+                </button>
+              </div>
+            </div>
+            <div className="sidepanel-body">
+              <Tabs
+                items={[
+                  { key: 'detail', label: '详情' },
+                  { key: 'runs', label: '记录', badge: runTotal > 0 ? runTotal : undefined },
+                ]}
+                activeKey={taskPanelTab}
+                onChange={(key) => {
+                  const next = key as 'detail' | 'runs';
+                  setTaskPanelTab(next);
+                  if (next === 'runs') {
+                    loadRuns(selectedTask.id, 1, runStatusFilter);
+                  }
+                }}
+              />
+
+              {taskPanelTab === 'detail' ? (
+                <>
+                  <div className="cell-actions" style={{ justifyContent: 'flex-start', marginBottom: 10 }}>
+                    <button className="btn primary" onClick={() => runTaskNow(selectedTask)} disabled={busy}>
+                      {busy ? '执行中...' : '立即同步'}
+                    </button>
+                    <button className="btn" onClick={() => toggleTaskStatus(selectedTask)} disabled={busy}>
+                      {selectedTask.status === 'running' ? '暂停' : '启用'}
+                    </button>
+                    <button className="btn" onClick={openRuns} disabled={busy}>
+                      查看记录
+                    </button>
+                  </div>
+
+                  <div className="kv">
+                    <div className="k">状态</div>
+                    <div className="v">
+                      <span className={`pill ${selectedTask.status === 'running' ? 'running' : ''}`}>{selectedTask.status}</span>
+                    </div>
+
+                    <div className="k">源</div>
+                    <div className="v ellipsis" title={sourceName}>
+                      {sourceName}
+                    </div>
+
+                    <div className="k">目标</div>
+                    <div className="v ellipsis" title={targetName}>
+                      {targetName}
+                    </div>
+
+                    <div className="k">调度</div>
+                    <div className="v">
+                      {selectedTask.scheduleType === 'fixed'
+                        ? `固定间隔：${selectedTask.scheduleValue || '--'} 分钟`
+                        : `Cron：${selectedTask.scheduleValue || '--'}`}
+                    </div>
+
+                    <div className="k">批次大小</div>
+                    <div className="v mono">{selectedTask.batchSize}</div>
+
+                    <div className="k">并发</div>
+                    <div className="v mono">{selectedTask.concurrency}</div>
+
+                    <div className="k">上次执行</div>
+                    <div className="v mono">{formatTime(selectedTask.lastRunAt)}</div>
+
+                    <div className="k">下次执行</div>
+                    <div className="v mono">{formatTime(selectedTask.nextRunAt)}</div>
+
+                    <div className="k">最近结果</div>
+                    <div className="v">
+                      <span
+                        className={`pill ${
+                          selectedTask.lastRunStatus === 'success'
+                            ? 'success'
+                            : selectedTask.lastRunStatus === 'failed'
+                              ? 'failed'
+                              : ''
+                        }`}
+                      >
+                        {selectedTask.lastRunStatus ?? '--'}
+                      </span>
+                    </div>
+
+                    <div className="k">任务 ID</div>
+                    <div className="v mono">{selectedTask.id}</div>
+                  </div>
+
+                  {selectedTask.lastRunMessage && (
+                    <>
+                      <div className="divider"></div>
+                      <div className="panel muted">{selectedTask.lastRunMessage}</div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="toolbar" style={{ marginBottom: 10 }}>
+                    <div className="toolbar-left">
+                      <label className="field" style={{ minWidth: 140 }}>
+                        <span className="field-label">状态</span>
+                        <select
+                          value={runStatusFilter}
+                          onChange={(e) => {
+                            const next = e.target.value as RunStatusFilter;
+                            setRunStatusFilter(next);
+                            loadRuns(selectedTask.id, 1, next);
+                          }}
+                        >
+                          <option value="all">全部</option>
+                          <option value="running">running</option>
+                          <option value="success">success</option>
+                          <option value="failed">failed</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div className="toolbar-right">
+                      <span className="muted" style={{ fontSize: 12 }}>
+                        共 {runTotal} 条，{runPageNo}/{totalPages}
+                      </span>
+                      <button
+                        className="btn"
+                        onClick={() => loadRuns(selectedTask.id, Math.max(1, runPageNo - 1), runStatusFilter)}
+                        disabled={runLoading || runPageNo <= 1}
+                      >
+                        上一页
+                      </button>
+                      <button
+                        className="btn"
+                        onClick={() => loadRuns(selectedTask.id, runPageNo + 1, runStatusFilter)}
+                        disabled={runLoading || runPageNo >= totalPages}
+                      >
+                        下一页
+                      </button>
+                    </div>
+                  </div>
+
+                  {runLoading ? (
+                    <div className="panel muted">加载中...</div>
+                  ) : runItems.length === 0 ? (
+                    <div className="panel muted">暂无执行记录。</div>
+                  ) : (
+                    <div className="table-panel">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th style={{ width: 96 }}>状态</th>
+                            <th style={{ width: 160 }}>开始</th>
+                            <th style={{ width: 80 }}>耗时</th>
+                            <th>信息</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {runItems.map((r) => (
+                            <tr key={r.id}>
+                              <td>
+                                <span
+                                  className={`pill ${
+                                    r.status === 'success' ? 'success' : r.status === 'failed' ? 'failed' : 'running'
+                                  }`}
+                                >
+                                  {r.status}
+                                </span>
+                              </td>
+                              <td className="mono">{formatTime(r.startedAt)}</td>
+                              <td className="mono">{formatDuration(r.startedAt, r.finishedAt)}</td>
+                              <td>
+                                <div className="ellipsis" title={r.message || ''}>
+                                  {r.message || '--'}
+                                </div>
+                                {r.metrics && (
+                                  <div className="sub mono ellipsis" title={JSON.stringify(r.metrics)}>
+                                    {JSON.stringify(r.metrics)}
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      return (
+        <>
+          <div className="summary-grid">
+            <div className="stat">
+              <div className="k">数据源总数</div>
+              <div className="v">{assets.length}</div>
+            </div>
+            <div className="stat">
+              <div className="k">在线 / 离线</div>
+              <div className="v">
+                {assetOnlineCount} / {assetOfflineCount}
+              </div>
+            </div>
+            <div className="stat">
+              <div className="k">同步任务总数</div>
+              <div className="v">{tasks.length}</div>
+            </div>
+            <div className="stat">
+              <div className="k">运行中 / 暂停</div>
+              <div className="v">
+                {taskRunningCount} / {taskPausedCount}
+              </div>
+            </div>
+          </div>
+
+          <Tabs
+            items={[
+              { key: 'assets', label: '数据源', badge: assets.length },
+              { key: 'tasks', label: '同步任务', badge: tasks.length },
+            ]}
+            activeKey={activeTab}
+            onChange={(key) => setActiveTab(key as ConsoleTab)}
+          />
+
+          {error && <div className="panel danger">{error}</div>}
+
+          <div className="workspace">
+            <div className="workspace-main">{activeTab === 'assets' ? renderAssetsMain() : renderTasksMain()}</div>
+            <div className="workspace-side">{activeTab === 'assets' ? renderAssetsSide() : renderTasksSide()}</div>
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
         <div className="toolbar">
           <div className="toolbar-left">
             <label className="field">
@@ -798,7 +1592,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
                         <button className="btn ghost" onClick={() => runTaskNow(t)} disabled={busy}>
                           {busy ? '执行中...' : '立即同步'}
                         </button>
-                        <button className="btn ghost" onClick={() => openRunModal(t)} disabled={busy}>
+                        <button className="btn ghost" onClick={() => openTaskRuns(t)} disabled={busy}>
                           记录
                         </button>
                         <button className="btn ghost" onClick={() => toggleTaskStatus(t)} disabled={busy}>
@@ -830,11 +1624,14 @@ export default function App({ basename: _basename }: { basename?: string }) {
           <p className="sub">集中管理 MySQL / Redis / MongoDB 的配置与健康状态。仅限管理员访问。</p>
         </div>
         <div className="header-actions">
-          <button className="btn" onClick={loadAssets} disabled={loading}>
+          <button className="btn" onClick={refreshAll} disabled={loading}>
             刷新
           </button>
           <button className="btn primary" onClick={startCreate} disabled={authState !== 'ok'}>
             新增数据源
+          </button>
+          <button className="btn" onClick={startCreateTask} disabled={authState !== 'ok' || assets.length < 2}>
+            新增任务
           </button>
         </div>
       </header>
@@ -1083,90 +1880,6 @@ export default function App({ basename: _basename }: { basename?: string }) {
               </button>
               <button className="btn primary" onClick={saveTask} disabled={saving}>
                 {saving ? '保存中...' : '保存'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isRunModalOpen && runTask && (
-        <div className="modal-mask">
-          <div className="modal" style={{ maxWidth: 860 }}>
-            <div className="modal-head">
-              <h3>执行记录：{runTask.name}</h3>
-              <button className="link" onClick={closeRunModal}>
-                关闭
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="toolbar" style={{ padding: 0 }}>
-                <div className="toolbar-left">
-                  <span className="muted">
-                    共 {runTotal} 条，页码 {runPageNo} / {Math.max(1, Math.ceil(runTotal / runPageSize))}
-                  </span>
-                </div>
-                <div className="toolbar-right">
-                  <button
-                    className="btn"
-                    onClick={() => loadRuns(runTask.id, Math.max(1, runPageNo - 1))}
-                    disabled={runLoading || runPageNo <= 1}
-                  >
-                    上一页
-                  </button>
-                  <button
-                    className="btn"
-                    onClick={() => loadRuns(runTask.id, runPageNo + 1)}
-                    disabled={runLoading || runPageNo >= Math.ceil(runTotal / runPageSize)}
-                  >
-                    下一页
-                  </button>
-                </div>
-              </div>
-
-              {runLoading ? (
-                <div className="panel muted">加载中...</div>
-              ) : runItems.length === 0 ? (
-                <div className="panel muted">暂无执行记录。</div>
-              ) : (
-                <div className="list">
-                  {runItems.map((r) => (
-                    <div className="card" key={r.id}>
-                      <div className="card-head">
-                        <div className="card-title">
-                          <span className={badgeClass(r.type)}>{r.type}</span>
-                          <div>
-                            <div className="name-row">
-                              <span className="name">{r.status}</span>
-                              <span className="pill">{formatTime(r.startedAt)}</span>
-                            </div>
-                            <div className="sub">
-                              结束：{formatTime(r.finishedAt)}，ID：<span className="mono">{r.id}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="card-body">
-                        {r.metrics && (
-                          <div className="note">
-                            <strong>指标：</strong>
-                            <span className="mono">{JSON.stringify(r.metrics)}</span>
-                          </div>
-                        )}
-                        {r.message && (
-                          <div className="note">
-                            <strong>信息：</strong>
-                            <span>{r.message}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="modal-foot">
-              <button className="btn" onClick={closeRunModal}>
-                关闭
               </button>
             </div>
           </div>
