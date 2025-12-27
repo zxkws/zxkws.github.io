@@ -1,5 +1,18 @@
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+export type FetchHttpError = Error & {
+  status?: number;
+  url?: string;
+  method?: HttpMethod;
+  payload?: unknown;
+};
+
+export const getErrorStatus = (error: unknown): number | null => {
+  if (!error || typeof error !== 'object') return null;
+  const status = (error as { status?: unknown }).status;
+  return typeof status === 'number' ? status : null;
+};
+
 export type RequestOptions = {
   method?: HttpMethod;
   headers?: Record<string, string>;
@@ -89,7 +102,7 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
     responseInterceptors = [],
   } = options;
 
-  return async function request<T = unknown>(
+	  return async function request<T = unknown>(
     url: string,
     params?: unknown,
     requestOptions: RequestOptions = {},
@@ -151,7 +164,7 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
       finalHeaders['Authorization'] = finalHeaders['Authorization'] ?? `Bearer ${token}`;
     }
 
-    try {
+	    try {
       const response = await fetch(resolvedUrl, {
         method,
         headers: finalHeaders,
@@ -168,20 +181,25 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
       const isJson = contentType.includes('application/json');
       const payload = (await (isJson ? response.json() : response.text())) as unknown;
 
-      if (!response.ok) {
-        if (response.status === 401 && onUnauthorized) {
-          onUnauthorized();
-        }
+	      if (!response.ok) {
+	        if (response.status === 401 && onUnauthorized) {
+	          onUnauthorized();
+	        }
         const candidate =
           isJson && payload && typeof payload === 'object'
             ? (payload as Record<string, unknown>).message ||
               (payload as Record<string, unknown>).error ||
               (payload as Record<string, unknown>).msg
             : undefined;
-        const messageText =
-          typeof candidate === 'string' && candidate.trim() ? candidate : `请求失败，状态码 ${response.status}`;
-        throw new Error(messageText);
-      }
+	        const messageText =
+	          typeof candidate === 'string' && candidate.trim() ? candidate : `请求失败，状态码 ${response.status}`;
+	        const error: FetchHttpError = new Error(messageText);
+	        error.status = response.status;
+	        error.url = resolvedUrl;
+	        error.method = method;
+	        error.payload = payload;
+	        throw error;
+	      }
 
       const result: FetchResponse<T> = {
         response,

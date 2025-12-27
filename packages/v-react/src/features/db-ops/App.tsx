@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { getErrorStatus } from '@zxkws/shared-fetch';
 import client from './http/client';
 import GlobalLoading from './components/GlobalLoading';
 import './styles.css';
@@ -80,7 +81,7 @@ type UserProfile = {
   roles?: string[]; // 新结构，可能是字符串数组
 };
 
-type AuthState = 'pending' | 'ok' | 'need-login' | 'forbidden';
+type AuthState = 'pending' | 'ok' | 'need-login' | 'forbidden' | 'error';
 
 type FilterState = {
   type: 'all' | DbType;
@@ -191,6 +192,9 @@ export default function App({ basename: _basename }: { basename?: string }) {
       const data = unwrap<DbAsset[]>(await client('/db-assets/list', payload));
       setAssets(data);
     } catch (err) {
+      if (getErrorStatus(err) === 401) {
+        setAuthState('need-login');
+      }
       setError(err instanceof Error ? err.message : '加载失败');
     } finally {
       setLoading(false);
@@ -202,6 +206,9 @@ export default function App({ basename: _basename }: { basename?: string }) {
       const data = unwrap<DbSyncTask[]>(await client('/db-sync/tasks/list', {}));
       setTasks(data);
     } catch (err) {
+      if (getErrorStatus(err) === 401) {
+        setAuthState('need-login');
+      }
       // 同步任务属于增强功能，失败时不阻塞主功能
       setError((prev) => prev ?? (err instanceof Error ? err.message : '加载同步任务失败'));
     }
@@ -221,14 +228,21 @@ export default function App({ basename: _basename }: { basename?: string }) {
         return;
       }
       setAuthState('ok');
+      setError(null);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : '';
-      if (msg.includes('401')) {
+      const status = getErrorStatus(err);
+      if (status === 401) {
         setAuthState('need-login');
-      } else {
-        setAuthState('forbidden');
+        setError(err instanceof Error ? err.message : '登录已失效，请重新登录');
+        return;
       }
-      setError('无法获取用户信息');
+      if (status === 403) {
+        setAuthState('forbidden');
+        setError(err instanceof Error ? err.message : '权限不足');
+        return;
+      }
+      setAuthState('error');
+      setError(err instanceof Error ? err.message : '服务暂不可用，请稍后重试');
     }
   }, [client]);
 
@@ -273,7 +287,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
     setTaskEditing(null);
   };
 
-  const saveAsset = async () => {
+	  const saveAsset = async () => {
     if (!editing) return;
     if (!editing.name.trim()) {
       showToast('请填写名称');
@@ -285,24 +299,27 @@ export default function App({ basename: _basename }: { basename?: string }) {
     }
 
     setSaving(true);
-    try {
+	    try {
       const payload = {
         ...editing,
         port: editing.port ? Number(editing.port) : undefined,
       };
       const endpoint = editing.id ? '/db-assets/update' : '/db-assets/create';
-      await client(endpoint, payload);
-      closeModal();
-      showToast('保存成功');
-      loadAssets();
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : '保存失败');
-    } finally {
-      setSaving(false);
-    }
-  };
+	      await client(endpoint, payload);
+	      closeModal();
+	      showToast('保存成功');
+	      loadAssets();
+	    } catch (err) {
+	      if (getErrorStatus(err) === 401) {
+	        setAuthState('need-login');
+	      }
+	      showToast(err instanceof Error ? err.message : '保存失败');
+	    } finally {
+	      setSaving(false);
+	    }
+	  };
 
-  const removeAsset = async (item: DbAsset) => {
+	  const removeAsset = async (item: DbAsset) => {
     if (!item.id) return;
     const confirmed = typeof window !== 'undefined' ? window.confirm(`确认删除【${item.name}】?`) : true;
     if (!confirmed) return;
@@ -314,14 +331,17 @@ export default function App({ basename: _basename }: { basename?: string }) {
       showToast('名称不一致，已取消删除');
       return;
     }
-    try {
-      await client('/db-assets/remove', { id: item.id, confirmName });
-      showToast('已删除');
-      loadAssets();
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : '删除失败');
-    }
-  };
+	    try {
+	      await client('/db-assets/remove', { id: item.id, confirmName });
+	      showToast('已删除');
+	      loadAssets();
+	    } catch (err) {
+	      if (getErrorStatus(err) === 401) {
+	        setAuthState('need-login');
+	      }
+	      showToast(err instanceof Error ? err.message : '删除失败');
+	    }
+	  };
 
   const mergeCheck = (results: CheckResult[]) => {
     setAssets((prev) => {
@@ -342,24 +362,27 @@ export default function App({ basename: _basename }: { basename?: string }) {
     });
   };
 
-  const checkAsset = async (id?: string) => {
+	  const checkAsset = async (id?: string) => {
     if (id) {
       setCheckingId(id);
     } else {
       setCheckingAll(true);
     }
-    try {
+	    try {
       const payload = id ? { id } : {};
       const results = unwrap<CheckResult[]>(await client('/db-assets/check', payload));
-      mergeCheck(results);
-      showToast('检查完成');
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : '检查失败');
-    } finally {
-      setCheckingId(null);
-      setCheckingAll(false);
-    }
-  };
+	      mergeCheck(results);
+	      showToast('检查完成');
+	    } catch (err) {
+	      if (getErrorStatus(err) === 401) {
+	        setAuthState('need-login');
+	      }
+	      showToast(err instanceof Error ? err.message : '检查失败');
+	    } finally {
+	      setCheckingId(null);
+	      setCheckingAll(false);
+	    }
+	  };
 
   const toggleSecret = (id?: string) => {
     if (!id) return;
@@ -380,7 +403,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
     setRunPageNo(1);
   };
 
-  const loadRuns = useCallback(
+	  const loadRuns = useCallback(
     async (taskId: string, pageNo: number) => {
       setRunLoading(true);
       try {
@@ -391,16 +414,19 @@ export default function App({ basename: _basename }: { basename?: string }) {
         setRunItems(data.items || []);
         setRunTotal(data.total || 0);
         setRunPageNo(data.pageNo || pageNo);
-      } catch (err) {
-        showToast(err instanceof Error ? err.message : '加载执行记录失败');
-      } finally {
-        setRunLoading(false);
-      }
-    },
+	      } catch (err) {
+	        if (getErrorStatus(err) === 401) {
+	          setAuthState('need-login');
+	        }
+	        showToast(err instanceof Error ? err.message : '加载执行记录失败');
+	      } finally {
+	        setRunLoading(false);
+	      }
+	    },
     [client, runPageSize, showToast],
   );
 
-  const saveTask = async () => {
+	  const saveTask = async () => {
     if (!taskEditing) return;
     if (!taskEditing.name?.trim()) {
       showToast('请填写任务名称');
@@ -416,51 +442,60 @@ export default function App({ basename: _basename }: { basename?: string }) {
     }
 
     setSaving(true);
-    try {
+	    try {
       const payload = {
         ...taskEditing,
         batchSize: Number(taskEditing.batchSize) || 200,
       };
       const endpoint = taskEditing.id ? '/db-sync/tasks/update' : '/db-sync/tasks/create';
-      await client(endpoint, payload);
-      closeTaskModal();
-      showToast('任务保存成功');
-      loadTasks();
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : '任务保存失败');
-    } finally {
-      setSaving(false);
-    }
-  };
+	      await client(endpoint, payload);
+	      closeTaskModal();
+	      showToast('任务保存成功');
+	      loadTasks();
+	    } catch (err) {
+	      if (getErrorStatus(err) === 401) {
+	        setAuthState('need-login');
+	      }
+	      showToast(err instanceof Error ? err.message : '任务保存失败');
+	    } finally {
+	      setSaving(false);
+	    }
+	  };
 
-  const runTaskNow = async (task: DbSyncTask) => {
+	  const runTaskNow = async (task: DbSyncTask) => {
     setTaskBusyId(task.id);
-    try {
+	    try {
       await client('/db-sync/tasks/run', { id: task.id, reason: 'manual' });
       showToast('已触发同步');
-      loadTasks();
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : '触发失败');
-    } finally {
-      setTaskBusyId(null);
-    }
-  };
+	      loadTasks();
+	    } catch (err) {
+	      if (getErrorStatus(err) === 401) {
+	        setAuthState('need-login');
+	      }
+	      showToast(err instanceof Error ? err.message : '触发失败');
+	    } finally {
+	      setTaskBusyId(null);
+	    }
+	  };
 
-  const toggleTaskStatus = async (task: DbSyncTask) => {
+	  const toggleTaskStatus = async (task: DbSyncTask) => {
     setTaskBusyId(task.id);
-    try {
+	    try {
       const endpoint = task.status === 'running' ? '/db-sync/tasks/pause' : '/db-sync/tasks/resume';
       await client(endpoint, { id: task.id });
       showToast(task.status === 'running' ? '已暂停' : '已启用');
-      loadTasks();
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : '操作失败');
-    } finally {
-      setTaskBusyId(null);
-    }
-  };
+	      loadTasks();
+	    } catch (err) {
+	      if (getErrorStatus(err) === 401) {
+	        setAuthState('need-login');
+	      }
+	      showToast(err instanceof Error ? err.message : '操作失败');
+	    } finally {
+	      setTaskBusyId(null);
+	    }
+	  };
 
-  const removeTask = async (task: DbSyncTask) => {
+	  const removeTask = async (task: DbSyncTask) => {
     const confirmed = typeof window !== 'undefined' ? window.confirm(`确认删除同步任务【${task.name}】?`) : true;
     if (!confirmed) return;
     const confirmName =
@@ -472,16 +507,19 @@ export default function App({ basename: _basename }: { basename?: string }) {
       return;
     }
     setTaskBusyId(task.id);
-    try {
-      await client('/db-sync/tasks/remove', { id: task.id, confirmName });
-      showToast('任务已删除');
-      loadTasks();
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : '删除失败');
-    } finally {
-      setTaskBusyId(null);
-    }
-  };
+	    try {
+	      await client('/db-sync/tasks/remove', { id: task.id, confirmName });
+	      showToast('任务已删除');
+	      loadTasks();
+	    } catch (err) {
+	      if (getErrorStatus(err) === 401) {
+	        setAuthState('need-login');
+	      }
+	      showToast(err instanceof Error ? err.message : '删除失败');
+	    } finally {
+	      setTaskBusyId(null);
+	    }
+	  };
 
   const goLogin = () => {
     if (typeof window === 'undefined') return;
@@ -513,17 +551,31 @@ export default function App({ basename: _basename }: { basename?: string }) {
       );
     }
 
-    if (authState === 'forbidden') {
-      return (
-        <div className="panel danger">
-          <h3>权限不足</h3>
-          <p>仅限拥有「admin」角色的同学使用。如果你需要访问，请联系管理员开通。</p>
-        </div>
-      );
-    }
+	    if (authState === 'forbidden') {
+	      return (
+	        <div className="panel danger">
+	          <h3>权限不足</h3>
+	          <p>仅限拥有「admin」角色的同学使用。如果你需要访问，请联系管理员开通。</p>
+	        </div>
+	      );
+	    }
 
-    return (
-      <>
+	    if (authState === 'error') {
+	      return (
+	        <div className="panel danger">
+	          <h3>服务异常</h3>
+	          <p>{error || '服务暂不可用，请稍后重试。'}</p>
+	          <div style={{ display: 'flex', gap: 10 }}>
+	            <button className="btn primary" onClick={loadProfile}>
+	              重试
+	            </button>
+	          </div>
+	        </div>
+	      );
+	    }
+
+	    return (
+	      <>
         <div className="toolbar">
           <div className="toolbar-left">
             <label className="field">
