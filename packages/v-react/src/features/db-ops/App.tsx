@@ -175,7 +175,6 @@ export default function App({ basename: _basename }: { basename?: string }) {
   const [runTotal, setRunTotal] = useState(0);
   const [runPageNo, setRunPageNo] = useState(1);
   const [runPageSize] = useState(10);
-  const hasRedirectedRef = useRef(false);
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -492,21 +491,26 @@ export default function App({ basename: _basename }: { basename?: string }) {
     window.location.href = `${base}/#/login?redirect=${encodeURIComponent(current)}`;
   };
 
-  // 一旦发现未登录，立即跳转登录，避免用户留在受限页面
-  useEffect(() => {
-    if (authState === 'need-login' && !hasRedirectedRef.current) {
-      hasRedirectedRef.current = true;
-      goLogin();
-    }
-  }, [authState]);
-
   const renderContent = () => {
     if (authState === 'pending') {
       return <div className="panel muted">正在校验权限...</div>;
     }
 
     if (authState === 'need-login') {
-      return <div className="panel muted">正在跳转到登录页...</div>;
+      return (
+        <div className="panel danger">
+          <h3>登录已失效</h3>
+          <p>后端接口返回未登录/登录过期，请重新登录后再试。</p>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button className="btn primary" onClick={goLogin}>
+              去登录
+            </button>
+            <button className="btn" onClick={loadProfile}>
+              重试
+            </button>
+          </div>
+        </div>
+      );
     }
 
     if (authState === 'forbidden') {
