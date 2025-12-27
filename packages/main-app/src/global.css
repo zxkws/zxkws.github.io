@@ -1,34 +1,4 @@
 :root {
-	color-scheme: light;
-
-	/* Palette Mapping - Adjusted for higher contrast and elegance */
-	--color-bg: #f1f5f9; /* Slate 100 - Slightly darker than pure white for depth */
-	--color-text: #1e293b; /* Slate 800 - High contrast text */
-	--color-muted: #64748b; /* Slate 500 */
-	--color-muted-strong: #475569; /* Slate 600 */
-
-	/* Glass System Refined */
-	--glass-border: rgba(255, 255, 255, 0.6);
-	--glass-surface: rgba(255, 255, 255, 0.75);
-	--glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-
-	/* Card Tokens (used by pages) */
-	--card-bg: var(--glass-surface);
-	--header-border: var(--glass-border);
-
-	--accent: #0ea5e9; /* Sky 500 */
-	--accent-glow: rgba(14, 165, 233, 0.3);
-
-	--stage-bg: rgba(255, 255, 255, 0.85);
-	--stage-shadow:
-		0 24px 60px -12px rgba(50, 50, 93, 0.15), 0 12px 24px -16px
-		rgba(0, 0, 0, 0.1);
-
-	/* Fonts */
-	--font-sans:
-		"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-		sans-serif;
-
 	/* Layout metrics (keep in sync with BasicLayout) */
 	--layout-header-height: 64px;
 	--layout-stage-pad: 16px;
@@ -38,28 +8,6 @@
 	:root {
 		--layout-stage-pad: 24px;
 	}
-}
-
-[data-theme="dark"] {
-	color-scheme: dark;
-
-	--color-bg: #020617; /* Slate 950 - Deep space */
-	--color-text: #f8fafc; /* Slate 50 */
-	--color-muted: #94a3b8; /* Slate 400 */
-	--color-muted-strong: #cbd5e1; /* Slate 300 */
-
-	--glass-border: rgba(255, 255, 255, 0.08);
-	--glass-surface: rgba(15, 23, 42, 0.7);
-	--glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-
-	--card-bg: var(--glass-surface);
-	--header-border: var(--glass-border);
-
-	--accent: #38bdf8; /* Sky 400 */
-	--accent-glow: rgba(56, 189, 248, 0.3);
-
-	--stage-bg: rgba(30, 41, 59, 0.4); /* More transparent in dark mode */
-	--stage-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.5);
 }
 
 *,

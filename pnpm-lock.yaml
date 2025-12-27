@@ -165,6 +165,9 @@ importers:
       '@zxkws/shared-fetch':
         specifier: workspace:*
         version: link:../shared-fetch
+      '@zxkws/shared-theme':
+        specifier: workspace:*
+        version: link:../shared-theme
       '@zxkws/web-monitor-sdk':
         specifier: workspace:*
         version: link:../web-monitor-sdk
@@ -289,6 +292,8 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/shared-theme: {}
+
   packages/textDifference: {}
 
   packages/v-app:
@@ -305,6 +310,9 @@ importers:
       '@zxkws/shared-fetch':
         specifier: workspace:*
         version: link:../shared-fetch
+      '@zxkws/shared-theme':
+        specifier: workspace:*
+        version: link:../shared-theme
       cssnano:
         specifier: ^7.1.1
         version: 7.1.1(postcss@8.5.6)

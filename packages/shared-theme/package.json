@@ -1,0 +1,12 @@
+{
+  "name": "@zxkws/shared-theme",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared theme tokens (CSS variables) for zxkws frontends",
+  "files": [
+    "theme.css"
+  ],
+  "sideEffects": [
+    "*.css"
+  ]
+}

@@ -7,6 +7,13 @@ on:
     paths-ignore:
       - README.md
 
+concurrency:
+  group: deploy-gh-pages
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
 jobs:
   generate-matrix:
     name: Discover packages
@@ -51,11 +58,14 @@ jobs:
             const pkgPath = path.join(packagesDir, name, 'package.json');
             if (!fs.existsSync(pkgPath)) continue;
             const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+            const pkgName = typeof pkg.name === 'string' ? pkg.name : name;
+            // Skip internal libraries (deploy only actual apps to GitHub Pages)
+            if (pkgName.startsWith('@zxkws/')) continue;
             if (!pkg.scripts || !pkg.scripts.build) continue;
             const override = overrides[name] || {};
             apps.push({
               name,
-              filter: override.filter || name,
+              filter: override.filter || pkgName,
               dist_path: override.dist_path || `packages/${name}/dist`,
               deploy_subdir:
                 override.deploy_subdir !== undefined ? override.deploy_subdir : name,
@@ -94,7 +104,7 @@ jobs:
         run: |
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: Setup pnpm cache
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
@@ -103,7 +113,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build package
         run: pnpm --filter ${{ matrix.app.filter }} build
@@ -139,6 +149,14 @@ jobs:
           pattern: dist-*
           merge-multiple: true
           path: deploy
+
+      - name: Preserve CNAME
+        run: |
+          if [ -f CNAME ]; then cp CNAME deploy/CNAME; fi
+
+      - name: Validate deploy output
+        run: |
+          test -f deploy/index.html
 
       - name: Deploy to GitHub Pages
         env:

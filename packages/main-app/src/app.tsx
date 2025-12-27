@@ -18,6 +18,7 @@ if (typeof window !== 'undefined') {
 
 import ErrorBoundary from './components/ErrorBoundary';
 import PageLoading from './components/PageLoading';
+import '@zxkws/shared-theme/theme.css';
 import './global.css';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';

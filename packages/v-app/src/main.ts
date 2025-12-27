@@ -6,6 +6,7 @@ import '@surely-vue/table/dist/index.less';
 import STable, { setLicenseKey } from '@surely-vue/table';
 
 import App from './App.vue';
+import '@zxkws/shared-theme/theme.css';
 import './style/tailwind.css';
 import './style/style.css';
 

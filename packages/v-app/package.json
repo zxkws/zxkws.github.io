@@ -13,6 +13,7 @@
     "@ice/stark-app": "^1.5.0",
     "@surely-vue/table": "^5.0.9",
     "@zxkws/shared-fetch": "workspace:*",
+    "@zxkws/shared-theme": "workspace:*",
     "cssnano": "^7.1.1",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.5.0",
