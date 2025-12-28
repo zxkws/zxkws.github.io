@@ -32,18 +32,18 @@ const request = async <T>(url: string, params?: unknown, method: 'GET' | 'POST' 
   return client<T>(url, params, { method });
 };
 
-export const listNotes = async (): Promise<Note[]> => request<Note[]>('/notes');
+export const listNotes = async (): Promise<Note[]> => request<Note[]>('/v1/notes');
 
-export const getNote = async (id: string): Promise<Note> => request<Note>(`/notes/${id}`);
+export const getNote = async (id: string): Promise<Note> => request<Note>(`/v1/notes/${id}`);
 
-export const createNote = async (payload: Partial<Note>) => request<Note>('/notes', payload, 'POST');
+export const createNote = async (payload: Partial<Note>) => request<Note>('/v1/notes', payload, 'POST');
 
-export const createDaily = async (date: string) => request<Note>('/notes/daily', { date }, 'POST');
+export const createDaily = async (date: string) => request<Note>('/v1/notes/daily', { date }, 'POST');
 
 export const patchNote = async (id: string, payload: Partial<Note> & { version?: number }) =>
-  request<Note>(`/notes/${id}`, payload, 'PATCH');
+  request<Note>(`/v1/notes/${id}`, payload, 'PATCH');
 
-export const deleteNote = async (id: string) => request(`/notes/${id}/delete`, undefined, 'POST');
+export const deleteNote = async (id: string) => request(`/v1/notes/${id}/delete`, undefined, 'POST');
 
 export type UploadRecord = {
   id: number;
@@ -59,5 +59,5 @@ export type UploadRecord = {
 export const uploadFile = async (file: File): Promise<UploadRecord> => {
   const formData = new FormData();
   formData.append('file', file, file.name);
-  return client<UploadRecord>('/upload/file', formData, { method: 'POST', file: true });
+  return client<UploadRecord>('/v1/upload/file', formData, { method: 'POST', file: true });
 };

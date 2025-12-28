@@ -51,7 +51,7 @@ export const deleteTodo = (params: { id: string | number }) => {
 };
 
 export const uploadFile = (formData: FormData) => {
-  return fetch<void>('/v1/upload', formData, { file: true });
+  return fetch<void>('/v1/upload/file', formData, { file: true });
 };
 
 // 账户管理API

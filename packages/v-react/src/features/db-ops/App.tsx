@@ -234,7 +234,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
       const payload: Record<string, unknown> = {};
       if (filters.type !== 'all') payload.type = filters.type;
       if (filters.keyword.trim()) payload.keyword = filters.keyword.trim();
-      const data = unwrap<DbAsset[]>(await client('/db-assets/list', payload));
+      const data = unwrap<DbAsset[]>(await client('/v1/db-assets/list', payload));
       setAssets(data);
     } catch (err) {
       if (getErrorStatus(err) === 401) {
@@ -248,7 +248,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
 
   const loadTasks = useCallback(async () => {
     try {
-      const data = unwrap<DbSyncTask[]>(await client('/db-sync/tasks/list', {}));
+      const data = unwrap<DbSyncTask[]>(await client('/v1/db-sync/tasks/list', {}));
       setTasks(data);
     } catch (err) {
       if (getErrorStatus(err) === 401) {
@@ -395,7 +395,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
         ...editing,
         port: editing.port ? Number(editing.port) : undefined,
       };
-      const endpoint = editing.id ? '/db-assets/update' : '/db-assets/create';
+      const endpoint = editing.id ? '/v1/db-assets/update' : '/v1/db-assets/create';
 	      await client(endpoint, payload);
 	      closeModal();
 	      showToast('保存成功');
@@ -423,7 +423,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
       return;
     }
 	    try {
-	      await client('/db-assets/remove', { id: item.id, confirmName });
+	      await client('/v1/db-assets/remove', { id: item.id, confirmName });
 	      showToast('已删除');
 	      loadAssets();
 	    } catch (err) {
@@ -461,7 +461,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
     }
 	    try {
       const payload = id ? { id } : {};
-      const results = unwrap<CheckResult[]>(await client('/db-assets/check', payload));
+      const results = unwrap<CheckResult[]>(await client('/v1/db-assets/check', payload));
 	      mergeCheck(results);
 	      showToast('检查完成');
 	    } catch (err) {
@@ -512,7 +512,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
           payload.status = status;
         }
         const data = unwrap<{ items: DbSyncRun[]; total: number; pageNo: number; pageSize: number }>(
-          await client('/db-sync/runs/list', payload),
+          await client('/v1/db-sync/runs/list', payload),
         );
         setRunItems(data.items || []);
         setRunTotal(data.total || 0);
@@ -550,7 +550,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
         ...taskEditing,
         batchSize: Number(taskEditing.batchSize) || 200,
       };
-      const endpoint = taskEditing.id ? '/db-sync/tasks/update' : '/db-sync/tasks/create';
+      const endpoint = taskEditing.id ? '/v1/db-sync/tasks/update' : '/v1/db-sync/tasks/create';
 	      await client(endpoint, payload);
 	      closeTaskModal();
 	      showToast('任务保存成功');
@@ -568,7 +568,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
 	  const runTaskNow = async (task: DbSyncTask) => {
     setTaskBusyId(task.id);
 	    try {
-      await client('/db-sync/tasks/run', { id: task.id, reason: 'manual' });
+      await client('/v1/db-sync/tasks/run', { id: task.id, reason: 'manual' });
       showToast('已触发同步');
 	      loadTasks();
 	    } catch (err) {
@@ -584,7 +584,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
 	  const toggleTaskStatus = async (task: DbSyncTask) => {
     setTaskBusyId(task.id);
 	    try {
-      const endpoint = task.status === 'running' ? '/db-sync/tasks/pause' : '/db-sync/tasks/resume';
+      const endpoint = task.status === 'running' ? '/v1/db-sync/tasks/pause' : '/v1/db-sync/tasks/resume';
       await client(endpoint, { id: task.id });
       showToast(task.status === 'running' ? '已暂停' : '已启用');
 	      loadTasks();
@@ -611,7 +611,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
     }
     setTaskBusyId(task.id);
 	    try {
-	      await client('/db-sync/tasks/remove', { id: task.id, confirmName });
+	      await client('/v1/db-sync/tasks/remove', { id: task.id, confirmName });
 	      showToast('任务已删除');
 	      loadTasks();
 	    } catch (err) {

@@ -30,7 +30,7 @@ export type McpConnection = {
 };
 
 export const parseTaskByNl = (text: string) =>
-  client<{ raw: string; parsed: unknown }>('/agent-tasks/nl', { text }, { method: 'POST' });
+  client<{ raw: string; parsed: unknown }>('/v1/agent-tasks/nl', { text }, { method: 'POST' });
 
 export const createAgentTask = (payload: {
   title: string;
@@ -42,13 +42,13 @@ export const createAgentTask = (payload: {
   expiresAt?: string;
   notifyChannel?: 'web_push' | 'email' | 'webhook';
   conditions: AgentTaskCondition[];
-}) => client<AgentTask>('/agent-tasks', payload, { method: 'POST' });
+}) => client<AgentTask>('/v1/agent-tasks', payload, { method: 'POST' });
 
-export const listAgentTasks = () => client<AgentTask[]>('/agent-tasks', undefined, { method: 'GET' });
+export const listAgentTasks = () => client<AgentTask[]>('/v1/agent-tasks', undefined, { method: 'GET' });
 
-export const executeAgentTask = (id: string) => client(`/agent-tasks/${id}/execute`, undefined, { method: 'POST' });
+export const executeAgentTask = (id: string) => client(`/v1/agent-tasks/${id}/execute`, undefined, { method: 'POST' });
 
-export const listMcpConnections = () => client<McpConnection[]>('/mcp/connections', undefined, { method: 'GET' });
+export const listMcpConnections = () => client<McpConnection[]>('/v1/mcp/connections', undefined, { method: 'GET' });
 
 export type PushSubscriptionPayload = {
   endpoint: string;
@@ -58,14 +58,14 @@ export type PushSubscriptionPayload = {
 };
 
 export const fetchVapidPublicKey = async () => {
-  const res = await client<{ publicKey: string | null; hint?: string }>('/agent-tasks/push/public-key', undefined, {
+  const res = await client<{ publicKey: string | null; hint?: string }>('/v1/agent-tasks/push/public-key', undefined, {
     method: 'GET',
   });
   return res?.publicKey ?? null;
 };
 
 export const savePushSubscription = (payload: PushSubscriptionPayload) =>
-  client('/agent-tasks/push/subscriptions', payload, { method: 'POST' });
+  client('/v1/agent-tasks/push/subscriptions', payload, { method: 'POST' });
 
 export const listPushSubscriptions = () =>
-  client<PushSubscriptionPayload[]>('/agent-tasks/push/subscriptions', undefined, { method: 'GET' });
+  client<PushSubscriptionPayload[]>('/v1/agent-tasks/push/subscriptions', undefined, { method: 'GET' });
