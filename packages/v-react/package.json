@@ -13,6 +13,7 @@
     "@ice/stark-app": "^1.5.0",
     "@tanstack/react-query": "^5.63.0",
     "@zxkws/shared-fetch": "workspace:*",
+    "@zxkws/shared-theme": "workspace:*",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "highlight.js": "^11.11.1",

@@ -527,7 +527,7 @@ const PdfEditorApp = (_props: PdfEditorAppProps) => {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} pe-root`}>
       <div className={styles.pdfEditorShell}>
         {renderViewer()}
         {renderSidebar()}

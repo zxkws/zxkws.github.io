@@ -371,6 +371,9 @@ importers:
       '@zxkws/shared-fetch':
         specifier: workspace:*
         version: link:../shared-fetch
+      '@zxkws/shared-theme':
+        specifier: workspace:*
+        version: link:../shared-theme
       clsx:
         specifier: ^2.1.1
         version: 2.1.1

@@ -1,11 +1,14 @@
 /*
-  Shared Theme Tokens (Glass Tech)
+  Shared Theme Tokens (Design System v2)
 
-  Notes:
-  - Keep this file token-only (no app-specific layout/background animations).
-  - Dark mode selectors support both:
-    - html[data-theme="dark"] (main-app)
-    - html.dark (Tailwind / v-app)
+  Goals:
+  - Readability-first (aim WCAG AA contrast by default).
+  - Light/Dark are structural equivalents (only tokens change).
+  - Keep token-only (no app-specific layout/background animations).
+
+  Dark mode selectors support both:
+  - html[data-theme="dark"] (main-app)
+  - html.dark (Tailwind / v-app / v-react ecosystem)
 */
 
 :root {
@@ -60,10 +63,11 @@
   --space-12: 3rem; /* 48 */
   --space-16: 4rem; /* 64 */
 
-  --radius-sm: 0.375rem; /* 6 */
-  --radius-md: 0.5rem; /* 8 */
-  --radius-lg: 0.75rem; /* 12 */
-  --radius-xl: 1rem; /* 16 */
+  /* Radius (enterprise console defaults) */
+  --radius-sm: 0.5rem; /* 8 */
+  --radius-md: 0.75rem; /* 12 */
+  --radius-lg: 1rem; /* 16 */
+  --radius-xl: 1.25rem; /* 20 */
   --radius-2xl: 1.5rem; /* 24 */
 
   --shadow-sm: 0 1px 2px rgba(2, 6, 23, 0.06);
@@ -77,7 +81,7 @@
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
 
-  /* ---- Color primitives (Slate / Sky) ---- */
+  /* ---- Color primitives (Slate) ---- */
   --slate-50: #f8fafc;
   --slate-100: #f1f5f9;
   --slate-200: #e2e8f0;
@@ -90,98 +94,105 @@
   --slate-900: #0f172a;
   --slate-950: #020617;
 
-  --sky-50: #f0f9ff;
-  --sky-100: #e0f2fe;
-  --sky-200: #bae6fd;
-  --sky-300: #7dd3fc;
-  --sky-400: #38bdf8;
-  --sky-500: #0ea5e9;
-  --sky-600: #0284c7;
-  --sky-700: #0369a1;
-  --sky-800: #075985;
-  --sky-900: #0c4a6e;
-  --sky-950: #082f49;
+  /* ---- Semantic colors (v2) ---- */
+  --color-canvas: #f7f8fa; /* page background */
+  --color-surface: #ffffff; /* primary container */
+  --color-surface-2: #f3f5f7; /* secondary container */
+  --color-surface-3: #eef2f6; /* hover/selected container */
 
-  /* ---- Semantic colors ---- */
-  --color-canvas: var(--slate-100);
-  --color-fg: var(--slate-800);
-  --color-fg-muted: var(--slate-500);
-  --color-fg-subtle: var(--slate-600);
+  --color-border: rgba(15, 23, 42, 0.1);
+  --color-divider: rgba(15, 23, 42, 0.08);
 
-  --color-primary: var(--sky-500);
-  --color-primary-fg: #ffffff;
-  --color-primary-glow: rgba(14, 165, 233, 0.3);
+  --color-fg: #0f172a;
+  --color-fg-secondary: #334155;
+  --color-fg-tertiary: #5b6b82; /* ensure >= 4.5:1 on canvas */
+  --color-fg-disabled: rgba(15, 23, 42, 0.35);
 
-  --color-surface: rgba(255, 255, 255, 0.75);
-  --color-surface-strong: rgba(255, 255, 255, 0.85);
-  --color-border: rgba(255, 255, 255, 0.6);
-  --color-border-strong: rgba(226, 232, 240, 0.9);
+  --color-primary: #1677ff;
+  --color-primary-hover: #0958d9;
+  --color-primary-active: #003eb3;
+  --color-on-primary: #ffffff;
+
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+  --color-info: #0ea5e9;
+
+  --color-focus-ring: rgba(22, 119, 255, 0.35);
 
   /* ---- Glass / Stage (shared aliases) ---- */
+  /* Keep names for backward compatibility, but values are now readability-first. */
   --glass-surface: var(--color-surface);
   --glass-border: var(--color-border);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  --glass-shadow: var(--shadow-sm);
 
-  --stage-bg: var(--color-surface-strong);
-  --stage-shadow: 0 24px 60px -12px rgba(50, 50, 93, 0.15), 0 12px 24px -16px rgba(0, 0, 0, 0.1);
+  --stage-bg: var(--color-surface);
+  --stage-shadow: var(--shadow-md);
 
   /* ---- Spinner (main-app uses these) ---- */
-  --spinner-track: rgba(148, 163, 184, 0.35);
+  --spinner-track: rgba(15, 23, 42, 0.15);
   --spinner-head: var(--color-primary);
 
   /* ---- Backward compatible aliases (main-app) ---- */
   --color-bg: var(--color-canvas);
   --color-text: var(--color-fg);
-  --color-muted: var(--color-fg-muted);
-  --color-muted-strong: var(--color-fg-subtle);
+  --color-muted: var(--color-fg-tertiary);
+  --color-muted-strong: var(--color-fg-secondary);
 
   --accent: var(--color-primary);
-  --accent-glow: var(--color-primary-glow);
+  --accent-glow: var(--color-focus-ring);
 
   --card-bg: var(--glass-surface);
   --header-border: var(--glass-border);
 
   /* ---- Backward compatible aliases (v-app) ---- */
   --bg-primary: transparent;
-  --bg-secondary: rgba(255, 255, 255, 0.6);
+  --bg-secondary: var(--color-surface);
 
   --text-primary: var(--color-fg);
-  --text-secondary: var(--color-fg-muted);
+  --text-secondary: var(--color-fg-tertiary);
 
   --accent-color: var(--color-primary);
 
-  --border-color: rgba(226, 232, 240, 0.6);
+  --border-color: var(--color-border);
 
-  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg: var(--color-surface);
 
-  --shadow-glow: 0 4px 20px rgba(14, 165, 233, 0.15);
+  --shadow-glow: 0 8px 24px rgba(22, 119, 255, 0.22);
 }
 
 html[data-theme="dark"],
 html.dark {
   color-scheme: dark;
 
-  --color-canvas: var(--slate-950);
-  --color-fg: var(--slate-50);
-  --color-fg-muted: var(--slate-400);
-  --color-fg-subtle: var(--slate-300);
+  --color-canvas: #0b1220;
+  --color-surface: #111a2c;
+  --color-surface-2: #0f172a;
+  --color-surface-3: #18233a;
 
-  --color-primary: var(--sky-400);
-  --color-primary-fg: #001018;
-  --color-primary-glow: rgba(56, 189, 248, 0.3);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-divider: rgba(255, 255, 255, 0.08);
 
-  --color-surface: rgba(15, 23, 42, 0.7);
-  --color-surface-strong: rgba(30, 41, 59, 0.45);
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-strong: rgba(255, 255, 255, 0.14);
+  --color-fg: #e5e7eb;
+  --color-fg-secondary: #b6c2d6;
+  --color-fg-tertiary: #94a3b8;
+  --color-fg-disabled: rgba(229, 231, 235, 0.35);
 
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-  --stage-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.5);
+  --color-primary: #4c9aff;
+  --color-primary-hover: #79b8ff;
+  --color-primary-active: #2b7de9;
+  --color-on-primary: #07111f;
 
-  --spinner-track: rgba(148, 163, 184, 0.22);
+  --color-success: #22c55e;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+  --color-info: #38bdf8;
 
-  /* v-app specific overrides */
-  --bg-secondary: rgba(30, 41, 59, 0.6);
-  --border-color: rgba(255, 255, 255, 0.1);
-  --glass-bg: rgba(30, 41, 59, 0.7);
+  --color-focus-ring: rgba(76, 154, 255, 0.4);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
+
+  --spinner-track: rgba(229, 231, 235, 0.18);
 }

@@ -127,7 +127,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0 h-full relative z-10">
           {/* The "Main Stage" - A floating glass card */}
           <main className="flex-1 p-4 md:p-6 overflow-hidden relative">
-            <div className="w-full h-full rounded-[24px] bg-[var(--stage-bg)] backdrop-blur-xl border border-[var(--glass-border)] shadow-[var(--stage-shadow)] overflow-hidden flex flex-col transition-all duration-300">
+            <div className="w-full h-full rounded-[12px] bg-[var(--stage-bg)] border border-[var(--color-divider)] shadow-[var(--stage-shadow)] overflow-hidden flex flex-col transition-all duration-300">
               {children}
             </div>
           </main>

@@ -2,14 +2,11 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0 24px;
+	padding: 0 var(--space-6);
 	height: 64px;
 	flex-shrink: 0;
-	/* Glass Effect */
-	background: var(--glass-surface);
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
-	border-bottom: 1px solid var(--glass-border);
+	background: var(--color-surface);
+	border-bottom: 1px solid var(--color-divider);
 	z-index: 20;
 }
 
@@ -23,14 +20,19 @@
 	display: none; /* Desktop hidden by default */
 	background: transparent;
 	border: none;
-	color: var(--color-text);
+	color: var(--color-fg);
 	cursor: pointer;
-	padding: 8px;
-	border-radius: 8px;
+	padding: var(--space-2);
+	border-radius: var(--radius-sm);
 }
 
 .menuToggle:hover {
-	background: rgba(128, 128, 128, 0.1);
+	background: var(--color-surface-3);
+}
+
+.menuToggle:focus-visible {
+	outline: 3px solid var(--color-focus-ring);
+	outline-offset: 2px;
 }
 
 .actions {
@@ -41,22 +43,29 @@
 }
 
 .themeBtn {
-	background: transparent;
-	border: 1px solid var(--glass-border);
-	color: var(--color-text);
+	background: var(--color-surface);
+	border: 1px solid var(--color-border);
+	color: var(--color-fg);
 	width: 36px;
 	height: 36px;
-	border-radius: 12px;
+	border-radius: var(--radius-md);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
-	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	transition:
+		background-color var(--duration-fast) var(--ease-standard),
+		border-color var(--duration-fast) var(--ease-standard),
+		color var(--duration-fast) var(--ease-standard);
 }
 
 .themeBtn:hover {
-	background: rgba(128, 128, 128, 0.1);
-	transform: translateY(-1px);
+	background: var(--color-surface-3);
+}
+
+.themeBtn:focus-visible {
+	outline: 3px solid var(--color-focus-ring);
+	outline-offset: 2px;
 }
 
 .userProfile {
@@ -66,20 +75,21 @@
 .userBtn {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	background: rgba(255, 255, 255, 0.1);
-	border: 1px solid var(--glass-border);
-	padding: 4px 14px 4px 4px;
-	border-radius: 24px;
+	gap: var(--space-2);
+	background: var(--color-surface-2);
+	border: 1px solid var(--color-border);
+	padding: 4px var(--space-3) 4px 4px;
+	border-radius: 999px;
 	cursor: pointer;
-	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	transition:
+		background-color var(--duration-fast) var(--ease-standard),
+		border-color var(--duration-fast) var(--ease-standard),
+		box-shadow var(--duration-fast) var(--ease-standard);
 }
 
 .userBtn:hover {
-	background: rgba(255, 255, 255, 0.2);
-	border-color: var(--accent);
-	transform: translateY(-1px);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	background: var(--color-surface-3);
+	box-shadow: var(--shadow-sm);
 }
 
 .avatar {
@@ -87,13 +97,13 @@
 	height: 32px;
 	border-radius: 50%;
 	object-fit: cover;
-	border: 2px solid rgba(255, 255, 255, 0.2);
+	border: 1px solid var(--color-border);
 }
 
 .username {
 	font-size: 14px;
 	font-weight: 600;
-	color: var(--color-text);
+	color: var(--color-fg);
 	letter-spacing: -0.01em;
 }
 
@@ -102,16 +112,14 @@
 	top: calc(100% + 12px);
 	right: 0;
 	width: 180px;
-	background: var(--glass-surface);
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
-	border: 1px solid var(--glass-border);
-	border-radius: 16px;
-	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-	padding: 8px;
+	background: var(--color-surface);
+	border: 1px solid var(--color-divider);
+	border-radius: var(--radius-md);
+	box-shadow: var(--shadow-md);
+	padding: var(--space-2);
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: var(--space-1);
 	z-index: 50;
 	transform-origin: top right;
 	animation: dropdownFade 0.2s ease-out;
@@ -130,12 +138,14 @@
 
 .menuItem {
 	text-decoration: none;
-	color: var(--color-text);
-	padding: 10px 14px;
+	color: var(--color-fg);
+	padding: var(--space-2) var(--space-3);
 	font-size: 14px;
 	font-weight: 500;
-	border-radius: 10px;
-	transition: all 0.2s;
+	border-radius: var(--radius-sm);
+	transition:
+		background-color var(--duration-fast) var(--ease-standard),
+		color var(--duration-fast) var(--ease-standard);
 	cursor: pointer;
 	background: transparent;
 	border: none;
@@ -145,9 +155,8 @@
 }
 
 .menuItem:hover {
-	background: var(--accent);
-	color: white;
-	box-shadow: 0 4px 12px var(--accent-glow);
+	background: var(--color-surface-3);
+	color: var(--color-fg);
 }
 
 @media (max-width: 768px) {

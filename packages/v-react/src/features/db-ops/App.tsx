@@ -1617,7 +1617,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
   };
 
   return (
-    <div className="page">
+    <div className="dbops-root">
       <header className="page-header">
         <div>
           <h1>数据库管控台</h1>

@@ -142,7 +142,7 @@ export default function ChatWorkspace() {
     }
   };
 
-  const layoutClass = clsx('workspace', sidebarCollapsed && 'sidebar-collapsed');
+  const layoutClass = clsx('cc-root', sidebarCollapsed && 'sidebar-collapsed');
 
   return (
     <div className={layoutClass}>

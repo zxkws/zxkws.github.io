@@ -1,65 +1,32 @@
-:root {
-  /* Palette - Matching v-app */
-  --color-primary: #0ea5e9;
-  --color-primary-hover: #0284c7;
-  --color-primary-light: #e0f2fe; /* Sky 100 */
-  
-  --bg-main: transparent; /* Changed from #f8fafc to transparent to blend with Glass OS */
-  --bg-surface: rgba(255, 255, 255, 0.6); /* Semi-transparent surface */
-  --bg-surface-hover: rgba(255, 255, 255, 0.8);
-  
-  --border-subtle: rgba(226, 232, 240, 0.6);
-  --border-focus: #0ea5e9;
-  
-  --text-main: #0f172a; /* Slate 900 */
-  --text-muted: #64748b; /* Slate 500 */
-  
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  
-  --glass-blur: blur(12px);
+/*
+  v-react shared styles (scoped)
+
+  Important:
+  - Do NOT style html/body here (micro-frontend safety).
+  - Only style inside `.v-react-root` container.
+*/
+
+.v-react-root {
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  font-family: var(--font-sans);
+  color: var(--color-fg);
+  background: transparent;
 }
 
-/* Dark Mode Variables */
-html.dark {
-  --bg-main: transparent;
-  --bg-surface: rgba(30, 41, 59, 0.6); /* Slate 800 semi-transparent */
-  --bg-surface-hover: rgba(51, 65, 85, 0.7);
-  
-  --color-primary-light: rgba(7, 89, 133, 0.4);
-  
-  --border-subtle: rgba(255, 255, 255, 0.1);
-  
-  --text-main: #f1f5f9;
-  --text-muted: #94a3b8;
-  
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+/* Standalone dev (container is #root) */
+.v-react-root#root {
+  height: 100vh;
 }
 
-* {
+.v-react-root,
+.v-react-root * {
   box-sizing: border-box;
 }
 
-html,
-body,
-#root {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: var(--text-main);
-  background: var(--bg-main); /* Transparent */
-  transition: color 0.3s ease;
-}
-
 /* Layout Structure */
-.layout {
+.v-react-root .layout {
   display: grid;
   grid-template-columns: 260px 1fr;
   height: 100%;
@@ -69,43 +36,49 @@ body {
 }
 
 /* Sidebar Styling - Glass Card */
-.sidebar {
-  background: var(--bg-surface);
-  backdrop-filter: var(--glass-blur);
-  border-right: 1px solid var(--border-subtle);
+.v-react-root .sidebar {
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-divider);
   display: flex;
   flex-direction: column;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-.toolbar {
+.v-react-root .toolbar {
   display: flex;
   gap: 12px;
   padding: 16px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--color-divider);
 }
 
-.toolbar button {
+.v-react-root .toolbar button {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-main);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-fg);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
 }
 
-.toolbar button:hover {
-  background: var(--bg-surface-hover);
+.v-react-root .toolbar button:hover {
+  background: var(--color-surface-3);
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
+.v-react-root .toolbar button:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
 /* Note List */
-.note-list {
+.v-react-root .note-list {
   overflow-y: auto;
   padding: 12px;
   flex: 1;
@@ -114,91 +87,90 @@ body {
   gap: 8px;
 }
 
-.note-item {
+.v-react-root .note-item {
   padding: 12px;
   border-radius: var(--radius-md);
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.2s ease;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
 }
 
-.note-item:hover {
-  background: var(--bg-surface-hover);
+.v-react-root .note-item:hover {
+  background: var(--color-surface-2);
 }
 
-.note-item.active {
-  background: var(--color-primary-light);
+.v-react-root .note-item.active {
+  background: var(--color-surface-3);
   border-color: var(--color-primary);
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
 }
 
-.note-item .title {
+.v-react-root .note-item .title {
   font-weight: 600;
   margin-bottom: 6px;
-  color: var(--text-main);
+  color: var(--color-fg);
   font-size: 14px;
 }
 
-.note-item.active .title {
+.v-react-root .note-item.active .title {
   color: var(--color-primary);
 }
 
-.note-item .meta {
+.v-react-root .note-item .meta {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--color-fg-tertiary);
   display: flex;
   justify-content: space-between;
 }
 
 /* Main Content Area - Another Glass Card */
-.main {
+.v-react-root .main {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--bg-surface);
-  backdrop-filter: var(--glass-blur);
+  background: var(--color-surface);
   margin: 0; /* Removing margin to fit main stage perfectly */
-  border-left: 1px solid var(--border-subtle); /* Divider instead of gap */
+  border-left: 1px solid var(--color-divider); /* Divider instead of gap */
   overflow: hidden;
 }
 
-.main.no-padding {
+.v-react-root .main.no-padding {
   padding: 0;
 }
 
 /* Tabs */
-.tabs {
+.v-react-root .tabs {
   display: flex;
   gap: 8px;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--color-divider);
+  background: var(--color-surface-2);
 }
 
-.tab {
+.v-react-root .tab {
   padding: 6px 16px;
   border-radius: 20px; /* Pill shape */
   background: transparent;
-  color: var(--text-muted);
+  color: var(--color-fg-tertiary);
   font-size: 13px;
   cursor: pointer;
   border: 1px solid transparent;
   transition: all 0.2s;
 }
 
-.tab:hover {
-  color: var(--text-main);
-  background: rgba(255, 255, 255, 0.1);
+.v-react-root .tab:hover {
+  color: var(--color-fg);
+  background: var(--color-surface-3);
 }
 
-.tab.active {
+.v-react-root .tab.active {
   background: var(--color-primary);
-  color: white;
-  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.4);
+  color: var(--color-on-primary);
 }
 
 /* Editor */
-.editor {
+.v-react-root .editor {
   display: grid;
   grid-template-columns: 1fr 8px 1fr;
   gap: 0;
@@ -207,154 +179,150 @@ body {
   background: transparent;
 }
 
-.editor textarea {
+.v-react-root .editor textarea {
   width: 100%;
   height: 100%;
   border: none;
   padding: 24px;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 15px;
   line-height: 1.6;
   outline: none;
   resize: none;
   background: transparent;
-  color: var(--text-main);
+  color: var(--color-fg);
 }
 
-.editor .preview {
-  background: rgba(0, 0, 0, 0.02); /* Very subtle separation */
+.v-react-root .editor .preview {
+  background: var(--color-surface-2); /* separation */
   overflow: auto;
   padding: 24px;
   border-left: none;
-  color: var(--text-main);
+  color: var(--color-fg);
   line-height: 1.6;
 }
 
-.editor .preview img {
+.v-react-root .editor .preview img {
   max-width: 100%;
   height: auto;
   display: block;
 }
 
-.editor .splitter {
+.v-react-root .editor .splitter {
   cursor: col-resize;
   background: transparent;
-  border-left: 1px solid var(--border-subtle);
-  border-right: 1px solid var(--border-subtle);
+  border-left: 1px solid var(--color-divider);
+  border-right: 1px solid var(--color-divider);
   transition: background-color 0.15s ease;
 }
 
-.editor .splitter:hover,
-.editor .splitter:active {
-  background: var(--bg-surface-hover);
+.v-react-root .editor .splitter:hover,
+.v-react-root .editor .splitter:active {
+  background: var(--color-surface-3);
 }
 
 /* Markdown Typography */
-.editor .preview h1,
-.editor .preview h2,
-.editor .preview h3,
-.editor .preview h4,
-.editor .preview h5,
-.editor .preview h6 {
+.v-react-root .editor .preview h1,
+.v-react-root .editor .preview h2,
+.v-react-root .editor .preview h3,
+.v-react-root .editor .preview h4,
+.v-react-root .editor .preview h5,
+.v-react-root .editor .preview h6 {
   margin: 1.2em 0 0.6em;
   font-weight: 700;
   line-height: 1.25;
 }
 
-.editor .preview h1 { font-size: 1.8em; }
-.editor .preview h2 { font-size: 1.5em; }
-.editor .preview h3 { font-size: 1.25em; }
+.v-react-root .editor .preview h1 { font-size: 1.8em; }
+.v-react-root .editor .preview h2 { font-size: 1.5em; }
+.v-react-root .editor .preview h3 { font-size: 1.25em; }
 
-.editor .preview p {
+.v-react-root .editor .preview p {
   margin: 0.6em 0;
 }
 
-.editor .preview ul,
-.editor .preview ol {
+.v-react-root .editor .preview ul,
+.v-react-root .editor .preview ol {
   margin: 0.6em 0 0.6em 1.2em;
   padding-left: 1em;
 }
 
-.editor .preview li {
+.v-react-root .editor .preview li {
   margin: 0.25em 0;
 }
 
-.editor .preview blockquote {
+.v-react-root .editor .preview blockquote {
   margin: 0.8em 0;
   padding: 0.4em 0.8em;
-  border-left: 4px solid var(--border-subtle);
-  background: rgba(0, 0, 0, 0.03);
-  color: var(--text-muted);
+  border-left: 4px solid var(--color-divider);
+  background: var(--color-surface);
+  color: var(--color-fg-tertiary);
 }
 
-.editor .preview code {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+.v-react-root .editor .preview code {
+  font-family: var(--font-mono);
   font-size: 0.95em;
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(15, 23, 42, 0.06);
   padding: 0.1em 0.3em;
   border-radius: 4px;
 }
 
-.editor .preview pre {
+.v-react-root .editor .preview pre {
   margin: 0.8em 0;
   padding: 12px 14px;
-  background: rgba(15, 23, 42, 0.06);
-  border: 1px solid var(--border-subtle);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
   border-radius: var(--radius-md);
   overflow: auto;
 }
 
-.editor .preview pre code {
+.v-react-root .editor .preview pre code {
   background: transparent;
   padding: 0;
   font-size: 0.92em;
 }
 
-.editor .preview a {
+.v-react-root .editor .preview a {
   color: var(--color-primary);
   text-decoration: underline;
 }
 
-.editor .preview hr {
+.v-react-root .editor .preview hr {
   border: none;
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--color-divider);
   margin: 1.2em 0;
 }
 
-.editor .preview table {
+.v-react-root .editor .preview table {
   width: 100%;
   border-collapse: collapse;
   margin: 1em 0;
   font-size: 0.95em;
 }
 
-.editor .preview th,
-.editor .preview td {
-  border: 1px solid var(--border-subtle);
+.v-react-root .editor .preview th,
+.v-react-root .editor .preview td {
+  border: 1px solid var(--color-divider);
   padding: 6px 8px;
   vertical-align: top;
 }
 
-.editor .preview tr:nth-child(even) {
+.v-react-root .editor .preview tr:nth-child(even) {
   background: rgba(0, 0, 0, 0.02);
 }
 
 /* Callouts / Admonitions */
-.callout {
+.v-react-root .callout {
   padding: 12px 16px;
   margin: 1em 0;
   border-radius: var(--radius-md);
   border-left-width: 4px;
   border-left-style: solid;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--color-surface);
   overflow: hidden;
 }
 
-html.dark .callout {
-  background: rgba(30, 41, 59, 0.4);
-}
-
-.callout-title {
+.v-react-root .callout-title {
   font-weight: 600;
   margin-bottom: 8px;
   display: flex;
@@ -363,44 +331,44 @@ html.dark .callout {
   line-height: 1.2;
 }
 
-.callout-content p {
+.v-react-root .callout-content p {
   margin: 8px 0;
 }
-.callout-content p:first-child {
+.v-react-root .callout-content p:first-child {
   margin-top: 0;
 }
-.callout-content p:last-child {
+.v-react-root .callout-content p:last-child {
   margin-bottom: 0;
 }
 
 /* Empty State */
-.empty {
+.v-react-root .empty {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
+  color: var(--color-fg-tertiary);
   gap: 16px;
 }
 
-.empty::before {
+.v-react-root .empty::before {
   content: '⚡';
   font-size: 48px;
   opacity: 0.5;
-  filter: drop-shadow(0 0 10px rgba(14, 165, 233, 0.5));
+  filter: drop-shadow(0 0 10px rgba(22, 119, 255, 0.35));
 }
 
 /* Status Bar */
-.status-bar {
+.v-react-root .status-bar {
   height: 32px;
   padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  border-top: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--color-divider);
+  background: var(--color-surface-2);
   font-size: 12px;
-  color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
+  color: var(--color-fg-tertiary);
+  font-family: var(--font-mono);
 }

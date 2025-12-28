@@ -5,6 +5,7 @@ import isInIcestark from '@ice/stark-app/lib/isInIcestark';
 import getBasename from '@ice/stark-app/lib/getBasename';
 import setLibraryName from '@ice/stark-app/lib/setLibraryName';
 import { App } from './modules/App';
+import '@zxkws/shared-theme/theme.css';
 import './styles.css';
 
 setLibraryName('v-react');
@@ -24,6 +25,7 @@ type RenderOptions = {
 };
 
 let appRoot: ReactDOM.Root | null = null;
+let mountedContainer: Element | null = null;
 
 const resolveContainer = (target?: Element | string | null): Element | null => {
   if (!target) return null;
@@ -32,6 +34,11 @@ const resolveContainer = (target?: Element | string | null): Element | null => {
 
 const renderApp = ({ container, basename }: RenderOptions) => {
   if (appRoot) appRoot.unmount();
+  if (mountedContainer && mountedContainer !== container) {
+    mountedContainer.classList.remove('v-react-root');
+  }
+  container.classList.add('v-react-root');
+  mountedContainer = container;
   const queryClient = new QueryClient();
   appRoot = ReactDOM.createRoot(container);
   appRoot.render(
@@ -47,6 +54,10 @@ export const unmount = async () => {
   if (appRoot) {
     appRoot.unmount();
     appRoot = null;
+  }
+  if (mountedContainer) {
+    mountedContainer.classList.remove('v-react-root');
+    mountedContainer = null;
   }
 };
 
