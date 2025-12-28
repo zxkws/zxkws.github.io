@@ -8,9 +8,12 @@ export function useTheme() {
     const root = window.document.documentElement;
     if (theme === 'system') {
       const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.classList.toggle('dark', systemDark);
+      const resolved = systemDark ? 'dark' : 'light';
+      root.classList.toggle('dark', resolved === 'dark');
+      root.setAttribute('data-theme', resolved);
     } else {
       root.classList.toggle('dark', theme === 'dark');
+      root.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light');
     }
   };
 

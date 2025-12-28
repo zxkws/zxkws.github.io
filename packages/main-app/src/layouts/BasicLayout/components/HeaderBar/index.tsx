@@ -10,33 +10,49 @@ type HeaderBarProps = {
   onMenuToggle?: () => void;
 };
 
+const readEffectiveTheme = (): 'light' | 'dark' => {
+  if (typeof document === 'undefined') return 'light';
+  const root = document.documentElement;
+  const isDarkAttr = root.getAttribute('data-theme') === 'dark';
+  const isDarkClass = root.classList.contains('dark');
+  return isDarkAttr || isDarkClass ? 'dark' : 'light';
+};
+
+const applyTheme = (next: 'light' | 'dark') => {
+  const root = document.documentElement;
+  root.setAttribute('data-theme', next);
+  root.classList.toggle('dark', next === 'dark');
+  localStorage.setItem('main-app-theme', next);
+};
+
 const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, clearUser } = useUser();
 
   useEffect(() => {
-    // Initial Theme Sync
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    setTheme(isDark ? 'dark' : 'light');
+    // Initial Theme Sync (support both `data-theme` and `html.dark` from micro-apps)
+    setTheme(readEffectiveTheme());
 
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-          setTheme(isDark ? 'dark' : 'light');
+        if (
+          mutation.type === 'attributes' &&
+          (mutation.attributeName === 'data-theme' || mutation.attributeName === 'class')
+        ) {
+          setTheme(readEffectiveTheme());
         }
       });
     });
 
-    observer.observe(document.documentElement, { attributes: true });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
     return () => observer.disconnect();
   }, []);
 
   const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('main-app-theme', next);
+    const current = readEffectiveTheme();
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
     setTheme(next);
   };
 
