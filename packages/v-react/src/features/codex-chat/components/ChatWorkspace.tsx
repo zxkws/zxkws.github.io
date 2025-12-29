@@ -5,6 +5,7 @@ import Composer from './Composer';
 import Sidebar from './Sidebar';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
+import ContextPanel from './ContextPanel';
 import { useChatState } from '../hooks/useChatState';
 import type { ComposerAttachment } from '../types';
 import { createId } from '../utils/storage';
@@ -18,6 +19,12 @@ export default function ChatWorkspace() {
     activeConversation,
     activeConversationId,
     isGenerating,
+    sessionContextItems,
+    fileContexts,
+    projectContexts,
+    contextTemplates,
+    contextBudgetChars,
+    lastContextOmitted,
     createConversation,
     selectConversation,
     renameConversation,
@@ -25,6 +32,12 @@ export default function ChatWorkspace() {
     duplicateConversation,
     updateSettings,
     toggleTool,
+    addContextItem,
+    toggleContextPin,
+    deleteContextItem,
+    saveContextTemplate,
+    applyContextTemplate,
+    deleteContextTemplate,
     sendMessage,
     cancelGeneration,
     clearConversation,
@@ -32,6 +45,7 @@ export default function ChatWorkspace() {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
+  const [contextPanelOpen, setContextPanelOpen] = useState(false);
   const [draft, setDraft] = useState('');
   const [attachments, setAttachments] = useState<ComposerAttachment[]>([]);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
@@ -169,6 +183,7 @@ export default function ChatWorkspace() {
           onClearConversation={handleClearConversation}
           onCancelGeneration={cancelGeneration}
           onToggleSidebar={() => setSidebarMobileOpen((prev) => !prev)}
+          onToggleContextPanel={() => setContextPanelOpen((prev) => !prev)}
           onModelChange={handleModelChange}
           onTemperatureChange={handleTemperatureChange}
           onToggleTool={handleToggleTool}
@@ -186,6 +201,22 @@ export default function ChatWorkspace() {
           onRemoveAttachment={handleRemoveAttachment}
         />
       </main>
+      <ContextPanel
+        open={contextPanelOpen}
+        sessionItems={sessionContextItems}
+        fileItems={fileContexts}
+        projectItems={projectContexts}
+        templates={contextTemplates}
+        budgetChars={contextBudgetChars}
+        lastOmitted={lastContextOmitted ?? undefined}
+        onClose={() => setContextPanelOpen(false)}
+        onAddItem={addContextItem}
+        onTogglePin={toggleContextPin}
+        onDeleteItem={deleteContextItem}
+        onSaveTemplate={saveContextTemplate}
+        onApplyTemplate={applyContextTemplate}
+        onDeleteTemplate={deleteContextTemplate}
+      />
     </div>
   );
 }

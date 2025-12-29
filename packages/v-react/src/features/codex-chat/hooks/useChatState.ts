@@ -3,6 +3,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   Attachment,
   ChatMessage,
+  ContextItem,
+  ContextScope,
+  ContextTemplate,
   ChatStateSnapshot,
   Conversation,
   ConversationSettings,
@@ -10,6 +13,7 @@ import type {
 } from '../types';
 import { DEFAULT_MODEL_ID } from '../constants/models';
 import { createChatCompletion, createChatCompletionStream, ChatServiceError } from '../services/chatService';
+import { buildContextPrompt, DEFAULT_CONTEXT_BUDGET_CHARS } from '../utils/context';
 import { createId, loadSnapshot, persistSnapshot } from '../utils/storage';
 
 const DEFAULT_TITLE = '新对话';
@@ -58,6 +62,10 @@ const createInitialSnapshot = (): ChatStateSnapshot => {
   return {
     conversations: [fallbackConversation],
     activeConversationId: fallbackConversation.id,
+    fileContexts: [],
+    projectContexts: [],
+    contextTemplates: [],
+    contextBudgetChars: DEFAULT_CONTEXT_BUDGET_CHARS,
   };
 };
 
@@ -96,6 +104,12 @@ type UseChatStateResult = {
   activeConversationId: string | null;
   activeConversation: Conversation | null;
   isGenerating: boolean;
+  sessionContextItems: ContextItem[];
+  fileContexts: ContextItem[];
+  projectContexts: ContextItem[];
+  contextTemplates: ContextTemplate[];
+  contextBudgetChars: number;
+  lastContextOmitted: number | null;
   createConversation: (options?: Partial<Conversation>) => Conversation;
   selectConversation: (conversationId: string) => void;
   renameConversation: (conversationId: string, title: string) => void;
@@ -103,6 +117,12 @@ type UseChatStateResult = {
   duplicateConversation: (conversationId: string) => void;
   updateSettings: (conversationId: string, settings: Partial<ConversationSettings>) => void;
   toggleTool: (conversationId: string, key: keyof ToolConfig, value: boolean) => void;
+  addContextItem: (scope: ContextScope, title: string, content: string) => void;
+  toggleContextPin: (scope: ContextScope, itemId: string) => void;
+  deleteContextItem: (scope: ContextScope, itemId: string) => void;
+  saveContextTemplate: (name: string) => void;
+  applyContextTemplate: (templateId: string) => void;
+  deleteContextTemplate: (templateId: string) => void;
   sendMessage: (content: string, options?: SendOptions) => Promise<void>;
   cancelGeneration: () => void;
   clearConversation: (conversationId: string) => void;
@@ -116,6 +136,11 @@ export const useChatState = (): UseChatStateResult => {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(
     initialSnapshot.activeConversationId ?? initialSnapshot.conversations[0]?.id ?? null,
   );
+  const [fileContexts, setFileContexts] = useState<ContextItem[]>(initialSnapshot.fileContexts ?? []);
+  const [projectContexts, setProjectContexts] = useState<ContextItem[]>(initialSnapshot.projectContexts ?? []);
+  const [contextTemplates, setContextTemplates] = useState<ContextTemplate[]>(initialSnapshot.contextTemplates ?? []);
+  const [contextBudgetChars] = useState<number>(initialSnapshot.contextBudgetChars ?? DEFAULT_CONTEXT_BUDGET_CHARS);
+  const [lastContextOmitted, setLastContextOmitted] = useState<number | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const pendingAssistantRef = useRef<{ conversationId: string; messageId: string } | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -125,9 +150,18 @@ export const useChatState = (): UseChatStateResult => {
     [conversations, activeConversationId],
   );
 
+  const sessionContextItems = useMemo(() => activeConversation?.contextItems ?? [], [activeConversation?.contextItems]);
+
   useEffect(() => {
-    persistSnapshot({ conversations, activeConversationId });
-  }, [conversations, activeConversationId]);
+    persistSnapshot({
+      conversations,
+      activeConversationId,
+      fileContexts,
+      projectContexts,
+      contextTemplates,
+      contextBudgetChars,
+    });
+  }, [conversations, activeConversationId, contextBudgetChars, contextTemplates, fileContexts, projectContexts]);
 
   const selectConversation = useCallback((conversationId: string) => {
     setActiveConversationId(conversationId);
@@ -141,6 +175,7 @@ export const useChatState = (): UseChatStateResult => {
       createdAt: options.createdAt ?? now,
       updatedAt: options.updatedAt ?? now,
       messages: options.messages ?? [],
+      contextItems: options.contextItems ?? [],
       settings: {
         model: options.settings?.model ?? DEFAULT_MODEL_ID,
         temperature: options.settings?.temperature ?? 0.6,
@@ -197,6 +232,12 @@ export const useChatState = (): UseChatStateResult => {
           ...message,
           id: createId('msg'),
         })),
+        contextItems: (source.contextItems ?? []).map((item) => ({
+          ...item,
+          id: createId('ctx'),
+          createdAt: now,
+          updatedAt: now,
+        })),
       };
       setConversations((prev) => [clone, ...prev]);
       setActiveConversationId(clone.id);
@@ -222,6 +263,149 @@ export const useChatState = (): UseChatStateResult => {
     );
   }, []);
 
+  const upsertSessionContextItems = useCallback((conversationId: string, updater: (items: ContextItem[]) => ContextItem[]) => {
+    setConversations((prev) =>
+      updateConversationState(prev, conversationId, (conversation) => {
+        const nextItems = updater(conversation.contextItems ?? []);
+        return {
+          ...conversation,
+          contextItems: nextItems,
+        };
+      }),
+    );
+  }, []);
+
+  const addContextItem = useCallback(
+    (scope: ContextScope, title: string, content: string) => {
+      const nowIso = new Date().toISOString();
+      const item: ContextItem = {
+        id: createId('ctx'),
+        scope,
+        title: title.trim(),
+        content: content.trim(),
+        pinned: false,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      };
+
+      if (scope === 'session') {
+        if (!activeConversationId) {
+          createConversation({ contextItems: [item] });
+          return;
+        }
+        upsertSessionContextItems(activeConversationId, (items) => [...items, item]);
+        return;
+      }
+      if (scope === 'file') {
+        setFileContexts((prev) => [...prev, item]);
+        return;
+      }
+      setProjectContexts((prev) => [...prev, item]);
+    },
+    [activeConversationId, createConversation, upsertSessionContextItems],
+  );
+
+  const toggleContextPin = useCallback(
+    (scope: ContextScope, itemId: string) => {
+      const nowIso = new Date().toISOString();
+      const toggleItem = (items: ContextItem[]) =>
+        items.map((item) =>
+          item.id === itemId
+            ? {
+                ...item,
+                pinned: !item.pinned,
+                updatedAt: nowIso,
+              }
+            : item,
+        );
+
+      if (scope === 'session') {
+        if (!activeConversationId) {
+          return;
+        }
+        upsertSessionContextItems(activeConversationId, toggleItem);
+        return;
+      }
+      if (scope === 'file') {
+        setFileContexts(toggleItem);
+        return;
+      }
+      setProjectContexts(toggleItem);
+    },
+    [activeConversationId, upsertSessionContextItems],
+  );
+
+  const deleteContextItem = useCallback(
+    (scope: ContextScope, itemId: string) => {
+      const removeItem = (items: ContextItem[]) => items.filter((item) => item.id !== itemId);
+      if (scope === 'session') {
+        if (!activeConversationId) {
+          return;
+        }
+        upsertSessionContextItems(activeConversationId, removeItem);
+        return;
+      }
+      if (scope === 'file') {
+        setFileContexts(removeItem);
+        return;
+      }
+      setProjectContexts(removeItem);
+    },
+    [activeConversationId, upsertSessionContextItems],
+  );
+
+  const saveContextTemplate = useCallback(
+    (name: string) => {
+      const trimmed = name.trim();
+      if (!trimmed || sessionContextItems.length === 0) {
+        return;
+      }
+      const nowIso = new Date().toISOString();
+      const template: ContextTemplate = {
+        id: createId('tpl'),
+        name: trimmed,
+        createdAt: nowIso,
+        items: sessionContextItems.map((item) => ({
+          title: item.title,
+          content: item.content,
+          pinned: item.pinned,
+        })),
+      };
+      setContextTemplates((prev) => [template, ...prev]);
+    },
+    [sessionContextItems],
+  );
+
+  const applyContextTemplate = useCallback(
+    (templateId: string) => {
+      const template = contextTemplates.find((item) => item.id === templateId);
+      if (!template) {
+        return;
+      }
+      const nowIso = new Date().toISOString();
+      const nextItems: ContextItem[] = template.items.map((item) => ({
+        id: createId('ctx'),
+        scope: 'session',
+        title: item.title,
+        content: item.content,
+        pinned: item.pinned,
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      }));
+
+      if (!activeConversationId) {
+        createConversation({ contextItems: nextItems });
+        return;
+      }
+      upsertSessionContextItems(activeConversationId, () => nextItems);
+    },
+    [activeConversationId, contextTemplates, createConversation, upsertSessionContextItems],
+  );
+
+  const deleteContextTemplate = useCallback((templateId: string) => {
+    setContextTemplates((prev) => prev.filter((item) => item.id !== templateId));
+  }, []);
+
   const clearConversation = useCallback((conversationId: string) => {
     const timestamp = new Date().toISOString();
     setConversations((prev) =>
@@ -238,6 +422,10 @@ export const useChatState = (): UseChatStateResult => {
     const fresh = createInitialSnapshot();
     setConversations(fresh.conversations);
     setActiveConversationId(fresh.activeConversationId);
+    setFileContexts(fresh.fileContexts ?? []);
+    setProjectContexts(fresh.projectContexts ?? []);
+    setContextTemplates(fresh.contextTemplates ?? []);
+    setLastContextOmitted(null);
     persistSnapshot(fresh);
   }, []);
 
@@ -312,7 +500,44 @@ export const useChatState = (): UseChatStateResult => {
         })),
       );
 
+      const contextResult = buildContextPrompt({
+        itemsByScope: {
+          session: conversation.contextItems ?? [],
+          file: fileContexts,
+          project: projectContexts,
+        },
+        budgetChars: contextBudgetChars,
+      });
+      setLastContextOmitted(contextResult.omitted > 0 ? contextResult.omitted : null);
+
       const payloadMessages = [...conversation.messages, userMessage];
+      const payloadMessagesWithContext = (() => {
+        if (!contextResult.prompt) {
+          return payloadMessages;
+        }
+
+        const systemMessage: ChatMessage = {
+          id: createId('msg'),
+          role: 'system',
+          content: contextResult.prompt,
+          createdAt: timestamp.toISOString(),
+          status: 'completed',
+        };
+
+        const firstSystemIndex = payloadMessages.findIndex((msg) => msg.role === 'system');
+        if (firstSystemIndex === -1) {
+          return [systemMessage, ...payloadMessages];
+        }
+
+        return payloadMessages.map((msg, index) =>
+          index === firstSystemIndex
+            ? {
+                ...msg,
+                content: `${systemMessage.content}\n\n---\n\n${msg.content}`,
+              }
+            : msg,
+        );
+      })();
       const payloadAttachments = options.attachments ?? [];
 
       const controller = new AbortController();
@@ -328,7 +553,7 @@ export const useChatState = (): UseChatStateResult => {
           await createChatCompletionStream(
             {
               conversationId,
-              messages: payloadMessages,
+              messages: payloadMessagesWithContext,
               settings: conversation.settings,
               tools: conversation.tools,
               attachments: payloadAttachments,
@@ -420,7 +645,7 @@ export const useChatState = (): UseChatStateResult => {
             const response = await createChatCompletion(
               {
                 conversationId,
-                messages: payloadMessages,
+                messages: payloadMessagesWithContext,
                 settings: conversation.settings,
                 tools: conversation.tools,
                 attachments: payloadAttachments,
@@ -496,7 +721,7 @@ export const useChatState = (): UseChatStateResult => {
         setIsGenerating(false);
       }
     },
-    [activeConversation, createConversation, isGenerating],
+    [activeConversation, contextBudgetChars, createConversation, fileContexts, isGenerating, projectContexts],
   );
 
   return {
@@ -504,6 +729,12 @@ export const useChatState = (): UseChatStateResult => {
     activeConversationId,
     activeConversation,
     isGenerating,
+    sessionContextItems,
+    fileContexts,
+    projectContexts,
+    contextTemplates,
+    contextBudgetChars,
+    lastContextOmitted,
     createConversation,
     selectConversation,
     renameConversation,
@@ -511,6 +742,12 @@ export const useChatState = (): UseChatStateResult => {
     duplicateConversation,
     updateSettings,
     toggleTool,
+    addContextItem,
+    toggleContextPin,
+    deleteContextItem,
+    saveContextTemplate,
+    applyContextTemplate,
+    deleteContextTemplate,
     sendMessage,
     cancelGeneration,
     clearConversation,

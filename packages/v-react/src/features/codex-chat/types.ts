@@ -1,5 +1,24 @@
 export type ChatRole = 'system' | 'user' | 'assistant' | 'tool';
 
+export type ContextScope = 'session' | 'file' | 'project';
+
+export type ContextItem = {
+  id: string;
+  scope: ContextScope;
+  title: string;
+  content: string;
+  pinned: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ContextTemplate = {
+  id: string;
+  name: string;
+  createdAt: string;
+  items: Array<Pick<ContextItem, 'title' | 'content' | 'pinned'>>;
+};
+
 export type Attachment = {
   id: string;
   name: string;
@@ -47,11 +66,16 @@ export type Conversation = {
   messages: ChatMessage[];
   settings: ConversationSettings;
   tools: ToolConfig;
+  contextItems?: ContextItem[];
 };
 
 export type ChatStateSnapshot = {
   conversations: Conversation[];
   activeConversationId: string | null;
+  fileContexts?: ContextItem[];
+  projectContexts?: ContextItem[];
+  contextTemplates?: ContextTemplate[];
+  contextBudgetChars?: number;
 };
 
 export type ComposerAttachment = {
