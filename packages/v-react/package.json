@@ -14,6 +14,7 @@
     "@tanstack/react-query": "^5.63.0",
     "@zxkws/shared-fetch": "workspace:*",
     "@zxkws/shared-theme": "workspace:*",
+    "@zxkws/web-monitor-sdk": "workspace:*",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "highlight.js": "^11.11.1",

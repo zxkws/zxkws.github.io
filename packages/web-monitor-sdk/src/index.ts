@@ -93,6 +93,53 @@ function sendData(event: MonitorEvent) {
   });
 }
 
+type CustomEventData = Record<string, unknown>;
+
+const MAX_CUSTOM_STRING_LENGTH = 120;
+
+function sanitizeCustomData(data: CustomEventData): Record<string, string | number | boolean> {
+  const safe: Record<string, string | number | boolean> = {};
+  if (!data || typeof data !== 'object') {
+    return safe;
+  }
+  Object.entries(data).forEach(([key, value]) => {
+    if (!key) return;
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      safe[key] = value;
+      return;
+    }
+    if (typeof value === 'boolean') {
+      safe[key] = value;
+      return;
+    }
+    if (typeof value === 'string') {
+      safe[key] = value.length > MAX_CUSTOM_STRING_LENGTH ? value.slice(0, MAX_CUSTOM_STRING_LENGTH) : value;
+    }
+  });
+  return safe;
+}
+
+export function trackCustom(type: string, data: CustomEventData = {}) {
+  if (!SDK_OPTIONS?.endpoint || !SDK_OPTIONS?.appId) {
+    return;
+  }
+
+  const event: MonitorEvent = {
+    type: type || 'custom',
+    data: sanitizeCustomData(data),
+    userId: getUserId(),
+    timestamp: Date.now(),
+    appId: SDK_OPTIONS.appId,
+    page: window.location.href,
+  };
+
+  try {
+    sendData(event);
+  } catch {
+    // ignore tracking errors to avoid breaking main flow
+  }
+}
+
 function trackPageView() {
   if (!SDK_OPTIONS) return;
 

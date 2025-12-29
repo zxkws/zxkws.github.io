@@ -374,6 +374,9 @@ importers:
       '@zxkws/shared-theme':
         specifier: workspace:*
         version: link:../shared-theme
+      '@zxkws/web-monitor-sdk':
+        specifier: workspace:*
+        version: link:../web-monitor-sdk
       clsx:
         specifier: ^2.1.1
         version: 2.1.1

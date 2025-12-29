@@ -15,8 +15,19 @@ import { DEFAULT_MODEL_ID } from '../constants/models';
 import { createChatCompletion, createChatCompletionStream, ChatServiceError } from '../services/chatService';
 import { buildContextPrompt, DEFAULT_CONTEXT_BUDGET_CHARS } from '../utils/context';
 import { createId, loadSnapshot, persistSnapshot } from '../utils/storage';
+import { trackCustom } from '@zxkws/web-monitor-sdk';
 
 const DEFAULT_TITLE = '新对话';
+
+const nowMs = () => (typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now());
+
+const safeTrack = (type: string, data: Record<string, unknown>) => {
+  try {
+    trackCustom(type, data);
+  } catch {
+    // ignore tracking errors
+  }
+};
 
 const createWelcomeConversation = (): Conversation => {
   const now = new Date();
@@ -142,7 +153,13 @@ export const useChatState = (): UseChatStateResult => {
   const [contextBudgetChars] = useState<number>(initialSnapshot.contextBudgetChars ?? DEFAULT_CONTEXT_BUDGET_CHARS);
   const [lastContextOmitted, setLastContextOmitted] = useState<number | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const pendingAssistantRef = useRef<{ conversationId: string; messageId: string } | null>(null);
+  const pendingAssistantRef = useRef<{
+    conversationId: string;
+    messageId: string;
+    model: string;
+    startedAtMs: number;
+    stream: boolean;
+  } | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const activeConversation = useMemo(
@@ -438,6 +455,11 @@ export const useChatState = (): UseChatStateResult => {
     if (!pending) {
       return;
     }
+
+    const elapsedMs = Math.max(0, Math.round(nowMs() - pending.startedAtMs));
+    safeTrack('ai_cancel', { model: pending.model, stream: pending.stream });
+    safeTrack('ai_total_ms', { ms: elapsedMs, model: pending.model, stream: pending.stream, status: 'cancel' });
+
     setConversations((prev) =>
       updateConversationState(prev, pending.conversationId, (conversation) => ({
         ...conversation,
@@ -540,9 +562,49 @@ export const useChatState = (): UseChatStateResult => {
       })();
       const payloadAttachments = options.attachments ?? [];
 
+      const startedAtMs = nowMs();
+      const model = conversation.settings.model;
+      let metricStream = true;
+      let trackedStreamConnect = false;
+      let trackedFirstToken = false;
+      let trackedTotal = false;
+
+      const trackStreamConnect = () => {
+        if (trackedStreamConnect || !metricStream) {
+          return;
+        }
+        trackedStreamConnect = true;
+        const elapsedMs = Math.max(0, Math.round(nowMs() - startedAtMs));
+        safeTrack('stream_connect_ms', { ms: elapsedMs, model, stream: true });
+      };
+
+      const trackFirstToken = () => {
+        if (trackedFirstToken) {
+          return;
+        }
+        trackedFirstToken = true;
+        const elapsedMs = Math.max(0, Math.round(nowMs() - startedAtMs));
+        safeTrack('ai_first_token_ms', { ms: elapsedMs, model, stream: metricStream });
+      };
+
+      const trackTotal = (status: 'completed' | 'error') => {
+        if (trackedTotal) {
+          return;
+        }
+        trackedTotal = true;
+        const elapsedMs = Math.max(0, Math.round(nowMs() - startedAtMs));
+        safeTrack('ai_total_ms', { ms: elapsedMs, model, stream: metricStream, status });
+      };
+
       const controller = new AbortController();
       abortControllerRef.current = controller;
-      pendingAssistantRef.current = { conversationId, messageId: assistantMessage.id };
+      pendingAssistantRef.current = {
+        conversationId,
+        messageId: assistantMessage.id,
+        model,
+        startedAtMs,
+        stream: metricStream,
+      };
       setIsGenerating(true);
 
       try {
@@ -609,6 +671,7 @@ export const useChatState = (): UseChatStateResult => {
             },
             {
               onMeta: () => {
+                trackStreamConnect();
                 setConversations((prev) =>
                   updateConversationState(prev, conversationId, (target) => ({
                     ...target,
@@ -626,11 +689,15 @@ export const useChatState = (): UseChatStateResult => {
               },
               onDelta: (delta) => {
                 receivedDelta = true;
+                trackStreamConnect();
+                trackFirstToken();
                 deltaBuffer += delta;
                 scheduleDeltaFlush();
               },
               onError: (message) => {
                 streamErrored = true;
+                safeTrack('ai_error', { model, stream: true, code: 'stream_error_event' });
+                trackTotal('error');
                 cancelDeltaFlush();
                 flushBufferedDelta();
                 setConversations((prev) =>
@@ -655,6 +722,7 @@ export const useChatState = (): UseChatStateResult => {
                 }
                 cancelDeltaFlush();
                 flushBufferedDelta();
+                trackTotal('completed');
                 setConversations((prev) =>
                   updateConversationState(prev, conversationId, (target) => ({
                     ...target,
@@ -685,6 +753,10 @@ export const useChatState = (): UseChatStateResult => {
           flushBufferedDelta();
           if (!receivedDelta && error instanceof ChatServiceError) {
             // 降级为非流式请求（兼容旧服务端/代理）
+            metricStream = false;
+            if (pendingAssistantRef.current) {
+              pendingAssistantRef.current.stream = false;
+            }
             const response = await createChatCompletion(
               {
                 conversationId,
@@ -696,6 +768,9 @@ export const useChatState = (): UseChatStateResult => {
               },
               { signal: controller.signal },
             );
+
+            trackFirstToken();
+            trackTotal('completed');
 
             setConversations((prev) =>
               updateConversationState(prev, conversationId, (target) => ({
@@ -718,6 +793,12 @@ export const useChatState = (): UseChatStateResult => {
           if (receivedDelta) {
             const friendlyMessage =
               error instanceof ChatServiceError ? error.friendlyMessage : '流式生成连接中断，请稍后重试。';
+            safeTrack('ai_error', {
+              model,
+              stream: true,
+              code: error instanceof ChatServiceError ? error.code : 'UNEXPECTED',
+            });
+            trackTotal('error');
             setConversations((prev) =>
               updateConversationState(prev, conversationId, (target) => ({
                 ...target,
@@ -742,6 +823,12 @@ export const useChatState = (): UseChatStateResult => {
           // 已在 cancelGeneration 中处理
           return;
         }
+        safeTrack('ai_error', {
+          model,
+          stream: metricStream,
+          code: error instanceof ChatServiceError ? error.code : 'UNEXPECTED',
+        });
+        trackTotal('error');
         const friendlyMessage =
           error instanceof ChatServiceError ? error.friendlyMessage : '暂时无法获取模型响应，请稍后再试。';
         setConversations((prev) =>
