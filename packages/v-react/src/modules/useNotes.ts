@@ -14,9 +14,7 @@ export const useNotes = () => {
   const hydrate = useNoteStore((s) => s.hydrate);
   const upsert = useNoteStore((s) => s.upsert);
   const setActive = useNoteStore((s) => s.setActive);
-  const [saving, setSaving] = useState<'idle' | 'local' | 'syncing' | 'error'>(
-    'idle',
-  );
+  const [saving, setSaving] = useState<'idle' | 'local' | 'syncing' | 'error'>('idle');
 
   const listQuery = useQuery<Note[]>({
     queryKey: ['notes'],
@@ -24,11 +22,7 @@ export const useNotes = () => {
   });
 
   const mutateNote = useMutation({
-    mutationFn: async (payload: {
-      id: string;
-      contentMd: string;
-      version?: number;
-    }) => {
+    mutationFn: async (payload: { id: string; contentMd: string; version?: number }) => {
       setSaving('syncing');
       const res = await patchNote(payload.id, payload);
       return res;
@@ -93,7 +87,6 @@ export const useNotes = () => {
     setActive,
     createToday: () => createDailyMutation.mutate(),
     createBlank: () => createEmptyMutation.mutate(),
-    updateContent: (id: string, contentMd: string, version?: number) =>
-      debouncedSave(id, contentMd, version),
+    updateContent: (id: string, contentMd: string, version?: number) => debouncedSave(id, contentMd, version),
   };
 };

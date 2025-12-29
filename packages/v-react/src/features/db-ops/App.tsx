@@ -477,7 +477,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
     setTaskEditing(null);
   };
 
-	  const saveAsset = async () => {
+  const saveAsset = async () => {
     if (!editing) return;
     if (!editing.name.trim()) {
       showToast('请填写名称');
@@ -489,49 +489,47 @@ export default function App({ basename: _basename }: { basename?: string }) {
     }
 
     setSaving(true);
-	    try {
+    try {
       const payload = {
         ...editing,
         port: editing.port ? Number(editing.port) : undefined,
       };
       const endpoint = editing.id ? '/v1/db-assets/update' : '/v1/db-assets/create';
-	      await client(endpoint, payload);
-	      closeModal();
-	      showToast('保存成功');
-	      loadAssets();
-	    } catch (err) {
-	      if (getErrorStatus(err) === 401) {
-	        setAuthState('need-login');
-	      }
-	      showToast(err instanceof Error ? err.message : '保存失败');
-	    } finally {
-	      setSaving(false);
-	    }
-	  };
+      await client(endpoint, payload);
+      closeModal();
+      showToast('保存成功');
+      loadAssets();
+    } catch (err) {
+      if (getErrorStatus(err) === 401) {
+        setAuthState('need-login');
+      }
+      showToast(err instanceof Error ? err.message : '保存失败');
+    } finally {
+      setSaving(false);
+    }
+  };
 
-	  const removeAsset = async (item: DbAsset) => {
+  const removeAsset = async (item: DbAsset) => {
     if (!item.id) return;
     const confirmed = typeof window !== 'undefined' ? window.confirm(`确认删除【${item.name}】?`) : true;
     if (!confirmed) return;
     const confirmName =
-      typeof window !== 'undefined'
-        ? window.prompt(`二次确认：请输入名称【${item.name}】以删除`) || ''
-        : item.name;
+      typeof window !== 'undefined' ? window.prompt(`二次确认：请输入名称【${item.name}】以删除`) || '' : item.name;
     if (confirmName.trim() !== item.name) {
       showToast('名称不一致，已取消删除');
       return;
     }
-	    try {
-	      await client('/v1/db-assets/remove', { id: item.id, confirmName });
-	      showToast('已删除');
-	      loadAssets();
-	    } catch (err) {
-	      if (getErrorStatus(err) === 401) {
-	        setAuthState('need-login');
-	      }
-	      showToast(err instanceof Error ? err.message : '删除失败');
-	    }
-	  };
+    try {
+      await client('/v1/db-assets/remove', { id: item.id, confirmName });
+      showToast('已删除');
+      loadAssets();
+    } catch (err) {
+      if (getErrorStatus(err) === 401) {
+        setAuthState('need-login');
+      }
+      showToast(err instanceof Error ? err.message : '删除失败');
+    }
+  };
 
   const mergeCheck = (results: CheckResult[]) => {
     setAssets((prev) => {
@@ -552,27 +550,27 @@ export default function App({ basename: _basename }: { basename?: string }) {
     });
   };
 
-	  const checkAsset = async (id?: string) => {
+  const checkAsset = async (id?: string) => {
     if (id) {
       setCheckingId(id);
     } else {
       setCheckingAll(true);
     }
-	    try {
+    try {
       const payload = id ? { id } : {};
       const results = unwrap<CheckResult[]>(await client('/v1/db-assets/check', payload));
-	      mergeCheck(results);
-	      showToast('检查完成');
-	    } catch (err) {
-	      if (getErrorStatus(err) === 401) {
-	        setAuthState('need-login');
-	      }
-	      showToast(err instanceof Error ? err.message : '检查失败');
-	    } finally {
-	      setCheckingId(null);
-	      setCheckingAll(false);
-	    }
-	  };
+      mergeCheck(results);
+      showToast('检查完成');
+    } catch (err) {
+      if (getErrorStatus(err) === 401) {
+        setAuthState('need-login');
+      }
+      showToast(err instanceof Error ? err.message : '检查失败');
+    } finally {
+      setCheckingId(null);
+      setCheckingAll(false);
+    }
+  };
 
   const toggleSecret = (id?: string) => {
     if (!id) return;
@@ -628,7 +626,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
     [client, runPageSize, showToast],
   );
 
-	  const saveTask = async () => {
+  const saveTask = async () => {
     if (!taskEditing) return;
     if (!taskEditing.name?.trim()) {
       showToast('请填写任务名称');
@@ -644,84 +642,89 @@ export default function App({ basename: _basename }: { basename?: string }) {
     }
 
     setSaving(true);
-	    try {
+    try {
       const payload = {
         ...taskEditing,
         batchSize: Number(taskEditing.batchSize) || 200,
       };
       const endpoint = taskEditing.id ? '/v1/db-sync/tasks/update' : '/v1/db-sync/tasks/create';
-	      await client(endpoint, payload);
-	      closeTaskModal();
-	      showToast('任务保存成功');
-	      loadTasks();
-	    } catch (err) {
-	      if (getErrorStatus(err) === 401) {
-	        setAuthState('need-login');
-	      }
-	      showToast(err instanceof Error ? err.message : '任务保存失败');
-	    } finally {
-	      setSaving(false);
-	    }
-	  };
+      await client(endpoint, payload);
+      closeTaskModal();
+      showToast('任务保存成功');
+      loadTasks();
+    } catch (err) {
+      if (getErrorStatus(err) === 401) {
+        setAuthState('need-login');
+      }
+      showToast(err instanceof Error ? err.message : '任务保存失败');
+    } finally {
+      setSaving(false);
+    }
+  };
 
-	  const runTaskNow = async (task: DbSyncTask) => {
+  const runTaskNow = async (task: DbSyncTask) => {
     setTaskBusyId(task.id);
-	    try {
+    try {
       await client('/v1/db-sync/tasks/run', { id: task.id, reason: 'manual' });
       showToast('已触发同步');
-	      loadTasks();
-	    } catch (err) {
-	      if (getErrorStatus(err) === 401) {
-	        setAuthState('need-login');
-	      }
-	      showToast(err instanceof Error ? err.message : '触发失败');
-	    } finally {
-	      setTaskBusyId(null);
-	    }
-	  };
+      loadTasks();
+      loadRunningRuns();
+    } catch (err) {
+      if (getErrorStatus(err) === 401) {
+        setAuthState('need-login');
+      }
+      const msg = err instanceof Error ? err.message : '触发失败';
+      if (msg.includes('任务正在执行中')) {
+        showToast('任务已在执行中，进度会自动刷新');
+        loadRunningRuns();
+      } else {
+        showToast(msg);
+      }
+    } finally {
+      setTaskBusyId(null);
+    }
+  };
 
-	  const toggleTaskStatus = async (task: DbSyncTask) => {
+  const toggleTaskStatus = async (task: DbSyncTask) => {
     setTaskBusyId(task.id);
-	    try {
+    try {
       const endpoint = task.status === 'running' ? '/v1/db-sync/tasks/pause' : '/v1/db-sync/tasks/resume';
       await client(endpoint, { id: task.id });
       showToast(task.status === 'running' ? '已暂停' : '已启用');
-	      loadTasks();
-	    } catch (err) {
-	      if (getErrorStatus(err) === 401) {
-	        setAuthState('need-login');
-	      }
-	      showToast(err instanceof Error ? err.message : '操作失败');
-	    } finally {
-	      setTaskBusyId(null);
-	    }
-	  };
+      loadTasks();
+    } catch (err) {
+      if (getErrorStatus(err) === 401) {
+        setAuthState('need-login');
+      }
+      showToast(err instanceof Error ? err.message : '操作失败');
+    } finally {
+      setTaskBusyId(null);
+    }
+  };
 
-	  const removeTask = async (task: DbSyncTask) => {
+  const removeTask = async (task: DbSyncTask) => {
     const confirmed = typeof window !== 'undefined' ? window.confirm(`确认删除同步任务【${task.name}】?`) : true;
     if (!confirmed) return;
     const confirmName =
-      typeof window !== 'undefined'
-        ? window.prompt(`二次确认：请输入名称【${task.name}】以删除`) || ''
-        : task.name;
+      typeof window !== 'undefined' ? window.prompt(`二次确认：请输入名称【${task.name}】以删除`) || '' : task.name;
     if (confirmName.trim() !== task.name) {
       showToast('名称不一致，已取消删除');
       return;
     }
     setTaskBusyId(task.id);
-	    try {
-	      await client('/v1/db-sync/tasks/remove', { id: task.id, confirmName });
-	      showToast('任务已删除');
-	      loadTasks();
-	    } catch (err) {
-	      if (getErrorStatus(err) === 401) {
-	        setAuthState('need-login');
-	      }
-	      showToast(err instanceof Error ? err.message : '删除失败');
-	    } finally {
-	      setTaskBusyId(null);
-	    }
-	  };
+    try {
+      await client('/v1/db-sync/tasks/remove', { id: task.id, confirmName });
+      showToast('任务已删除');
+      loadTasks();
+    } catch (err) {
+      if (getErrorStatus(err) === 401) {
+        setAuthState('need-login');
+      }
+      showToast(err instanceof Error ? err.message : '删除失败');
+    } finally {
+      setTaskBusyId(null);
+    }
+  };
 
   const goLogin = () => {
     if (typeof window === 'undefined') return;
@@ -753,28 +756,28 @@ export default function App({ basename: _basename }: { basename?: string }) {
       );
     }
 
-	    if (authState === 'forbidden') {
-	      return (
-	        <div className="panel danger">
-	          <h3>权限不足</h3>
-	          <p>仅限拥有「admin」角色的同学使用。如果你需要访问，请联系管理员开通。</p>
-	        </div>
-	      );
-	    }
+    if (authState === 'forbidden') {
+      return (
+        <div className="panel danger">
+          <h3>权限不足</h3>
+          <p>仅限拥有「admin」角色的同学使用。如果你需要访问，请联系管理员开通。</p>
+        </div>
+      );
+    }
 
-	    if (authState === 'error') {
-	      return (
-	        <div className="panel danger">
-	          <h3>服务异常</h3>
-	          <p>{error || '服务暂不可用，请稍后重试。'}</p>
-	          <div style={{ display: 'flex', gap: 10 }}>
-	            <button className="btn primary" onClick={loadProfile}>
-	              重试
-	            </button>
-	          </div>
-	        </div>
-	      );
-	    }
+    if (authState === 'error') {
+      return (
+        <div className="panel danger">
+          <h3>服务异常</h3>
+          <p>{error || '服务暂不可用，请稍后重试。'}</p>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button className="btn primary" onClick={loadProfile}>
+              重试
+            </button>
+          </div>
+        </div>
+      );
+    }
 
     const useNewLayout: boolean = true;
 
@@ -785,8 +788,8 @@ export default function App({ basename: _basename }: { basename?: string }) {
       const taskPausedCount = tasks.filter((item) => item.status === 'paused').length;
 
       const assetMap = new Map(assets.filter((a) => a.id).map((a) => [a.id as string, a] as const));
-      const selectedAsset = selectedAssetId ? assetMap.get(selectedAssetId) ?? null : null;
-      const selectedTask = selectedTaskId ? tasks.find((t) => t.id === selectedTaskId) ?? null : null;
+      const selectedAsset = selectedAssetId ? (assetMap.get(selectedAssetId) ?? null) : null;
+      const selectedTask = selectedTaskId ? (tasks.find((t) => t.id === selectedTaskId) ?? null) : null;
 
       const getAssetName = (id?: string) => {
         if (!id) return '--';
@@ -823,7 +826,11 @@ export default function App({ basename: _basename }: { basename?: string }) {
               </button>
             </div>
             <div className="toolbar-right">
-              <button className="btn" onClick={() => checkAsset()} disabled={checkingAll || loading || assets.length === 0}>
+              <button
+                className="btn"
+                onClick={() => checkAsset()}
+                disabled={checkingAll || loading || assets.length === 0}
+              >
                 {checkingAll ? '巡检中...' : '全部巡检'}
               </button>
               <button className="btn primary" onClick={startCreate}>
@@ -867,7 +874,9 @@ export default function App({ basename: _basename }: { basename?: string }) {
                     >
                       <td>
                         <span className={statusClass(item.lastStatus)}></span>
-                        <span style={{ marginLeft: 8, textTransform: 'uppercase' }}>{item.lastStatus ?? 'unknown'}</span>
+                        <span style={{ marginLeft: 8, textTransform: 'uppercase' }}>
+                          {item.lastStatus ?? 'unknown'}
+                        </span>
                       </td>
                       <td>
                         <div className="ellipsis" title={item.name}>
@@ -888,7 +897,9 @@ export default function App({ basename: _basename }: { basename?: string }) {
                           {displayAddr || '--'}
                         </div>
                       </td>
-                      <td className="mono">{typeof item.lastLatencyMs === 'number' ? `${item.lastLatencyMs}ms` : '--'}</td>
+                      <td className="mono">
+                        {typeof item.lastLatencyMs === 'number' ? `${item.lastLatencyMs}ms` : '--'}
+                      </td>
                       <td className="mono">{formatTime(item.lastCheckedAt)}</td>
                       <td>
                         <div className="cell-actions">
@@ -994,7 +1005,9 @@ export default function App({ basename: _basename }: { basename?: string }) {
                 <div className="k">状态</div>
                 <div className="v">
                   <span className={statusClass(selectedAsset.lastStatus)}></span>
-                  <span style={{ marginLeft: 8, textTransform: 'uppercase' }}>{selectedAsset.lastStatus ?? 'unknown'}</span>
+                  <span style={{ marginLeft: 8, textTransform: 'uppercase' }}>
+                    {selectedAsset.lastStatus ?? 'unknown'}
+                  </span>
                   {typeof selectedAsset.lastLatencyMs === 'number' && (
                     <span className="mono" style={{ marginLeft: 8, color: 'var(--muted)' }}>
                       {selectedAsset.lastLatencyMs}ms
@@ -1014,7 +1027,9 @@ export default function App({ basename: _basename }: { basename?: string }) {
 
                 <div className="k">密码</div>
                 <div className="v">
-                  <span className="mono">{secretOpen ? selectedAsset.password || '--' : maskSecret(selectedAsset.password)}</span>
+                  <span className="mono">
+                    {secretOpen ? selectedAsset.password || '--' : maskSecret(selectedAsset.password)}
+                  </span>
                   {selectedAsset.id && selectedAsset.password && (
                     <button className="link" onClick={() => toggleSecret(selectedAsset.id)} style={{ marginLeft: 10 }}>
                       {secretOpen ? '隐藏' : '显示'}
@@ -1104,7 +1119,13 @@ export default function App({ basename: _basename }: { basename?: string }) {
                   const sourceName = getAssetName(t.sourceAssetId);
                   const targetName = getAssetName(t.targetAssetId);
                   const scheduleText =
-                    t.scheduleType === 'fixed' ? `每 ${t.scheduleValue || '--'} 分钟` : `Cron：${t.scheduleValue || '--'}`;
+                    t.scheduleType === 'fixed'
+                      ? `每 ${
+                          Number.isFinite(Number(t.scheduleValue)) && Number(t.scheduleValue) > 0
+                            ? Number(t.scheduleValue)
+                            : 60
+                        } 分钟`
+                      : `Cron：${t.scheduleValue || '--'}`;
                   return (
                     <tr key={t.id} className={selected ? 'selected' : ''} onClick={() => selectTaskRow(t)}>
                       <td>
@@ -1292,7 +1313,9 @@ export default function App({ basename: _basename }: { basename?: string }) {
                   <div className="kv">
                     <div className="k">状态</div>
                     <div className="v">
-                      <span className={`pill ${selectedTask.status === 'running' ? 'running' : ''}`}>{selectedTask.status}</span>
+                      <span className={`pill ${selectedTask.status === 'running' ? 'running' : ''}`}>
+                        {selectedTask.status}
+                      </span>
                     </div>
 
                     <div className="k">源</div>
@@ -1665,19 +1688,19 @@ export default function App({ basename: _basename }: { basename?: string }) {
             <div className="panel muted">暂无同步任务。</div>
           ) : (
             <div className="list">
-	              {tasks.map((t) => {
-	                const runningRun = runningRuns[t.id];
-	                const busy = taskBusyId === t.id || Boolean(runningRun);
-	                const progressLine = runningRun ? formatProgressLine(runningRun) : null;
-	                const runningSummary = runningRun
-	                  ? `执行中：开始 ${formatTime(runningRun.startedAt)} · 已耗时 ${formatDuration(runningRun.startedAt)}${
-	                      progressLine ? ` · ${progressLine}` : ''
-	                    }`
-	                  : null;
-	                const source = assets.find((a) => a.id === t.sourceAssetId);
-	                const target = assets.find((a) => a.id === t.targetAssetId);
-	                return (
-	                  <div className="card" key={t.id}>
+              {tasks.map((t) => {
+                const runningRun = runningRuns[t.id];
+                const busy = taskBusyId === t.id || Boolean(runningRun);
+                const progressLine = runningRun ? formatProgressLine(runningRun) : null;
+                const runningSummary = runningRun
+                  ? `执行中：开始 ${formatTime(runningRun.startedAt)} · 已耗时 ${formatDuration(runningRun.startedAt)}${
+                      progressLine ? ` · ${progressLine}` : ''
+                    }`
+                  : null;
+                const source = assets.find((a) => a.id === t.sourceAssetId);
+                const target = assets.find((a) => a.id === t.targetAssetId);
+                return (
+                  <div className="card" key={t.id}>
                     <div className="card-head">
                       <div className="card-title">
                         <span className={badgeClass(t.type)}>{t.type}</span>
@@ -1697,13 +1720,15 @@ export default function App({ basename: _basename }: { basename?: string }) {
                       </div>
                     </div>
 
-	                    <div className="card-body">
-	                      {runningSummary && <div className="panel muted">{runningSummary}</div>}
-	                      <div className="grid">
-	                        <div>
-	                          <p className="label">调度</p>
+                    <div className="card-body">
+                      {runningSummary && <div className="panel muted">{runningSummary}</div>}
+                      <div className="grid">
+                        <div>
+                          <p className="label">调度</p>
                           <p className="value">
-                            {t.scheduleType === 'fixed' ? `固定间隔：${t.scheduleValue || '--'} 分钟` : `Cron：${t.scheduleValue || '--'}`}
+                            {t.scheduleType === 'fixed'
+                              ? `固定间隔：${t.scheduleValue || '--'} 分钟`
+                              : `Cron：${t.scheduleValue || '--'}`}
                           </p>
                         </div>
                         <div>
@@ -1975,7 +2000,9 @@ export default function App({ basename: _basename }: { basename?: string }) {
                   <span className="field-label">调度类型</span>
                   <select
                     value={taskEditing.scheduleType}
-                    onChange={(e) => setTaskEditing({ ...taskEditing, scheduleType: e.target.value as DbSyncScheduleType })}
+                    onChange={(e) =>
+                      setTaskEditing({ ...taskEditing, scheduleType: e.target.value as DbSyncScheduleType })
+                    }
                   >
                     <option value="fixed">固定间隔</option>
                     <option value="cron">Cron</option>
@@ -1998,7 +2025,9 @@ export default function App({ basename: _basename }: { basename?: string }) {
                   <input
                     type="number"
                     value={taskEditing.batchSize ?? 200}
-                    onChange={(e) => setTaskEditing({ ...taskEditing, batchSize: e.target.value ? Number(e.target.value) : 200 })}
+                    onChange={(e) =>
+                      setTaskEditing({ ...taskEditing, batchSize: e.target.value ? Number(e.target.value) : 200 })
+                    }
                     placeholder="200"
                   />
                 </label>

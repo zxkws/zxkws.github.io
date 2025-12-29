@@ -1,5 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
-
 interface Options {
   appId: string;
   endpoint: string;
@@ -32,11 +30,19 @@ function isReportEndpoint(url: string): boolean {
   return urlAbs === endpointAbs || urlAbs.startsWith(`${endpointAbs}?`) || urlAbs.startsWith(endpointAbs);
 }
 
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 function getUserId(): string {
   if (!USER_ID) {
     let userId = localStorage.getItem('web_monitor_user_id');
     if (!userId) {
-      userId = uuidv4();
+      userId = generateUUID();
       localStorage.setItem('web_monitor_user_id', userId);
     }
     USER_ID = userId;
@@ -50,23 +56,41 @@ function sendData(event: MonitorEvent) {
     return;
   }
 
-  const payload = JSON.stringify(event);
+  // Optimize payload: remove undefined/null values if necessary to save bytes
+  const payloadStr = JSON.stringify(event);
+
+  // 1. Try sendBeacon (Preferred for reliability on unload, though it uses POST)
+  // Most modern analytics use this.
   if (navigator.sendBeacon) {
-    // Keep it as a "simple" request (text/plain) to avoid CORS preflight.
-    navigator.sendBeacon(SDK_OPTIONS.endpoint, payload);
-  } else {
-    // Fallback for browsers that do not support sendBeacon
-    fetch(SDK_OPTIONS.endpoint, {
-      method: 'POST',
-      body: payload,
-      headers: {
-        'Content-Type': 'text/plain;charset=UTF-8',
-      },
-      keepalive: true, // Important for keeping requests alive during page dismissal
-    }).catch(error => {
-      console.error('Failed to send data via fetch:', error);
-    });
+    const blob = new Blob([payloadStr], { type: 'application/json; charset=UTF-8' });
+    const success = navigator.sendBeacon(SDK_OPTIONS.endpoint, blob);
+    if (success) return;
   }
+
+  // 2. Fallback to Image Beacon (GET)
+  // "GET should be enough" - use 1x1 gif for maximum compatibility.
+  // Warning: URL length limits apply (typically ~2KB). Large stack traces may be truncated or fail.
+  const query = `?data=${encodeURIComponent(payloadStr)}`;
+  const fullUrl = `${SDK_OPTIONS.endpoint}${query}`;
+  
+  if (fullUrl.length < 2048) {
+    const img = new Image();
+    img.src = fullUrl;
+    return;
+  }
+
+  // 3. Fallback to fetch (keepalive) if Image URL is too long or sendBeacon failed/unavailable
+  fetch(SDK_OPTIONS.endpoint, {
+    method: 'POST',
+    body: payloadStr,
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8',
+    },
+    keepalive: true,
+  }).catch(error => {
+    // Silent fail or minimal log to avoid loops
+    // console.error('Failed to send data:', error); 
+  });
 }
 
 function trackPageView() {
@@ -92,13 +116,18 @@ function handleHistoryChange() {
 }
 
 function setupErrorTracking() {
-  window.onerror = (message, source, lineno, colno, error) => {
+  // Fix: Use addEventListener instead of overwriting window.onerror
+  window.addEventListener('error', (event) => {
     if (!SDK_OPTIONS) return;
+    
+    // ErrorEvent properties
+    const { message, filename, lineno, colno, error } = event;
+
     const errorEvent: MonitorEvent = {
       type: 'error',
       data: {
         message: typeof message === 'string' ? message : 'Script Error',
-        source,
+        source: filename,
         lineno,
         colno,
         stack: error ? error.stack : undefined,
@@ -110,9 +139,10 @@ function setupErrorTracking() {
       page: window.location.href,
     };
     sendData(errorEvent);
-  };
+  }, true); // Use capturing phase to catch more errors
 
-  window.onunhandledrejection = (event) => {
+  // Fix: Use addEventListener instead of overwriting window.onunhandledrejection
+  window.addEventListener('unhandledrejection', (event) => {
     if (!SDK_OPTIONS) return;
     const reason = event.reason;
     const errorEvent: MonitorEvent = {
@@ -128,20 +158,20 @@ function setupErrorTracking() {
       page: window.location.href,
     };
     sendData(errorEvent);
-  };
+  });
 }
 
 function setupPerformanceTracking() {
   if (!('PerformanceObserver' in window)) {
-    console.warn('PerformanceObserver not supported in this browser.');
     return;
   }
 
   const observer = new PerformanceObserver((list) => {
     list.getEntries().forEach((entry) => {
       if (!SDK_OPTIONS) return;
-      // Prevent a feedback loop: reporting itself can generate "resource" entries.
+      // Filter out reports to own endpoint to prevent loops
       if (typeof entry.name === 'string' && isReportEndpoint(entry.name)) return;
+      
       const perfEvent: MonitorEvent = {
         type: 'performance',
         data: {
@@ -149,8 +179,7 @@ function setupPerformanceTracking() {
           entryType: entry.entryType,
           startTime: entry.startTime,
           duration: entry.duration,
-          // Add more performance-specific data if needed
-          ...entry.toJSON(), // Capture all available properties
+          ...entry.toJSON(),
         },
         userId: getUserId(),
         timestamp: Date.now(),
@@ -161,55 +190,39 @@ function setupPerformanceTracking() {
     });
   });
 
-  // Observe common performance metrics
-  // Avoid observing "resource" by default: too noisy and can include beacon/fetch, causing recursive reporting.
-  // Some browsers throw if "buffered" is used with "entryTypes"; observe per-type with a fallback.
   const entryTypes = ['paint', 'largest-contentful-paint', 'layout-shift', 'navigation'] as const;
   entryTypes.forEach((type) => {
     try {
       observer.observe({ type, buffered: true });
-    } catch (error) {
-      try {
-        observer.observe({ type });
-      } catch (observeError) {
-        console.warn(`[web-monitor-sdk] PerformanceObserver type not supported: ${type}`, observeError);
-      }
+    } catch {
+      // Fallback or ignore
     }
   });
-
-  // White Screen Time (approximation - FCP can be a good proxy)
-  // More accurate white screen time typically requires monitoring DOM changes
-  // or a custom script that determines when the "first meaningful paint" happens.
-  // For simplicity and standard compliance, we'll rely on FCP via PerformanceObserver.
 }
-
 
 export function init(options: Options) {
   SDK_OPTIONS = options;
-  getUserId(); // Initialize user ID
+  getUserId(); 
 
-  // Initial page view
   trackPageView();
 
-  // Track page views for SPA navigation
-  const pushState = history.pushState;
+  // Monkey-patch history for SPA support
+  // Consider providing an option to disable this if the app handles it
+  const originalPushState = history.pushState;
   history.pushState = function (...args: Parameters<History['pushState']>) {
-    pushState.apply(history, args);
+    originalPushState.apply(history, args);
     handleHistoryChange();
   };
 
-  const replaceState = history.replaceState;
+  const originalReplaceState = history.replaceState;
   history.replaceState = function (...args: Parameters<History['replaceState']>) {
-    replaceState.apply(history, args);
+    originalReplaceState.apply(history, args);
     handleHistoryChange();
   };
 
   window.addEventListener('popstate', handleHistoryChange);
-  window.addEventListener('hashchange', handleHistoryChange); // For hash-based routing
+  window.addEventListener('hashchange', handleHistoryChange);
 
-  // Setup error tracking
   setupErrorTracking();
-
-  // Setup performance tracking
   setupPerformanceTracking();
 }

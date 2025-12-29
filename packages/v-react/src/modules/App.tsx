@@ -26,11 +26,7 @@ export const App = ({ basename }: { basename?: string }) => {
         {/* 未匹配时展示 404 */}
         <Route
           path="*"
-          element={
-            <div style={{ padding: 16, fontSize: 14, color: 'var(--color-text, #666)' }}>
-              页面不存在
-            </div>
-          }
+          element={<div style={{ padding: 16, fontSize: 14, color: 'var(--color-text, #666)' }}>页面不存在</div>}
         />
       </Routes>
     </BrowserRouter>

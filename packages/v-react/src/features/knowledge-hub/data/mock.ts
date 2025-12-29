@@ -511,9 +511,7 @@ const knowledgeApiEndpoints: ApiEndpoint[] = [
       { name: 'owners', type: 'string[]', required: true, description: '责任人邮箱列表' },
       { name: 'defaultPipelines', type: 'string[]', required: false, description: '默认关联的 pipeline ID 列表' },
     ],
-    responseBody: [
-      { name: 'spaceId', type: 'string', required: true, description: '创建后的知识空间 ID' },
-    ],
+    responseBody: [{ name: 'spaceId', type: 'string', required: true, description: '创建后的知识空间 ID' }],
     errors: sharedErrors,
   },
   {
@@ -525,7 +523,13 @@ const knowledgeApiEndpoints: ApiEndpoint[] = [
     description: '可传入自定义参数覆盖默认配置，支持 dry-run',
     requestBody: [
       { name: 'dryRun', type: 'boolean', required: false, description: '是否仅验证链路不写入索引', example: false },
-      { name: 'overrideConfig', type: 'object', required: false, description: '临时覆盖 stage 配置', example: { chunk: { maxTokens: 480 } } },
+      {
+        name: 'overrideConfig',
+        type: 'object',
+        required: false,
+        description: '临时覆盖 stage 配置',
+        example: { chunk: { maxTokens: 480 } },
+      },
     ],
     responseBody: [
       { name: 'taskId', type: 'string', required: true, description: '任务 ID，可用于查询状态' },
@@ -544,11 +548,21 @@ const knowledgeApiEndpoints: ApiEndpoint[] = [
       { name: 'spaceId', type: 'string', required: true, description: '目标知识空间 ID' },
       { name: 'query', type: 'string', required: true, description: '自然语言查询内容' },
       { name: 'maxHops', type: 'number', required: false, description: '最大图遍历深度', example: 4 },
-      { name: 'reasoningMode', type: 'string', required: false, description: '推理模式：chain-of-thought / tree-of-thought / agentic' },
+      {
+        name: 'reasoningMode',
+        type: 'string',
+        required: false,
+        description: '推理模式：chain-of-thought / tree-of-thought / agentic',
+      },
     ],
     responseBody: [
       { name: 'answer', type: 'string', required: true, description: '最终回答文本' },
-      { name: 'evidences', type: 'Array<{nodeId:string,source:string,confidence:number}>', required: true, description: '证据列表' },
+      {
+        name: 'evidences',
+        type: 'Array<{nodeId:string,source:string,confidence:number}>',
+        required: true,
+        description: '证据列表',
+      },
       { name: 'reasoningTrace', type: 'object', required: false, description: '推理链详情' },
     ],
     errors: sharedErrors,
@@ -566,9 +580,7 @@ const knowledgeApiEndpoints: ApiEndpoint[] = [
       { name: 'from', type: 'string', required: false, description: '开始时间，ISO8601' },
       { name: 'to', type: 'string', required: false, description: '结束时间，ISO8601' },
     ],
-    responseBody: [
-      { name: 'items', type: 'DataQualityIssue[]', required: true, description: '质量缺陷列表' },
-    ],
+    responseBody: [{ name: 'items', type: 'DataQualityIssue[]', required: true, description: '质量缺陷列表' }],
     errors: sharedErrors,
   },
 ];
@@ -584,6 +596,8 @@ export const backendServices: BackendService[] = [
     name: 'graph-reasoner-service',
     description: 'GraphRAG 推理与图谱增强的服务层，提供推理链追踪能力',
     basePath: '/api/graph-reasoner',
-    endpoints: knowledgeApiEndpoints.filter((endpoint) => endpoint.id.includes('graphrag') || endpoint.id.includes('quality')),
+    endpoints: knowledgeApiEndpoints.filter(
+      (endpoint) => endpoint.id.includes('graphrag') || endpoint.id.includes('quality'),
+    ),
   },
 ];

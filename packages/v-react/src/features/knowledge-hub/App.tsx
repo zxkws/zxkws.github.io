@@ -30,13 +30,7 @@ type AppProps = {
   basename?: string;
 };
 
-type TabKey =
-  | 'overview'
-  | 'text'
-  | 'multimodal'
-  | 'graphrag'
-  | 'operations'
-  | 'apis';
+type TabKey = 'overview' | 'text' | 'multimodal' | 'graphrag' | 'operations' | 'apis';
 
 const TAB_CONFIG: Array<{ key: TabKey; label: string; description: string }> = [
   { key: 'overview', label: '知识总览', description: '跨模态知识资产与治理指标概览' },
@@ -139,15 +133,21 @@ const renderEvaluatorCard = (item: RetrievalEvaluator) => (
     <div style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}>
       <div>
         <div style={{ fontSize: 12, color: 'var(--kh-text-muted)' }}>当前</div>
-        <div className={styles.metricValue}>{item.metric.includes('Recall') ? percentFormatter.format(item.current) : item.current}</div>
+        <div className={styles.metricValue}>
+          {item.metric.includes('Recall') ? percentFormatter.format(item.current) : item.current}
+        </div>
       </div>
       <div>
         <div style={{ fontSize: 12, color: 'var(--kh-text-muted)' }}>目标</div>
-        <div style={{ fontSize: 16 }}>{item.metric.includes('Recall') ? percentFormatter.format(item.target) : item.target}</div>
+        <div style={{ fontSize: 16 }}>
+          {item.metric.includes('Recall') ? percentFormatter.format(item.target) : item.target}
+        </div>
       </div>
       <div>
         <div style={{ fontSize: 12, color: 'var(--kh-text-muted)' }}>基线</div>
-        <div style={{ fontSize: 16 }}>{item.metric.includes('Recall') ? percentFormatter.format(item.baseline) : item.baseline}</div>
+        <div style={{ fontSize: 16 }}>
+          {item.metric.includes('Recall') ? percentFormatter.format(item.baseline) : item.baseline}
+        </div>
       </div>
     </div>
     <div style={{ fontSize: 12, color: 'var(--kh-text-muted)' }}>最近评估：{formatDateTime(item.lastRunAt)}</div>
@@ -178,7 +178,9 @@ const renderAssetCard = (asset: MultimodalAsset) => (
 const renderGraphRun = (run: GraphRagRun) => (
   <div key={run.id} className={styles.timelineItem}>
     <strong>{run.query}</strong>
-    <span>触发人：{run.triggeredBy} · 状态：{run.status}</span>
+    <span>
+      触发人：{run.triggeredBy} · 状态：{run.status}
+    </span>
     <span>
       延迟：{run.latencyMs}ms · Hops：{run.hops} · 推理 Tokens：{numberFormatter.format(run.reasoningTokens)}
     </span>
@@ -247,9 +249,7 @@ const renderBackendService = (service: BackendService) => (
           {endpoint.queryParams && endpoint.queryParams.length > 0 && (
             <div>
               <div style={{ fontSize: 12, color: 'var(--kh-text-muted)', marginBottom: 4 }}>Query</div>
-              <div className={styles.codeBlock}>
-                {JSON.stringify(endpoint.queryParams, null, 2)}
-              </div>
+              <div className={styles.codeBlock}>{JSON.stringify(endpoint.queryParams, null, 2)}</div>
             </div>
           )}
           {endpoint.requestBody && (
@@ -350,7 +350,9 @@ const App = (_props: AppProps) => {
               <h2>文本知识库作业面板</h2>
               <span>自适应切片、嵌入、索引与检索评估</span>
             </header>
-            <div className={styles.twoColumn}>{ingestionPipelines.filter((item) => item.modality === 'text').map(renderPipelineStage)}</div>
+            <div className={styles.twoColumn}>
+              {ingestionPipelines.filter((item) => item.modality === 'text').map(renderPipelineStage)}
+            </div>
             <div className={styles.section}>
               <header className={styles.sectionHeader}>
                 <h2>检索质量评估</h2>
@@ -367,7 +369,9 @@ const App = (_props: AppProps) => {
               <h2>多模态知识资产</h2>
               <span>统一管理视频、音频、图像与结构化文本</span>
             </header>
-            <div className={styles.twoColumn}>{ingestionPipelines.filter((item) => item.modality === 'multimodal').map(renderPipelineStage)}</div>
+            <div className={styles.twoColumn}>
+              {ingestionPipelines.filter((item) => item.modality === 'multimodal').map(renderPipelineStage)}
+            </div>
             <div className={styles.section}>
               <header className={styles.sectionHeader}>
                 <h2>资产工作台</h2>
@@ -384,7 +388,9 @@ const App = (_props: AppProps) => {
               <h2>GraphRAG 编排中心</h2>
               <span>图谱构建、推理链与运行态分析</span>
             </header>
-            <div className={styles.twoColumn}>{ingestionPipelines.filter((item) => item.modality === 'graph').map(renderPipelineStage)}</div>
+            <div className={styles.twoColumn}>
+              {ingestionPipelines.filter((item) => item.modality === 'graph').map(renderPipelineStage)}
+            </div>
             <div className={styles.section}>
               <header className={styles.sectionHeader}>
                 <h2>节点与关系模板</h2>

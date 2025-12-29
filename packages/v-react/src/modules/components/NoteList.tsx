@@ -10,9 +10,7 @@ export const NoteList = ({
   activeId?: string;
   onSelect: (id: string) => void;
 }) => {
-  const sorted = [...notes].sort((a, b) =>
-    dayjs(b.updatedAt).valueOf() - dayjs(a.updatedAt).valueOf(),
-  );
+  const sorted = [...notes].sort((a, b) => dayjs(b.updatedAt).valueOf() - dayjs(a.updatedAt).valueOf());
 
   return (
     <div className="note-list">

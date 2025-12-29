@@ -32,23 +32,20 @@ const CALLOUT_VARIANTS: Record<string, { color: string; icon: string }> = {
   quote: { color: '#6e7781', icon: '💬' },
 };
 
-export const Editor = ({
-  note,
-  onChange,
-}: {
-  note: Note;
-  onChange: (md: string) => void;
-}) => {
+export const Editor = ({ note, onChange }: { note: Note; onChange: (md: string) => void }) => {
   const [value, setValue] = useState(note.contentMd);
   const { notes, setActive } = useNoteStore();
-  
+
   // Memoize the wiki link plugin to avoid re-creation on render
   const wikiLinkPlugin = useMemo(() => {
-    return [remarkWikiLink, { 
-      hrefTemplate: (permalink: string) => `note:${permalink}`,
-      pageResolver: (name: string) => [name],
-      aliasDivider: '|'
-    }];
+    return [
+      remarkWikiLink,
+      {
+        hrefTemplate: (permalink: string) => `note:${permalink}`,
+        pageResolver: (name: string) => [name],
+        aliasDivider: '|',
+      },
+    ];
   }, []);
 
   const [split, setSplit] = useState<number>(() => {
@@ -123,18 +120,14 @@ export const Editor = ({
         const record = await uploadFile(file);
         const url = record.signedUrl || record.url;
         const safeName = file.name.replace(/\s+/g, ' ');
-        const md = file.type.startsWith('image/')
-          ? `![${safeName}](${url})\n`
-          : `[${safeName}](${url})\n`;
+        const md = file.type.startsWith('image/') ? `![${safeName}](${url})\n` : `[${safeName}](${url})\n`;
         insertAtCursor(md);
       } catch (err) {
         console.warn('[notes-editor] upload failed, fallback to inline data url', err);
         try {
           const dataUrl = await fileToDataUrl(file);
           const safeName = file.name.replace(/\s+/g, ' ');
-          const md = file.type.startsWith('image/')
-            ? `![${safeName}](${dataUrl})\n`
-            : `[${safeName}](${dataUrl})\n`;
+          const md = file.type.startsWith('image/') ? `![${safeName}](${dataUrl})\n` : `[${safeName}](${dataUrl})\n`;
           insertAtCursor(md);
         } catch (fallbackErr) {
           console.warn('[notes-editor] inline fallback failed', fallbackErr);
@@ -216,18 +209,13 @@ export const Editor = ({
       <div className="preview">
         <ReactMarkdown
           remarkPlugins={[remarkGfm as any, remarkMath, remarkFrontmatter, wikiLinkPlugin]}
-          rehypePlugins={[
-            [rehypeHighlight as any, { ignoreMissing: true }],
-            rehypeKatex,
-          ]}
+          rehypePlugins={[[rehypeHighlight as any, { ignoreMissing: true }], rehypeKatex]}
           components={{
             code(props) {
               const { children, className, node, ...rest } = props;
               const match = /language-(\w+)/.exec(className || '');
               if (match && match[1] === 'mermaid') {
-                return (
-                  <Mermaid content={String(children).replace(/\n$/, '')} />
-                );
+                return <Mermaid content={String(children).replace(/\n$/, '')} />;
               }
               return (
                 <code className={className} {...rest}>
@@ -239,32 +227,36 @@ export const Editor = ({
               const { href, children, ...rest } = props;
               if (href?.startsWith('note:')) {
                 const targetName = href.slice(5);
-                const isMissing = !Object.values(notes).some(n => n.title === targetName);
+                const isMissing = !Object.values(notes).some((n) => n.title === targetName);
                 return (
-                  <a 
+                  <a
                     {...rest}
                     className={`wiki-link ${isMissing ? 'is-missing' : ''}`}
                     onClick={(e) => {
                       e.preventDefault();
                       // Find note by title
-                      const targetNote = Object.values(notes).find(n => n.title === targetName);
+                      const targetNote = Object.values(notes).find((n) => n.title === targetName);
                       if (targetNote) {
                         setActive(targetNote.id);
                       } else {
                         alert(`Note "${targetName}" not found.`);
                       }
                     }}
-                    style={{ 
+                    style={{
                       cursor: 'pointer',
                       color: isMissing ? '#999' : undefined,
-                      textDecoration: 'none'
+                      textDecoration: 'none',
                     }}
                   >
                     {children}
                   </a>
                 );
               }
-              return <a href={href} {...rest}>{children}</a>;
+              return (
+                <a href={href} {...rest}>
+                  {children}
+                </a>
+              );
             },
             blockquote(props) {
               // Simple check for Callout syntax: > [!INFO] Title
@@ -272,28 +264,28 @@ export const Editor = ({
               // ReactMarkdown structure for blockquote often wraps content in p
               // We need to inspect the first child to see if it's a paragraph containing the trigger
               const firstChild = Array.isArray(children) ? children[0] : children;
-              
+
               if (
-                typeof firstChild === 'object' && 
-                firstChild && 
+                typeof firstChild === 'object' &&
+                firstChild &&
                 'props' in firstChild &&
                 typeof firstChild.props.children === 'string'
               ) {
                 const text = firstChild.props.children as string;
                 const match = text.match(/^\[!(\w+)\](?: (.*))?$/);
-                
+
                 if (match) {
                   const type = match[1].toLowerCase();
                   const title = match[2];
                   const variant = CALLOUT_VARIANTS[type] || CALLOUT_VARIANTS.note;
-                  
+
                   // Content excluding the first line (the title line)
-                  // But wait, ReactMarkdown splits by blocks. 
+                  // But wait, ReactMarkdown splits by blocks.
                   // If "text" is just the first line, subsequent lines might be in other children.
                   // However, common mark usually keeps the paragraph together if not separated by newline.
                   // For robust implementation in React without a plugin, we just handle the simplest case:
                   // The blockquote contains one or more paragraphs. We style the whole blockquote box.
-                  
+
                   // Removing the trigger text from the first paragraph
                   const cleanChildren = [
                     <div key="callout-content" className="callout-content">
@@ -303,26 +295,32 @@ export const Editor = ({
                           and maybe hide the trigger text via CSS or just leave it for now 
                           (Obsidian renders the title separately). 
                       */}
-                       {/* Better approach: Clone the first paragraph and replace its text? 
+                      {/* Better approach: Clone the first paragraph and replace its text? 
                            Or simpler: Just render the Box style. The User sees [!INFO] text, 
                            which is acceptable as a fallback, or we can use CSS to hide it if we wrap it?
                        */}
-                       {/* Let's try to remove the trigger string from display if possible */}
-                       {Array.isArray(children) ? children.map((child, idx) => {
-                         if (idx === 0 && typeof child?.props?.children === 'string') {
-                            const remainingText = child.props.children.replace(/^\[!(\w+)\](?: (.*))?(\n|$)/, '');
-                            if (!remainingText.trim() && !title) return null; // Empty body
-                            // If title exists, we already used it.
-                            return <p key={idx} {...child.props}>{remainingText}</p>;
-                         }
-                         return child;
-                       }) : children}
-                    </div>
+                      {/* Let's try to remove the trigger string from display if possible */}
+                      {Array.isArray(children)
+                        ? children.map((child, idx) => {
+                            if (idx === 0 && typeof child?.props?.children === 'string') {
+                              const remainingText = child.props.children.replace(/^\[!(\w+)\](?: (.*))?(\n|$)/, '');
+                              if (!remainingText.trim() && !title) return null; // Empty body
+                              // If title exists, we already used it.
+                              return (
+                                <p key={idx} {...child.props}>
+                                  {remainingText}
+                                </p>
+                              );
+                            }
+                            return child;
+                          })
+                        : children}
+                    </div>,
                   ];
 
                   return (
-                    <div 
-                      className="callout" 
+                    <div
+                      className="callout"
                       style={{
                         borderLeftColor: variant.color,
                         backgroundColor: `${variant.color}1a`, // 10% opacity fallback
@@ -337,9 +335,9 @@ export const Editor = ({
                   );
                 }
               }
-              
+
               return <blockquote {...props} />;
-            }
+            },
           }}
         >
           {value}

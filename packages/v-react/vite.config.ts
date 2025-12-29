@@ -7,9 +7,7 @@ export default defineConfig(({ mode }) => {
   const isProd = mode === 'production';
   const serverEnv = process.env.SERVER_ENV === 'prod' ? 'prod' : 'dev';
   const apiProxyTarget =
-    process.env.API_PROXY_TARGET ||
-    process.env.API_BASE_URL ||
-    (serverEnv === 'prod' ? '' : 'http://localhost:3333');
+    process.env.API_PROXY_TARGET || process.env.API_BASE_URL || (serverEnv === 'prod' ? '' : 'http://localhost:3333');
 
   return {
     envPrefix: ['VITE_', 'API_BASE_URL'],
@@ -31,8 +29,7 @@ export default defineConfig(({ mode }) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-        'Access-Control-Allow-Headers':
-          'X-Requested-With, content-type, Authorization',
+        'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
       },
       proxy: {
         '^/api': {

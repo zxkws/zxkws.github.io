@@ -17,11 +17,7 @@ export const Tabs = ({
         const n = notes[id];
         if (!n) return null;
         return (
-          <div
-            key={id}
-            className={`tab ${id === activeId ? 'active' : ''}`}
-            onClick={() => onSelect(id)}
-          >
+          <div key={id} className={`tab ${id === activeId ? 'active' : ''}`} onClick={() => onSelect(id)}>
             {n.title || n.slug}
           </div>
         );

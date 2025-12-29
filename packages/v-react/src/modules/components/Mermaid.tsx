@@ -10,7 +10,7 @@ export const Mermaid = ({ content }: { content: string }) => {
 
   useEffect(() => {
     let mounted = true;
-    
+
     const renderChart = async () => {
       try {
         const isDark = document.documentElement.classList.contains('dark');
@@ -20,7 +20,7 @@ export const Mermaid = ({ content }: { content: string }) => {
           securityLevel: 'loose',
           fontFamily: 'inherit',
         });
-        
+
         // Generate a unique ID for each render to avoid collisions
         const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
         const { svg } = await mermaid.render(id, content);
@@ -30,7 +30,9 @@ export const Mermaid = ({ content }: { content: string }) => {
       } catch (error) {
         console.error('Mermaid render error:', error);
         if (mounted) {
-          setSvg(`<pre class="error" style="color:red">Mermaid Error: ${error instanceof Error ? error.message : String(error)}</pre>`);
+          setSvg(
+            `<pre class="error" style="color:red">Mermaid Error: ${error instanceof Error ? error.message : String(error)}</pre>`,
+          );
         }
       }
     };
@@ -49,11 +51,5 @@ export const Mermaid = ({ content }: { content: string }) => {
     };
   }, [content]);
 
-  return (
-    <div 
-      className="mermaid-chart"
-      ref={ref}
-      dangerouslySetInnerHTML={{ __html: svg }} 
-    />
-  );
+  return <div className="mermaid-chart" ref={ref} dangerouslySetInnerHTML={{ __html: svg }} />;
 };

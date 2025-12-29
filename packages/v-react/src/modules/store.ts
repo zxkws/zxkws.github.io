@@ -50,17 +50,14 @@ export const useNoteStore = create<NoteState>()(
       },
       ensureTab(id) {
         set((state) => {
-          const openTabs = state.ui.openTabs.includes(id)
-            ? state.ui.openTabs
-            : [...state.ui.openTabs, id];
+          const openTabs = state.ui.openTabs.includes(id) ? state.ui.openTabs : [...state.ui.openTabs, id];
           return { ui: { ...state.ui, openTabs, activeId: id } };
         });
       },
       closeTab(id) {
         set((state) => {
           const openTabs = state.ui.openTabs.filter((t) => t !== id);
-          const activeId =
-            state.ui.activeId === id ? openTabs.at(-1) : state.ui.activeId;
+          const activeId = state.ui.activeId === id ? openTabs.at(-1) : state.ui.activeId;
           return { ui: { openTabs, activeId }, notes: state.notes };
         });
       },
@@ -68,8 +65,7 @@ export const useNoteStore = create<NoteState>()(
         set((state) => {
           const { [id]: _, ...rest } = state.notes;
           const openTabs = state.ui.openTabs.filter((t) => t !== id);
-          const activeId =
-            state.ui.activeId === id ? openTabs.at(-1) : state.ui.activeId;
+          const activeId = state.ui.activeId === id ? openTabs.at(-1) : state.ui.activeId;
           return { notes: rest, ui: { openTabs, activeId } };
         });
       },
