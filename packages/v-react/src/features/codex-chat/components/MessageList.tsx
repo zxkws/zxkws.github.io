@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 
 import type { ChatMessage } from '../types';
@@ -36,6 +36,7 @@ const IconRefresh = () => (
 );
 
 type MessageListProps = {
+  conversationId: string | null;
   messages: ChatMessage[];
   isGenerating: boolean;
   onRegenerate: () => void;
@@ -57,8 +58,18 @@ const formatTime = (iso: string) => {
 
 const isAssistant = (message: ChatMessage) => message.role === 'assistant';
 
-export default function MessageList({ messages, isGenerating, onRegenerate }: MessageListProps) {
+const DEFAULT_VISIBLE_COUNT = 80;
+const LOAD_MORE_STEP = 60;
+
+export default function MessageList({ conversationId, messages, isGenerating, onRegenerate }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [visibleCount, setVisibleCount] = useState(DEFAULT_VISIBLE_COUNT);
+  const anchorHeightRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setVisibleCount(DEFAULT_VISIBLE_COUNT);
+    anchorHeightRef.current = null;
+  }, [conversationId]);
 
   useEffect(() => {
     const element = scrollRef.current;
@@ -67,6 +78,17 @@ export default function MessageList({ messages, isGenerating, onRegenerate }: Me
     }
     element.scrollTo({ top: element.scrollHeight, behavior: 'smooth' });
   }, [messages.length]);
+
+  useLayoutEffect(() => {
+    const anchorHeight = anchorHeightRef.current;
+    const element = scrollRef.current;
+    if (anchorHeight === null || !element) {
+      return;
+    }
+    const delta = element.scrollHeight - anchorHeight;
+    element.scrollTop += delta;
+    anchorHeightRef.current = null;
+  }, [visibleCount]);
 
   const hasConversation = useMemo(() => messages.length > 0, [messages.length]);
 
@@ -85,6 +107,17 @@ export default function MessageList({ messages, isGenerating, onRegenerate }: Me
 
   const lastAssistantMessage = [...messages].reverse().find(isAssistant);
 
+  const hasMoreHistory = messages.length > visibleCount;
+  const visibleMessages = hasMoreHistory ? messages.slice(-visibleCount) : messages;
+
+  const handleLoadMore = () => {
+    const element = scrollRef.current;
+    if (element) {
+      anchorHeightRef.current = element.scrollHeight;
+    }
+    setVisibleCount((prev) => Math.min(messages.length, prev + LOAD_MORE_STEP));
+  };
+
   const copyToClipboard = async (content: string) => {
     try {
       await navigator.clipboard.writeText(content);
@@ -97,7 +130,14 @@ export default function MessageList({ messages, isGenerating, onRegenerate }: Me
     <div className="message-area">
       <div className="message-scroll" ref={scrollRef}>
         <div className="message-timeline">
-          {messages.map((message) => {
+          {hasMoreHistory && (
+            <div className="message-history-loader">
+              <button type="button" className="secondary-button" onClick={handleLoadMore}>
+                加载更早消息（剩余 {messages.length - visibleMessages.length} 条）
+              </button>
+            </div>
+          )}
+          {visibleMessages.map((message) => {
             const isUser = message.role === 'user';
             const statusClass = message.status === 'error' ? 'message-status error' : 'message-status';
             return (

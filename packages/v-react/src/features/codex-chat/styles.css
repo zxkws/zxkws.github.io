@@ -566,6 +566,11 @@
   padding: 0 28px;
 }
 
+.cc-root .message-history-loader {
+  display: flex;
+  justify-content: center;
+}
+
 .cc-root .message-card {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr);

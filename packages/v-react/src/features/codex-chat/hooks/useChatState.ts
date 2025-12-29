@@ -548,6 +548,54 @@ export const useChatState = (): UseChatStateResult => {
       try {
         let receivedDelta = false;
         let streamErrored = false;
+        let deltaBuffer = '';
+        let deltaFlushTimer: number | null = null;
+
+        const flushBufferedDelta = () => {
+          if (!deltaBuffer) {
+            return;
+          }
+          const delta = deltaBuffer;
+          deltaBuffer = '';
+          setConversations((prev) =>
+            updateConversationState(prev, conversationId, (target) => ({
+              ...target,
+              updatedAt: new Date().toISOString(),
+              messages: target.messages.map((message) =>
+                message.id === assistantMessage.id
+                  ? {
+                      ...message,
+                      status: 'streaming',
+                      content: `${message.content}${delta}`,
+                    }
+                  : message,
+              ),
+            })),
+          );
+        };
+
+        const scheduleDeltaFlush = () => {
+          if (deltaFlushTimer !== null) {
+            return;
+          }
+          if (typeof window === 'undefined') {
+            flushBufferedDelta();
+            return;
+          }
+          deltaFlushTimer = window.setTimeout(() => {
+            deltaFlushTimer = null;
+            flushBufferedDelta();
+          }, 50);
+        };
+
+        const cancelDeltaFlush = () => {
+          if (deltaFlushTimer === null || typeof window === 'undefined') {
+            deltaFlushTimer = null;
+            return;
+          }
+          window.clearTimeout(deltaFlushTimer);
+          deltaFlushTimer = null;
+        };
 
         try {
           await createChatCompletionStream(
@@ -578,24 +626,13 @@ export const useChatState = (): UseChatStateResult => {
               },
               onDelta: (delta) => {
                 receivedDelta = true;
-                setConversations((prev) =>
-                  updateConversationState(prev, conversationId, (target) => ({
-                    ...target,
-                    updatedAt: new Date().toISOString(),
-                    messages: target.messages.map((message) =>
-                      message.id === assistantMessage.id
-                        ? {
-                            ...message,
-                            status: 'streaming',
-                            content: `${message.content}${delta}`,
-                          }
-                        : message,
-                    ),
-                  })),
-                );
+                deltaBuffer += delta;
+                scheduleDeltaFlush();
               },
               onError: (message) => {
                 streamErrored = true;
+                cancelDeltaFlush();
+                flushBufferedDelta();
                 setConversations((prev) =>
                   updateConversationState(prev, conversationId, (target) => ({
                     ...target,
@@ -616,6 +653,8 @@ export const useChatState = (): UseChatStateResult => {
                 if (streamErrored) {
                   return;
                 }
+                cancelDeltaFlush();
+                flushBufferedDelta();
                 setConversations((prev) =>
                   updateConversationState(prev, conversationId, (target) => ({
                     ...target,
@@ -638,8 +677,12 @@ export const useChatState = (): UseChatStateResult => {
         } catch (error) {
           if ((error as DOMException)?.name === 'AbortError') {
             // 已在 cancelGeneration 中处理
+            cancelDeltaFlush();
+            deltaBuffer = '';
             return;
           }
+          cancelDeltaFlush();
+          flushBufferedDelta();
           if (!receivedDelta && error instanceof ChatServiceError) {
             // 降级为非流式请求（兼容旧服务端/代理）
             const response = await createChatCompletion(

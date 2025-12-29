@@ -372,7 +372,12 @@ export default function ChatWorkspace() {
           onTemperatureChange={handleTemperatureChange}
           onToggleTool={handleToggleTool}
         />
-        <MessageList messages={messages} isGenerating={isGenerating} onRegenerate={handleRegenerate} />
+        <MessageList
+          conversationId={activeConversationId}
+          messages={messages}
+          isGenerating={isGenerating}
+          onRegenerate={handleRegenerate}
+        />
         <Composer
           value={draft}
           attachments={attachments}
