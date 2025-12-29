@@ -32,6 +32,7 @@ type ChatHeaderProps = {
   onCancelGeneration: () => void;
   onToggleSidebar: () => void;
   onToggleContextPanel: () => void;
+  onToggleWorkspacePanel: () => void;
   onModelChange: (modelId: string) => void;
   onTemperatureChange: (value: number) => void;
   onToggleTool: (tool: keyof ToolConfig, value: boolean) => void;
@@ -46,6 +47,7 @@ export default function ChatHeader({
   onCancelGeneration,
   onToggleSidebar,
   onToggleContextPanel,
+  onToggleWorkspacePanel,
   onModelChange,
   onTemperatureChange,
   onToggleTool,
@@ -84,6 +86,9 @@ export default function ChatHeader({
           </button>
           <button type="button" className="secondary-button" onClick={onToggleContextPanel}>
             上下文
+          </button>
+          <button type="button" className="secondary-button" onClick={onToggleWorkspacePanel}>
+            工作区
           </button>
           <button type="button" className="secondary-button" onClick={onDuplicateConversation}>
             复制会话

@@ -12,6 +12,17 @@ type MarkdownSegment = { type: 'text'; content: string } | { type: 'code'; conte
 
 const CODE_BLOCK_REGEX = /```([\w-]+)?\n?([\s\S]*?)```/g;
 
+export type CodeBlock = { language?: string; content: string };
+
+export const extractCodeBlocks = (content: string): CodeBlock[] => {
+  const blocks: CodeBlock[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = CODE_BLOCK_REGEX.exec(content)) !== null) {
+    blocks.push({ language: match[1] || undefined, content: (match[2] ?? '').trim() });
+  }
+  return blocks;
+};
+
 const splitSegments = (content: string): MarkdownSegment[] => {
   const segments: MarkdownSegment[] = [];
   let lastIndex = 0;

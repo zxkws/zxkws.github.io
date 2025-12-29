@@ -1018,6 +1018,148 @@
   gap: 8px;
 }
 
+.cc-root .workspace-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--cc-color-58);
+  backdrop-filter: blur(4px);
+  z-index: 6;
+}
+
+.cc-root .workspace-panel {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(520px, 100%);
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-color);
+  box-shadow: -18px 0 40px var(--cc-color-7);
+  transform: translateX(102%);
+  transition: transform var(--transition);
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+}
+
+.cc-root .workspace-panel.is-open {
+  transform: translateX(0);
+}
+
+.cc-root .workspace-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--cc-color-54);
+}
+
+.cc-root .workspace-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cc-root .workspace-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--cc-color-43);
+  background: var(--cc-color-18);
+}
+
+.cc-root .workspace-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cc-root .workspace-section-header h4 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.cc-root .workspace-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cc-root .workspace-editor textarea {
+  border-radius: 14px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-input);
+  padding: 12px;
+  outline: none;
+  font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cc-root .workspace-editor textarea:focus {
+  border-color: var(--cc-color-29);
+  box-shadow: 0 0 0 3px var(--cc-color-24);
+}
+
+.cc-root .workspace-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cc-root .diff-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.cc-root .diff-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cc-root .diff-grid textarea {
+  border-radius: 14px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-input);
+  padding: 12px;
+  outline: none;
+  font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cc-root .workspace-block-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cc-root .workspace-block-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--cc-color-22);
+  background: var(--cc-color-53);
+}
+
+.cc-root .workspace-block-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .cc-root .tooltip {
   position: absolute;
   padding: 8px 10px;
