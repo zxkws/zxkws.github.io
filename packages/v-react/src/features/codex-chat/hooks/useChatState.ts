@@ -9,7 +9,7 @@ import type {
   ToolConfig,
 } from '../types';
 import { DEFAULT_MODEL_ID } from '../constants/models';
-import { createChatCompletion, ChatServiceError } from '../services/chatService';
+import { createChatCompletion, createChatCompletionStream, ChatServiceError } from '../services/chatService';
 import { createId, loadSnapshot, persistSnapshot } from '../utils/storage';
 
 const DEFAULT_TITLE = '新对话';
@@ -321,34 +321,154 @@ export const useChatState = (): UseChatStateResult => {
       setIsGenerating(true);
 
       try {
-        const response = await createChatCompletion(
-          {
-            conversationId,
-            messages: payloadMessages,
-            settings: conversation.settings,
-            tools: conversation.tools,
-            attachments: payloadAttachments,
-            stream: false,
-          },
-          { signal: controller.signal },
-        );
+        let receivedDelta = false;
+        let streamErrored = false;
 
-        setConversations((prev) =>
-          updateConversationState(prev, conversationId, (target) => ({
-            ...target,
-            updatedAt: new Date().toISOString(),
-            messages: target.messages.map((message) =>
-              message.id === assistantMessage.id
-                ? {
-                    ...message,
-                    content: response.message.content,
-                    toolCalls: response.message.toolCalls,
-                    status: response.message.status ?? 'completed',
-                  }
-                : message,
-            ),
-          })),
-        );
+        try {
+          await createChatCompletionStream(
+            {
+              conversationId,
+              messages: payloadMessages,
+              settings: conversation.settings,
+              tools: conversation.tools,
+              attachments: payloadAttachments,
+              stream: true,
+            },
+            {
+              onMeta: () => {
+                setConversations((prev) =>
+                  updateConversationState(prev, conversationId, (target) => ({
+                    ...target,
+                    updatedAt: new Date().toISOString(),
+                    messages: target.messages.map((message) =>
+                      message.id === assistantMessage.id
+                        ? {
+                            ...message,
+                            status: 'streaming',
+                          }
+                        : message,
+                    ),
+                  })),
+                );
+              },
+              onDelta: (delta) => {
+                receivedDelta = true;
+                setConversations((prev) =>
+                  updateConversationState(prev, conversationId, (target) => ({
+                    ...target,
+                    updatedAt: new Date().toISOString(),
+                    messages: target.messages.map((message) =>
+                      message.id === assistantMessage.id
+                        ? {
+                            ...message,
+                            status: 'streaming',
+                            content: `${message.content}${delta}`,
+                          }
+                        : message,
+                    ),
+                  })),
+                );
+              },
+              onError: (message) => {
+                streamErrored = true;
+                setConversations((prev) =>
+                  updateConversationState(prev, conversationId, (target) => ({
+                    ...target,
+                    updatedAt: new Date().toISOString(),
+                    messages: target.messages.map((item) =>
+                      item.id === assistantMessage.id
+                        ? {
+                            ...item,
+                            status: 'error',
+                            content: message,
+                          }
+                        : item,
+                    ),
+                  })),
+                );
+              },
+              onDone: () => {
+                if (streamErrored) {
+                  return;
+                }
+                setConversations((prev) =>
+                  updateConversationState(prev, conversationId, (target) => ({
+                    ...target,
+                    updatedAt: new Date().toISOString(),
+                    messages: target.messages.map((item) =>
+                      item.id === assistantMessage.id
+                        ? {
+                            ...item,
+                            status: 'completed',
+                          }
+                        : item,
+                    ),
+                  })),
+                );
+              },
+            },
+            { signal: controller.signal },
+          );
+          return;
+        } catch (error) {
+          if ((error as DOMException)?.name === 'AbortError') {
+            // 已在 cancelGeneration 中处理
+            return;
+          }
+          if (!receivedDelta && error instanceof ChatServiceError) {
+            // 降级为非流式请求（兼容旧服务端/代理）
+            const response = await createChatCompletion(
+              {
+                conversationId,
+                messages: payloadMessages,
+                settings: conversation.settings,
+                tools: conversation.tools,
+                attachments: payloadAttachments,
+                stream: false,
+              },
+              { signal: controller.signal },
+            );
+
+            setConversations((prev) =>
+              updateConversationState(prev, conversationId, (target) => ({
+                ...target,
+                updatedAt: new Date().toISOString(),
+                messages: target.messages.map((message) =>
+                  message.id === assistantMessage.id
+                    ? {
+                        ...message,
+                        content: response.message.content,
+                        toolCalls: response.message.toolCalls,
+                        status: response.message.status ?? 'completed',
+                      }
+                    : message,
+                ),
+              })),
+            );
+            return;
+          }
+          if (receivedDelta) {
+            const friendlyMessage =
+              error instanceof ChatServiceError ? error.friendlyMessage : '流式生成连接中断，请稍后重试。';
+            setConversations((prev) =>
+              updateConversationState(prev, conversationId, (target) => ({
+                ...target,
+                updatedAt: new Date().toISOString(),
+                messages: target.messages.map((item) =>
+                  item.id === assistantMessage.id
+                    ? {
+                        ...item,
+                        status: 'error',
+                        content: `${item.content}\n\n${friendlyMessage}`,
+                      }
+                    : item,
+                ),
+              })),
+            );
+            return;
+          }
+          throw error;
+        }
       } catch (error) {
         if ((error as DOMException)?.name === 'AbortError') {
           // 已在 cancelGeneration 中处理
