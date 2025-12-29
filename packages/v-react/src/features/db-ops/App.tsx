@@ -65,6 +65,27 @@ type DbSyncRun = {
   cts?: string | Date;
 };
 
+type DbSyncRunProgress = {
+  phase?: string;
+  stage?: string;
+  tablesTotal?: number;
+  tablesDone?: number;
+  currentTable?: string;
+  currentTableRowsCopied?: number;
+  currentTableRowsEstimate?: number;
+  rowsCopied?: number;
+  rowsTotalEstimate?: number;
+  collectionsTotal?: number;
+  collectionsDone?: number;
+  currentCollection?: string;
+  currentCollectionDocsCopied?: number;
+  docsCopied?: number;
+  keysCopied?: number;
+  elapsedMs?: number;
+  etaFinishedAt?: string;
+  updatedAt?: string;
+};
+
 type CheckResult = {
   id: string;
   name: string;
@@ -174,9 +195,10 @@ const maskAddressForDisplay = (address: string) => {
 };
 
 const formatDuration = (startedAt?: string | Date, finishedAt?: string | Date) => {
-  if (!startedAt || !finishedAt) return '--';
+  if (!startedAt) return '--';
   const start = typeof startedAt === 'string' ? new Date(startedAt) : startedAt;
-  const finish = typeof finishedAt === 'string' ? new Date(finishedAt) : finishedAt;
+  const finishRaw = finishedAt ?? new Date();
+  const finish = typeof finishRaw === 'string' ? new Date(finishRaw) : finishRaw;
   const ms = finish.getTime() - start.getTime();
   if (Number.isNaN(ms) || ms < 0) return '--';
   if (ms < 1000) return `${ms}ms`;
@@ -185,6 +207,53 @@ const formatDuration = (startedAt?: string | Date, finishedAt?: string | Date) =
   const min = Math.floor(sec / 60);
   const rest = sec % 60;
   return `${min}m${rest}s`;
+};
+
+const extractRunProgress = (metrics?: Record<string, unknown>): DbSyncRunProgress | null => {
+  if (!metrics || typeof metrics !== 'object') return null;
+  const raw = (metrics as any).progress ?? metrics;
+  if (!raw || typeof raw !== 'object') return null;
+  return raw as DbSyncRunProgress;
+};
+
+const formatCount = (value?: unknown) => {
+  const num = typeof value === 'number' ? value : typeof value === 'string' && value.trim() ? Number(value) : NaN;
+  if (!Number.isFinite(num)) return '--';
+  return num.toLocaleString('zh-CN');
+};
+
+const formatProgressLine = (run: DbSyncRun) => {
+  const p = extractRunProgress(run.metrics);
+  if (!p) return null;
+
+  const phaseLabel =
+    p.phase === 'mysql' ? 'MySQL' : p.phase === 'mongodb' ? 'MongoDB' : p.phase === 'redis' ? 'Redis' : p.phase;
+  const parts: string[] = [];
+  if (phaseLabel) parts.push(String(phaseLabel));
+  if (p.currentTable) parts.push(String(p.currentTable));
+  if (p.currentCollection) parts.push(String(p.currentCollection));
+
+  if (typeof p.tablesTotal === 'number') {
+    parts.push(`表 ${formatCount(p.tablesDone ?? 0)}/${formatCount(p.tablesTotal)}`);
+  } else if (typeof p.collectionsTotal === 'number') {
+    parts.push(`集合 ${formatCount(p.collectionsDone ?? 0)}/${formatCount(p.collectionsTotal)}`);
+  }
+
+  if (typeof p.rowsTotalEstimate === 'number') {
+    parts.push(`行 ${formatCount(p.rowsCopied ?? 0)}/${formatCount(p.rowsTotalEstimate)}`);
+  } else if (typeof p.rowsCopied === 'number') {
+    parts.push(`行 ${formatCount(p.rowsCopied)}`);
+  } else if (typeof p.docsCopied === 'number') {
+    parts.push(`文档 ${formatCount(p.docsCopied)}`);
+  } else if (typeof p.keysCopied === 'number') {
+    parts.push(`keys ${formatCount(p.keysCopied)}`);
+  }
+
+  if (p.etaFinishedAt) {
+    parts.push(`预计结束 ${formatTime(p.etaFinishedAt)}`);
+  }
+
+  return parts.join(' · ');
 };
 
 const unwrap = <T,>(payload: unknown): T => {
@@ -221,6 +290,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
   const [runPageNo, setRunPageNo] = useState(1);
   const [runPageSize] = useState(10);
   const [runStatusFilter, setRunStatusFilter] = useState<RunStatusFilter>('all');
+  const [runningRuns, setRunningRuns] = useState<Record<string, DbSyncRun>>({});
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -256,6 +326,25 @@ export default function App({ basename: _basename }: { basename?: string }) {
       }
       // 同步任务属于增强功能，失败时不阻塞主功能
       setError((prev) => prev ?? (err instanceof Error ? err.message : '加载同步任务失败'));
+    }
+  }, [client]);
+
+  const loadRunningRuns = useCallback(async () => {
+    try {
+      const data = unwrap<{ items: DbSyncRun[]; total: number; pageNo: number; pageSize: number }>(
+        await client('/v1/db-sync/runs/list', { status: 'running', pageNo: 1, pageSize: 50 }),
+      );
+      const map: Record<string, DbSyncRun> = {};
+      (data.items || []).forEach((item) => {
+        map[item.taskId] = item;
+      });
+      setRunningRuns(map);
+    } catch (err) {
+      if (getErrorStatus(err) === 401) {
+        setAuthState('need-login');
+        return;
+      }
+      // running runs 获取失败不影响主功能
     }
   }, [client]);
 
@@ -299,8 +388,18 @@ export default function App({ basename: _basename }: { basename?: string }) {
     if (authState === 'ok') {
       loadAssets();
       loadTasks();
+      loadRunningRuns();
     }
-  }, [authState, loadAssets, loadTasks]);
+  }, [authState, loadAssets, loadTasks, loadRunningRuns]);
+
+  useEffect(() => {
+    if (authState !== 'ok') return;
+    if (typeof window === 'undefined') return;
+    const timer = window.setInterval(() => {
+      loadRunningRuns();
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [authState, loadRunningRuns]);
 
   useEffect(() => {
     if (selectedAssetId && !assets.some((item) => item.id === selectedAssetId)) {
@@ -994,7 +1093,14 @@ export default function App({ basename: _basename }: { basename?: string }) {
               <tbody>
                 {tasks.map((t) => {
                   const selected = t.id === selectedTaskId;
-                  const busy = taskBusyId === t.id;
+                  const runningRun = runningRuns[t.id];
+                  const busy = taskBusyId === t.id || Boolean(runningRun);
+                  const progressLine = runningRun ? formatProgressLine(runningRun) : null;
+                  const runningSummary = runningRun
+                    ? `执行中：开始 ${formatTime(runningRun.startedAt)} · 已耗时 ${formatDuration(runningRun.startedAt)}${
+                        progressLine ? ` · ${progressLine}` : ''
+                      }`
+                    : null;
                   const sourceName = getAssetName(t.sourceAssetId);
                   const targetName = getAssetName(t.targetAssetId);
                   const scheduleText =
@@ -1011,6 +1117,11 @@ export default function App({ basename: _basename }: { basename?: string }) {
                         <div className="sub ellipsis" title={t.id}>
                           {t.id}
                         </div>
+                        {runningSummary && (
+                          <div className="sub ellipsis" title={runningSummary}>
+                            {runningSummary}
+                          </div>
+                        )}
                       </td>
                       <td>
                         <span className={badgeClass(t.type)}>{t.type}</span>
@@ -1113,7 +1224,14 @@ export default function App({ basename: _basename }: { basename?: string }) {
           );
         }
 
-        const busy = taskBusyId === selectedTask.id;
+        const runningRun = runningRuns[selectedTask.id];
+        const busy = taskBusyId === selectedTask.id || Boolean(runningRun);
+        const progressLine = runningRun ? formatProgressLine(runningRun) : null;
+        const runningSummary = runningRun
+          ? `执行中：开始 ${formatTime(runningRun.startedAt)} · 已耗时 ${formatDuration(runningRun.startedAt)}${
+              progressLine ? ` · ${progressLine}` : ''
+            }`
+          : null;
         const sourceName = getAssetName(selectedTask.sourceAssetId);
         const targetName = getAssetName(selectedTask.targetAssetId);
         const totalPages = Math.max(1, Math.ceil(runTotal / runPageSize));
@@ -1168,6 +1286,8 @@ export default function App({ basename: _basename }: { basename?: string }) {
                       查看记录
                     </button>
                   </div>
+
+                  {runningSummary && <div className="panel muted">{runningSummary}</div>}
 
                   <div className="kv">
                     <div className="k">状态</div>
@@ -1305,11 +1425,24 @@ export default function App({ basename: _basename }: { basename?: string }) {
                                 <div className="ellipsis" title={r.message || ''}>
                                   {r.message || '--'}
                                 </div>
-                                {r.metrics && (
-                                  <div className="sub mono ellipsis" title={JSON.stringify(r.metrics)}>
-                                    {JSON.stringify(r.metrics)}
-                                  </div>
-                                )}
+                                {(() => {
+                                  const progressLine = formatProgressLine(r);
+                                  if (progressLine) {
+                                    return (
+                                      <div className="sub mono ellipsis" title={progressLine}>
+                                        {progressLine}
+                                      </div>
+                                    );
+                                  }
+                                  if (r.metrics) {
+                                    return (
+                                      <div className="sub mono ellipsis" title={JSON.stringify(r.metrics)}>
+                                        {JSON.stringify(r.metrics)}
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })()}
                               </td>
                             </tr>
                           ))}
@@ -1532,12 +1665,19 @@ export default function App({ basename: _basename }: { basename?: string }) {
             <div className="panel muted">暂无同步任务。</div>
           ) : (
             <div className="list">
-              {tasks.map((t) => {
-                const busy = taskBusyId === t.id;
-                const source = assets.find((a) => a.id === t.sourceAssetId);
-                const target = assets.find((a) => a.id === t.targetAssetId);
-                return (
-                  <div className="card" key={t.id}>
+	              {tasks.map((t) => {
+	                const runningRun = runningRuns[t.id];
+	                const busy = taskBusyId === t.id || Boolean(runningRun);
+	                const progressLine = runningRun ? formatProgressLine(runningRun) : null;
+	                const runningSummary = runningRun
+	                  ? `执行中：开始 ${formatTime(runningRun.startedAt)} · 已耗时 ${formatDuration(runningRun.startedAt)}${
+	                      progressLine ? ` · ${progressLine}` : ''
+	                    }`
+	                  : null;
+	                const source = assets.find((a) => a.id === t.sourceAssetId);
+	                const target = assets.find((a) => a.id === t.targetAssetId);
+	                return (
+	                  <div className="card" key={t.id}>
                     <div className="card-head">
                       <div className="card-title">
                         <span className={badgeClass(t.type)}>{t.type}</span>
@@ -1557,10 +1697,11 @@ export default function App({ basename: _basename }: { basename?: string }) {
                       </div>
                     </div>
 
-                    <div className="card-body">
-                      <div className="grid">
-                        <div>
-                          <p className="label">调度</p>
+	                    <div className="card-body">
+	                      {runningSummary && <div className="panel muted">{runningSummary}</div>}
+	                      <div className="grid">
+	                        <div>
+	                          <p className="label">调度</p>
                           <p className="value">
                             {t.scheduleType === 'fixed' ? `固定间隔：${t.scheduleValue || '--'} 分钟` : `Cron：${t.scheduleValue || '--'}`}
                           </p>
