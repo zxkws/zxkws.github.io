@@ -83,6 +83,10 @@ const staticNavItems: NavItem[] = [
     name: '系统设计',
     url: 'https://learning-guide.gitbook.io/system-design-interview/xi-tong-she-ji-mian-shi-nei-mu-zhi-nan-di-yi-juan/chapter-01-scale-from-zero-to-millions-of-users',
   },
+  {
+    name: 'learngraph',
+    url: 'https://www.learngraph.online/',
+  }
 ].map((item, index) => ({ ...item, id: index + 1 }));
 
 const storedItems = ref<NavItem[]>([]);
