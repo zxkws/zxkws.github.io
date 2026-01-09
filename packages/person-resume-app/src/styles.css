@@ -46,9 +46,9 @@
     @apply !shadow-none !border-0 !p-0 !rounded-none;
   }
 
-  /* Ensure links are readable */
+  /* Ensure links do not introduce unexpected colors in print */
   a {
-    @apply !text-black !underline !decoration-indigo-500 !underline-offset-2;
+    @apply !text-black !no-underline;
   }
 
   /* Hide dark mode adjustments */

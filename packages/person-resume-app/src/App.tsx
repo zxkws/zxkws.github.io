@@ -93,42 +93,82 @@ function normalizeResumeData(raw: unknown): ResumeData {
   };
 }
 
+function clearResumeCache(reason: string, savedVersion: string | null, currentVersion: string) {
+  console.warn(
+    `[Resume] ${reason}! Saved: ${savedVersion ?? 'null'}, Current: ${currentVersion}. Clearing cache...`,
+  );
+
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(VERSION_KEY);
+
+    // Legacy keys (in case older builds used different names)
+    localStorage.removeItem('resumeData');
+    localStorage.removeItem('resume-data-v1');
+
+    localStorage.setItem(VERSION_KEY, currentVersion);
+  } catch (err) {
+    console.error('[Resume] Failed to clear localStorage:', err);
+  }
+}
+
 function loadResumeDataFromStorage(): ResumeData {
   const currentVersion = String(RESUME_DATA_VERSION);
 
   try {
     const savedVersion = localStorage.getItem(VERSION_KEY);
+    const saved = localStorage.getItem(STORAGE_KEY);
 
-    if (savedVersion !== currentVersion) {
-      console.log(`[Resume] Version mismatch (saved: ${savedVersion}, current: ${currentVersion}), clearing cache...`);
-      localStorage.removeItem(STORAGE_KEY);
+    console.info(
+      `[Resume] Load storage: savedVersion=${savedVersion ?? 'null'}, currentVersion=${currentVersion}, hasPayload=${
+        saved ? 'yes' : 'no'
+      }`,
+    );
+
+    if (!savedVersion && !saved) {
+      console.info('[Resume] No cached resume found, using defaults.');
       localStorage.setItem(VERSION_KEY, currentVersion);
-      return cloneResumeData(defaultResumeData);
+      return normalizeResumeData(defaultResumeData);
     }
 
-    const saved = localStorage.getItem(STORAGE_KEY);
+    if (savedVersion !== currentVersion) {
+      clearResumeCache('Version mismatch', savedVersion, currentVersion);
+      return normalizeResumeData(defaultResumeData);
+    }
+
     if (!saved) {
+      console.warn('[Resume] Version matches but resume payload missing, using defaults.');
       localStorage.setItem(VERSION_KEY, currentVersion);
-      return cloneResumeData(defaultResumeData);
+      return normalizeResumeData(defaultResumeData);
     }
 
     return normalizeResumeData(JSON.parse(saved));
-  } catch {
+  } catch (err) {
+    console.error('[Resume] Error loading data:', err);
     try {
+      console.warn('[Resume] Reset localStorage due to load error (localStorage.clear).');
+      localStorage.clear();
       localStorage.setItem(VERSION_KEY, currentVersion);
-    } catch {
-      // ignore
+    } catch (resetErr) {
+      console.error('[Resume] Failed to reset localStorage:', resetErr);
     }
-    return cloneResumeData(defaultResumeData);
+    return normalizeResumeData(defaultResumeData);
   }
 }
 
 function saveResumeDataToStorage(data: ResumeData) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const payload = JSON.stringify(data);
+    localStorage.setItem(STORAGE_KEY, payload);
     localStorage.setItem(VERSION_KEY, String(RESUME_DATA_VERSION));
-  } catch {
-    // ignore
+
+    if (import.meta.env.DEV) {
+      console.debug(
+        `[Resume] Saved to localStorage: version=${String(RESUME_DATA_VERSION)}, bytes=${payload.length}`,
+      );
+    }
+  } catch (err) {
+    console.error('[Resume] Error saving data:', err);
   }
 }
 
@@ -172,6 +212,10 @@ export default function App() {
   const importInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    console.info(`[Resume] App mounted. RESUME_DATA_VERSION=${String(RESUME_DATA_VERSION)}`);
+  }, []);
+
+  useEffect(() => {
     saveResumeDataToStorage(resumeData);
   }, [resumeData]);
 
@@ -202,7 +246,8 @@ export default function App() {
   };
 
   const handlePrint = () => {
-    window.print();
+    console.info('[Resume] Print requested.');
+    window.requestAnimationFrame(() => window.print());
   };
 
   const handleResetToDefault = () => {
@@ -213,8 +258,10 @@ export default function App() {
     try {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(VERSION_KEY);
-    } catch {
-      // ignore
+      localStorage.setItem(VERSION_KEY, String(RESUME_DATA_VERSION));
+      console.info(`[Resume] Reset to defaults. ${VERSION_KEY}=${String(RESUME_DATA_VERSION)}`);
+    } catch (err) {
+      console.error('[Resume] Failed to reset localStorage:', err);
     }
 
     setResumeData(cloneResumeData(defaultResumeData));
