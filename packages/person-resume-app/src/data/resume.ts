@@ -97,8 +97,7 @@ export const experiences: Experience[] = [
     projects: [
       {
         name: '企业级大模型对话与标注平台',
-        description:
-          '服务内部 AI 团队的对话数据标注与质量评估系统，支持千万级对话数据管理与多角色协作流程。',
+        description: '服务内部 AI 团队的对话数据标注与质量评估系统，支持千万级对话数据管理与多角色协作流程。',
         responsibilities: [
           '主导前端架构设计，采用微前端方案兼容 Vue2 遗留系统与 Vue3 新特性，保障业务连续迭代',
           '设计并实现复杂报表系统的缓存与状态还原方案，支持筛选/分页/排序/钻取等多维度配置',
@@ -198,19 +197,6 @@ export const experiences: Experience[] = [
         ],
         tech: ['Vue', 'ECharts', '数据可视化', 'Excel 导入导出'],
       },
-    ],
-    highlights: [
-      '推动工程化与发布规范落地，提升迭代效率与线上稳定性',
-      '与产品/算法/后端协作推进指标口径统一，提升数据可信度与分析一致性',
-    ],
-    tech: ['React', 'Vue', 'Node.js', 'CI/CD', 'ECharts', 'Data Visualization'],
-  },
-  {
-    period: '2019.11 – 2021.01',
-    org: '某企业服务公司（PDM 系统）',
-    role: '前端工程师',
-    overview: '负责 PDM 系统通用报表能力建设，以组件化/配置化方式提升报表交付效率。',
-    projects: [
       {
         name: 'PDM 系统通用报表组件库',
         description: '产品数据管理系统的通用报表组件库，支持复杂报表配置、筛选、分组与导出等能力。',
@@ -227,9 +213,10 @@ export const experiences: Experience[] = [
       },
     ],
     highlights: [
-      '持续推进团队协作流程优化，提升代码质量与交付可控性',
+      '推动工程化与发布规范落地，提升迭代效率与线上稳定性',
+      '与产品/算法/后端协作推进指标口径统一，提升数据可信度与分析一致性',
     ],
-    tech: ['Vue', 'Element UI', 'Engineering Standards'],
+    tech: ['React', 'Vue', 'Node.js', 'CI/CD', 'ECharts', 'Data Visualization'],
   },
 ];
 
