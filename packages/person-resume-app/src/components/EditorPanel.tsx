@@ -1,6 +1,6 @@
 import { Plus, Trash2 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import type { Experience, ResumeData, SkillGroup } from '../data/resume';
+import type { Experience, Project, ResumeData, SkillGroup } from '../data/resume';
 
 type Props = {
   data: ResumeData;
@@ -12,6 +12,14 @@ const inputClassName =
 
 const textareaClassName =
   'w-full min-h-[88px] rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400';
+
+const emptyProject: Project = {
+  name: '',
+  description: '',
+  responsibilities: [''],
+  achievements: [''],
+  tech: [''],
+};
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -230,13 +238,15 @@ export default function EditorPanel({ data, onChange }: Props) {
 
       <Section title="工作经历">
         <div className="flex items-center justify-between gap-2">
-          <div className="text-[12px] text-slate-500 dark:text-slate-300">时间 / 公司 / 职位 / 亮点 / 技术栈</div>
+          <div className="text-[12px] text-slate-500 dark:text-slate-300">
+            时间 / 公司 / 职位 / 职责概述 / 项目 / 亮点 / 技术栈
+          </div>
           <AddButton
             label="添加经历"
             onClick={() =>
               updateExperiences([
                 ...data.experiences,
-                { period: '', org: '', role: '', highlights: [''], tech: [''] },
+                { period: '', org: '', role: '', overview: '', projects: [], highlights: [''], tech: [''] },
               ])
             }
           />
@@ -279,7 +289,152 @@ export default function EditorPanel({ data, onChange }: Props) {
                 </Field>
               </div>
 
+              <div className="mt-3">
+                <Field label="职责概述">
+                  <textarea
+                    className={textareaClassName}
+                    value={exp.overview}
+                    placeholder="1-2 句话概述该阶段主要职责与影响范围"
+                    onChange={(e) =>
+                      updateExperiences(updateAt(data.experiences, idx, { ...exp, overview: e.target.value }))
+                    }
+                  />
+                </Field>
+              </div>
+
               <div className="mt-3 space-y-3">
+                <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="text-[12px] font-semibold text-slate-700 dark:text-slate-200">项目</div>
+                    <AddButton
+                      label="添加项目"
+                      onClick={() =>
+                        updateExperiences(
+                          updateAt(data.experiences, idx, {
+                            ...exp,
+                            projects: [...exp.projects, { ...emptyProject }],
+                          }),
+                        )
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    {exp.projects.map((proj, projIndex) => (
+                      <div
+                        key={projIndex}
+                        className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/40 p-3"
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="text-[12px] font-bold text-slate-700 dark:text-slate-200">
+                            项目 #{projIndex + 1}
+                          </div>
+                          <IconButton
+                            title="删除项目"
+                            onClick={() =>
+                              updateExperiences(
+                                updateAt(data.experiences, idx, {
+                                  ...exp,
+                                  projects: removeAt(exp.projects, projIndex),
+                                }),
+                              )
+                            }
+                          >
+                            <Trash2 size={14} />
+                          </IconButton>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <Field label="项目名称">
+                            <input
+                              className={inputClassName}
+                              value={proj.name}
+                              placeholder="例如：云监控微前端架构改造"
+                              onChange={(e) =>
+                                updateExperiences(
+                                  updateAt(data.experiences, idx, {
+                                    ...exp,
+                                    projects: updateAt(exp.projects, projIndex, { ...proj, name: e.target.value }),
+                                  }),
+                                )
+                              }
+                            />
+                          </Field>
+                        </div>
+
+                        <div className="mt-3">
+                          <Field label="项目描述">
+                            <textarea
+                              className={textareaClassName}
+                              value={proj.description}
+                              placeholder="背景、规模、用户/业务价值（可写 1-2 句）"
+                              onChange={(e) =>
+                                updateExperiences(
+                                  updateAt(data.experiences, idx, {
+                                    ...exp,
+                                    projects: updateAt(exp.projects, projIndex, {
+                                      ...proj,
+                                      description: e.target.value,
+                                    }),
+                                  }),
+                                )
+                              }
+                            />
+                          </Field>
+                        </div>
+
+                        <div className="mt-3 space-y-3">
+                          <StringListEditor
+                            label="负责内容"
+                            items={proj.responsibilities}
+                            placeholder="我负责了什么"
+                            addLabel="添加一条"
+                            onChange={(responsibilities) =>
+                              updateExperiences(
+                                updateAt(data.experiences, idx, {
+                                  ...exp,
+                                  projects: updateAt(exp.projects, projIndex, { ...proj, responsibilities }),
+                                }),
+                              )
+                            }
+                          />
+
+                          <StringListEditor
+                            label="成果亮点"
+                            items={proj.achievements}
+                            placeholder="用量化数据表达影响"
+                            addLabel="添加一条"
+                            onChange={(achievements) =>
+                              updateExperiences(
+                                updateAt(data.experiences, idx, {
+                                  ...exp,
+                                  projects: updateAt(exp.projects, projIndex, { ...proj, achievements }),
+                                }),
+                              )
+                            }
+                          />
+
+                          <StringListEditor
+                            label="技术栈"
+                            items={proj.tech}
+                            placeholder="例如：React / Webpack 5 / Module Federation"
+                            addLabel="添加技术项"
+                            onChange={(tech) =>
+                              updateExperiences(
+                                updateAt(data.experiences, idx, {
+                                  ...exp,
+                                  projects: updateAt(exp.projects, projIndex, { ...proj, tech }),
+                                }),
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    {!exp.projects.length && <div className="text-[12px] text-slate-400">暂无项目</div>}
+                  </div>
+                </div>
+
                 <StringListEditor
                   label="亮点"
                   items={exp.highlights}

@@ -36,7 +36,6 @@ function normalizeResumeData(raw: unknown): ResumeData {
 
   const skillGroupsRaw = Array.isArray(raw.skillGroups) ? raw.skillGroups : defaults.skillGroups;
   const experiencesRaw = Array.isArray(raw.experiences) ? raw.experiences : defaults.experiences;
-  const projectsRaw = Array.isArray(raw.projects) ? raw.projects : defaults.projects;
   const educationRaw = isRecord(raw.education) ? raw.education : {};
 
   return {
@@ -58,23 +57,32 @@ function normalizeResumeData(raw: unknown): ResumeData {
         items: asStringArray(groupRaw.items, []),
       };
     }),
-    experiences: (Array.isArray(experiencesRaw) ? experiencesRaw : []).map((e) => {
+    experiences: (Array.isArray(experiencesRaw) ? experiencesRaw : []).map((e, index) => {
       const expRaw = isRecord(e) ? e : {};
+
+      const fallbackExp = defaults.experiences[index];
+
+      const projectsRaw = Array.isArray(expRaw.projects) ? expRaw.projects : fallbackExp?.projects ?? [];
+
       return {
-        period: asString(expRaw.period, ''),
-        org: asString(expRaw.org, ''),
-        role: asString(expRaw.role, ''),
-        highlights: asStringArray(expRaw.highlights, []),
-        tech: asStringArray(expRaw.tech, []),
-      };
-    }),
-    projects: (Array.isArray(projectsRaw) ? projectsRaw : []).map((p) => {
-      const projRaw = isRecord(p) ? p : {};
-      return {
-        name: asString(projRaw.name, ''),
-        focus: asString(projRaw.focus, ''),
-        outcomes: asStringArray(projRaw.outcomes, []),
-        stack: asStringArray(projRaw.stack, []),
+        period: asString(expRaw.period, fallbackExp?.period ?? ''),
+        org: asString(expRaw.org, fallbackExp?.org ?? ''),
+        role: asString(expRaw.role, fallbackExp?.role ?? ''),
+        overview: asString(expRaw.overview, fallbackExp?.overview ?? ''),
+        projects: projectsRaw
+          .filter((p) => isRecord(p))
+          .map((p) => {
+            const projRaw = p as Record<string, unknown>;
+            return {
+              name: asString(projRaw.name, ''),
+              description: asString(projRaw.description, ''),
+              responsibilities: asStringArray(projRaw.responsibilities, []),
+              achievements: asStringArray(projRaw.achievements, []),
+              tech: asStringArray(projRaw.tech, []),
+            };
+          }),
+        highlights: asStringArray(expRaw.highlights, fallbackExp?.highlights ?? []),
+        tech: asStringArray(expRaw.tech, fallbackExp?.tech ?? []),
       };
     }),
     education: {

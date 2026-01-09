@@ -10,6 +10,10 @@ function joinClassName(...parts: Array<string | undefined | false>) {
   return parts.filter(Boolean).join(' ');
 }
 
+function nonEmpty(value: string) {
+  return value.trim().length > 0;
+}
+
 export default function ResumePreview({ data, className }: Props) {
   const githubHref = data.profile.contact.github
     ? data.profile.contact.github.startsWith('http')
@@ -107,7 +111,7 @@ export default function ResumePreview({ data, className }: Props) {
                   {group.name}
                 </h3>
                 <ul className="space-y-0.5">
-                  {group.items.map((skill, i) => (
+                  {group.items.filter(nonEmpty).map((skill, i) => (
                     <li
                       key={i}
                       className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug print:text-black"
@@ -130,30 +134,101 @@ export default function ResumePreview({ data, className }: Props) {
             {data.experiences.map((exp, idx) => (
               <div
                 key={idx}
-                className="relative pl-3 border-l border-slate-200 dark:border-slate-700 print:border-l-0 print:pl-0"
+                className="relative pl-3 border-l border-slate-200 dark:border-slate-700 print:border-l-0 print:pl-0 pb-4 border-b border-slate-200 dark:border-slate-700 print:border-slate-800 last:border-b-0"
               >
                 <div className="absolute -left-[6px] top-1 w-2.5 h-2.5 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-400 print:hidden" />
 
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1">
-                  <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white text-[13px] print:text-black">{exp.org}</h3>
+                <div>
+                  {/* 第一行：公司 + 时间（主体信息，加粗突出） */}
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-1">
+                    <h3 className="text-[14px] font-bold text-slate-900 dark:text-white print:text-black">
+                      {exp.org}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono print:text-black">
+                      {exp.period}
+                    </p>
+                  </div>
+
+                  {/* 第二行：职位 + 职责概述（次要信息，字体缩小） */}
+                  <div className="mb-2">
                     <p className="text-[12px] text-slate-700 dark:text-slate-200 font-semibold print:text-black">
                       {exp.role}
                     </p>
+                    {exp.overview && (
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug mt-1 print:text-black">
+                        {exp.overview}
+                      </p>
+                    )}
                   </div>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-300 font-mono tracking-wide print:text-black">
-                    {exp.period}
-                  </p>
                 </div>
 
+                {!!exp.projects?.length && (
+                  <div className="mt-3 space-y-2 pl-3 print:pl-0">
+                    {exp.projects.map((proj, projIndex) => (
+                      <div
+                        key={projIndex}
+                        className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/30 p-3 print:bg-transparent print:border-slate-300"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+                          <h4 className="text-[12px] font-bold text-slate-900 dark:text-white print:text-black">
+                            {proj.name}
+                          </h4>
+                        </div>
+                        {proj.description && (
+                          <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-300 leading-snug print:text-black">
+                            {proj.description}
+                          </p>
+                        )}
+
+                        <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <div className="text-[10px] font-bold text-slate-700 dark:text-slate-200 mb-1 print:text-black">
+                              负责内容
+                            </div>
+                            <ul className="list-disc list-outside ml-4 space-y-0.5 text-[11px] text-slate-700 dark:text-slate-300 leading-snug print:text-black">
+                              {proj.responsibilities.filter(nonEmpty).map((item, i) => (
+                                <li key={i}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          <div>
+                            <div className="text-[10px] font-bold text-slate-700 dark:text-slate-200 mb-1 print:text-black">
+                              成果亮点
+                            </div>
+                            <ul className="list-disc list-outside ml-4 space-y-0.5 text-[11px] text-slate-700 dark:text-slate-300 leading-snug print:text-black">
+                              {proj.achievements.filter(nonEmpty).map((item, i) => (
+                                <li key={i}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+
+                        {!!proj.tech?.filter(nonEmpty).length && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {proj.tech.filter(nonEmpty).map((t, i) => (
+                              <span
+                                key={i}
+                                className="pill print:border-slate-300 print:text-black print:bg-transparent"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <ul className="mt-2 list-disc list-outside ml-4 space-y-0.5 text-[12px] text-slate-700 dark:text-slate-300 leading-snug print:text-black">
-                  {exp.highlights.map((h, i) => (
+                  {exp.highlights.filter(nonEmpty).map((h, i) => (
                     <li key={i}>{h}</li>
                   ))}
                 </ul>
 
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {exp.tech.map((t, i) => (
+                  {exp.tech.filter(nonEmpty).map((t, i) => (
                     <span key={i} className="pill print:border-slate-300 print:text-black print:bg-transparent">
                       {t}
                     </span>
