@@ -62,7 +62,7 @@ function normalizeResumeData(raw: unknown): ResumeData {
 
       const fallbackExp = defaults.experiences[index];
 
-      const projectsRaw = Array.isArray(expRaw.projects) ? expRaw.projects : fallbackExp?.projects ?? [];
+      const projectsRaw = Array.isArray(expRaw.projects) ? expRaw.projects : (fallbackExp?.projects ?? []);
 
       return {
         period: asString(expRaw.period, fallbackExp?.period ?? ''),
@@ -100,9 +100,7 @@ function loadResumeDataFromStorage(): ResumeData {
     const savedVersion = localStorage.getItem(VERSION_KEY);
 
     if (savedVersion !== currentVersion) {
-      console.log(
-        `[Resume] Version mismatch (saved: ${savedVersion}, current: ${currentVersion}), clearing cache...`,
-      );
+      console.log(`[Resume] Version mismatch (saved: ${savedVersion}, current: ${currentVersion}), clearing cache...`);
       localStorage.removeItem(STORAGE_KEY);
       localStorage.setItem(VERSION_KEY, currentVersion);
       return cloneResumeData(defaultResumeData);
@@ -155,15 +153,7 @@ function downloadJson(data: ResumeData) {
   URL.revokeObjectURL(url);
 }
 
-function ToolbarButton({
-  onClick,
-  label,
-  children,
-}: {
-  onClick: () => void;
-  label: string;
-  children: ReactNode;
-}) {
+function ToolbarButton({ onClick, label, children }: { onClick: () => void; label: string; children: ReactNode }) {
   return (
     <button
       type="button"
@@ -274,24 +264,10 @@ export default function App() {
               </div>
             </div>
           </div>
-
-          <footer className="mt-6 text-center text-slate-400 text-sm print:hidden">
-            <p>
-              Press <kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200">Cmd/Ctrl + P</kbd> to save
-              as PDF
-            </p>
-          </footer>
         </div>
       ) : (
         <div className="max-w-4xl mx-auto px-4 md:px-0">
           <ResumePreview data={resumeData} />
-
-          <footer className="mt-6 text-center text-slate-400 text-sm print:hidden">
-            <p>
-              Press <kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200">Cmd/Ctrl + P</kbd> to save
-              as PDF
-            </p>
-          </footer>
         </div>
       )}
     </div>

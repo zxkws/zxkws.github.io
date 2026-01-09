@@ -57,7 +57,7 @@ export default function ResumePreview({ data, className }: Props) {
                   <Mail size={12} className="text-slate-500 print:text-black" />
                   <a
                     href={`mailto:${data.profile.contact.email}`}
-                    className="hover:text-slate-900 dark:hover:text-white underline decoration-slate-300 underline-offset-2 print:no-underline"
+                    className="hover:text-slate-900 dark:hover:text-white decoration-slate-300 underline-offset-2 print:no-underline"
                   >
                     {data.profile.contact.email}
                   </a>
@@ -70,7 +70,7 @@ export default function ResumePreview({ data, className }: Props) {
                     href={githubHref}
                     target="_blank"
                     rel="noreferrer"
-                    className="hover:text-slate-900 dark:hover:text-white underline decoration-slate-300 underline-offset-2 print:no-underline"
+                    className="hover:text-slate-900 dark:hover:text-white decoration-slate-300 underline-offset-2 print:no-underline"
                   >
                     {data.profile.contact.github}
                   </a>
@@ -87,10 +87,11 @@ export default function ResumePreview({ data, className }: Props) {
             <div className="my-2 border-t border-slate-200 dark:border-slate-600 print:border-slate-300" />
 
             <div>
-              <div className="font-semibold text-slate-700 dark:text-slate-200 print:text-black">{data.education.school}</div>
-              <div className="text-[12px] text-slate-600 dark:text-slate-300 print:text-black">{data.education.degree}</div>
-              <div className="text-[12px] text-slate-500 dark:text-slate-400 font-mono tracking-wide print:text-black">
-                {data.education.period}
+              <div className="font-semibold text-slate-700 dark:text-slate-200 print:text-black">
+                {data.education.school}({data.education.period})
+              </div>
+              <div className="text-[12px] text-slate-600 dark:text-slate-300 print:text-black">
+                {data.education.degree}
               </div>
             </div>
           </div>
@@ -141,9 +142,7 @@ export default function ResumePreview({ data, className }: Props) {
                 <div>
                   {/* 第一行：公司 + 时间（主体信息，加粗突出） */}
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-1">
-                    <h3 className="text-[14px] font-bold text-slate-900 dark:text-white print:text-black">
-                      {exp.org}
-                    </h3>
+                    <h3 className="text-[14px] font-bold text-slate-900 dark:text-white print:text-black">{exp.org}</h3>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono print:text-black">
                       {exp.period}
                     </p>
