@@ -91,7 +91,7 @@ export const experiences: Experience[] = [
   },
   {
     period: '2023.10 – 2025.03',
-    org: '纬创软件（上海）有限公司',
+    org: '纬创软件有限公司',
     role: '资深前端工程师',
     overview: '负责大模型应用前端架构设计与工程化建设，主导核心业务系统的技术选型与落地。',
     projects: [
