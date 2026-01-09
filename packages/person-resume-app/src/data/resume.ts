@@ -44,7 +44,7 @@ export type ResumeData = {
 };
 
 export const profile = {
-  name: '李慧琪',
+  name: '李XX',
   title: '资深前端工程师',
   contact: {
     phone: '152-xxxx-xxxx',
