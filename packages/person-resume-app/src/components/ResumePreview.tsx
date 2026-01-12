@@ -24,7 +24,7 @@ export default function ResumePreview({ data, className }: Props) {
   return (
     <div
       className={joinClassName(
-        'resume-preview bg-white dark:bg-slate-800 shadow-xl print:shadow-none print:bg-white rounded-lg overflow-hidden print:text-black print:[&_*]:text-black print:[&_*]:border-slate-800',
+        'resume-preview bg-white dark:bg-slate-800 shadow-xl print:shadow-none print:bg-white rounded-lg overflow-hidden print:text-black print:border-slate-800 print:[&_*]:text-black print:[&_*]:border-slate-800',
         className,
       )}
     >
@@ -35,7 +35,7 @@ export default function ResumePreview({ data, className }: Props) {
             <h1 className="text-3xl md:text-[34px] font-extrabold text-slate-900 dark:text-white tracking-tight mb-1 print:text-black">
               {data.profile.name}
             </h1>
-            <p className="text-lg text-slate-700 dark:text-slate-200 font-semibold mb-3 print:text-black">
+            <p className="text-lg text-slate-800 dark:text-slate-200 font-semibold mb-3 print:text-black">
               {data.profile.title}
             </p>
             <p className="text-[12px] leading-snug text-slate-700 dark:text-slate-300 max-w-2xl print:text-black">
@@ -137,13 +137,13 @@ export default function ResumePreview({ data, className }: Props) {
                 key={idx}
                 className="relative pl-3 border-l border-slate-200 dark:border-slate-700 pb-4 border-b border-slate-200 dark:border-slate-700 print:border-slate-800 last:border-b-0"
               >
-                <div className="absolute -left-[6px] top-1 w-2.5 h-2.5 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-400" />
+                <div className="absolute -left-[6px] top-1 w-2.5 h-2.5 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-400 print:bg-white print:border-slate-800" />
 
                 <div>
                   {/* 第一行：公司 + 时间（主体信息，加粗突出） */}
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-1">
                     <h3 className="text-[14px] font-bold text-slate-900 dark:text-white print:text-black">{exp.org}</h3>
-                    <p className="text-[11px] text-slate-700 dark:text-slate-400 font-mono print:text-black">{exp.period}</p>
+                    <p className="text-[11px] text-slate-700 dark:text-slate-300 font-mono print:text-black">{exp.period}</p>
                   </div>
 
                   {/* 第二行：职位 + 职责概述（次要信息，字体缩小） */}

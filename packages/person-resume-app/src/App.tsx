@@ -99,14 +99,40 @@ function clearResumeCache(reason: string, savedVersion: string | null, currentVe
   );
 
   try {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(VERSION_KEY);
+    const keysToRemove = new Set([
+      STORAGE_KEY,
+      VERSION_KEY,
+      // Legacy keys (in case older builds used different names)
+      'resumeData',
+      'resumeDataVersion',
+      'resume-data-v1',
+      'resume-data-version-v1',
+    ]);
 
-    // Legacy keys (in case older builds used different names)
-    localStorage.removeItem('resumeData');
-    localStorage.removeItem('resume-data-v1');
+    // Defensive: clear any older/experimental keys that start with resume-*
+    // (GitHub Pages deployments sometimes ship multiple builds over time).
+    const dynamicKeys: string[] = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (!key) continue;
+      if (
+        key === STORAGE_KEY ||
+        key === VERSION_KEY ||
+        key === 'resumeData' ||
+        key === 'resumeDataVersion' ||
+        key.startsWith('resume-') ||
+        key.startsWith('resume_') ||
+        key.startsWith('resumeData-')
+      ) {
+        dynamicKeys.push(key);
+      }
+    }
+
+    dynamicKeys.forEach((k) => keysToRemove.add(k));
+    Array.from(keysToRemove).forEach((key) => localStorage.removeItem(key));
 
     localStorage.setItem(VERSION_KEY, currentVersion);
+    console.info(`[Resume] Cache cleared. ${VERSION_KEY}=${currentVersion}`);
   } catch (err) {
     console.error('[Resume] Failed to clear localStorage:', err);
   }
@@ -116,42 +142,40 @@ function loadResumeDataFromStorage(): ResumeData {
   const currentVersion = String(RESUME_DATA_VERSION);
 
   try {
-    const savedVersion = localStorage.getItem(VERSION_KEY);
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const savedVersion = (localStorage.getItem(VERSION_KEY) ?? '').trim() || null;
 
     console.info(
-      `[Resume] Load storage: savedVersion=${savedVersion ?? 'null'}, currentVersion=${currentVersion}, hasPayload=${
-        saved ? 'yes' : 'no'
-      }`,
+      `[Resume] Storage version check: saved=${savedVersion ?? 'null'}, current=${currentVersion}`,
     );
-
-    if (!savedVersion && !saved) {
-      console.info('[Resume] No cached resume found, using defaults.');
-      localStorage.setItem(VERSION_KEY, currentVersion);
-      return normalizeResumeData(defaultResumeData);
-    }
 
     if (savedVersion !== currentVersion) {
       clearResumeCache('Version mismatch', savedVersion, currentVersion);
       return normalizeResumeData(defaultResumeData);
     }
 
+    const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) {
-      console.warn('[Resume] Version matches but resume payload missing, using defaults.');
+      console.info('[Resume] No cached resume payload, using defaults.');
       localStorage.setItem(VERSION_KEY, currentVersion);
       return normalizeResumeData(defaultResumeData);
     }
 
+    console.info(
+      `[Resume] Load storage ok: version=${currentVersion}, bytes=${saved.length}, loadedAt=${new Date().toISOString()}`,
+    );
+
     return normalizeResumeData(JSON.parse(saved));
   } catch (err) {
     console.error('[Resume] Error loading data:', err);
+
+    let savedVersion: string | null = null;
     try {
-      console.warn('[Resume] Reset localStorage due to load error (localStorage.clear).');
-      localStorage.clear();
-      localStorage.setItem(VERSION_KEY, currentVersion);
-    } catch (resetErr) {
-      console.error('[Resume] Failed to reset localStorage:', resetErr);
+      savedVersion = localStorage.getItem(VERSION_KEY);
+    } catch {
+      savedVersion = null;
     }
+
+    clearResumeCache('Load error', savedVersion, currentVersion);
     return normalizeResumeData(defaultResumeData);
   }
 }
@@ -212,7 +236,9 @@ export default function App() {
   const importInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    console.info(`[Resume] App mounted. RESUME_DATA_VERSION=${String(RESUME_DATA_VERSION)}`);
+    console.info(
+      `[Resume] App mounted. version=${String(RESUME_DATA_VERSION)}, mode=${import.meta.env.MODE}, base=${import.meta.env.BASE_URL}`,
+    );
   }, []);
 
   useEffect(() => {
@@ -256,10 +282,9 @@ export default function App() {
     }
 
     try {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(VERSION_KEY);
-      localStorage.setItem(VERSION_KEY, String(RESUME_DATA_VERSION));
-      console.info(`[Resume] Reset to defaults. ${VERSION_KEY}=${String(RESUME_DATA_VERSION)}`);
+      const currentVersion = String(RESUME_DATA_VERSION);
+      const savedVersion = (localStorage.getItem(VERSION_KEY) ?? '').trim() || null;
+      clearResumeCache('Manual reset', savedVersion, currentVersion);
     } catch (err) {
       console.error('[Resume] Failed to reset localStorage:', err);
     }
