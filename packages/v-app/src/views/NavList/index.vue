@@ -111,6 +111,10 @@ const staticNavItems: NavItem[] = [
     name: 'gitee',
     url: 'https://gitee.com/explore'
   },
+  {
+    name: 'huaweicloud',
+    url: 'https://devcloud.cn-north-4.huaweicloud.com/home'
+  },
 ].map((item, index) => ({ ...item, id: index + 1 }));
 
 const storedItems = ref<NavItem[]>([]);
