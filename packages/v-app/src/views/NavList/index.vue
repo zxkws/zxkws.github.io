@@ -86,7 +86,31 @@ const staticNavItems: NavItem[] = [
   {
     name: 'learngraph',
     url: 'https://www.learngraph.online/',
-  }
+  },
+  {
+    name:'cloudstudio在线开发',
+    url: 'https://cloudstudio.net/courses'
+  },
+  {
+    name:"stackblitz",
+    url:'https://stackblitz.com/',
+  },
+  {
+    name:"stackblitz",
+    url:'https://stackblitz.com/',
+  },
+  {
+    name:"codepen",
+    url:'https://codepen.io/',
+  },
+  {
+    name:"codesandbox",
+    url:'https://codesandbox.io/',
+  },
+  {
+    name: 'gitee',
+    url: 'https://gitee.com/explore'
+  },
 ].map((item, index) => ({ ...item, id: index + 1 }));
 
 const storedItems = ref<NavItem[]>([]);
