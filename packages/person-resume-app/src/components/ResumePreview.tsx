@@ -105,12 +105,9 @@ export default function ResumePreview({ data, className }: Props) {
           <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-wider mb-3 pb-1 border-b border-slate-300 dark:border-slate-600 print:border-slate-800 print:text-black">
             技术栈
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-3">
             {data.skillGroups.map((group, idx) => (
               <div key={idx}>
-                <h3 className="text-[12px] font-bold text-slate-800 dark:text-slate-200 mb-1 print:text-black">
-                  {group.name}
-                </h3>
                 <ul className="space-y-0.5">
                   {group.items.filter(nonEmpty).map((skill, i) => (
                     <li
@@ -143,7 +140,9 @@ export default function ResumePreview({ data, className }: Props) {
                   {/* 第一行：公司 + 时间（主体信息，加粗突出） */}
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1 mb-1">
                     <h3 className="text-[14px] font-bold text-slate-900 dark:text-white print:text-black">{exp.org}</h3>
-                    <p className="text-[11px] text-slate-700 dark:text-slate-300 font-mono print:text-black">{exp.period}</p>
+                    <p className="text-[11px] text-slate-700 dark:text-slate-300 font-mono print:text-black">
+                      {exp.period}
+                    </p>
                   </div>
 
                   {/* 第二行：职位 + 职责概述（次要信息，字体缩小） */}
@@ -177,24 +176,10 @@ export default function ResumePreview({ data, className }: Props) {
                           </p>
                         )}
 
-                        <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="mt-2 grid grid-cols-1 gap-3">
                           <div>
-                            <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200 mb-1 print:text-black">
-                              负责内容
-                            </div>
                             <ul className="list-disc list-outside ml-4 space-y-0.5 text-[11px] text-slate-800 dark:text-slate-300 leading-snug print:text-black">
                               {proj.responsibilities.filter(nonEmpty).map((item, i) => (
-                                <li key={i}>{item}</li>
-                              ))}
-                            </ul>
-                          </div>
-
-                          <div>
-                            <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200 mb-1 print:text-black">
-                              成果亮点
-                            </div>
-                            <ul className="list-disc list-outside ml-4 space-y-0.5 text-[11px] text-slate-800 dark:text-slate-300 leading-snug print:text-black">
-                              {proj.achievements.filter(nonEmpty).map((item, i) => (
                                 <li key={i}>{item}</li>
                               ))}
                             </ul>

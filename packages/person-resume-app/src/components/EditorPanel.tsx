@@ -39,15 +39,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function IconButton({
-  title,
-  onClick,
-  children,
-}: {
-  title: string;
-  onClick: () => void;
-  children: ReactNode;
-}) {
+function IconButton({ title, onClick, children }: { title: string; onClick: () => void; children: ReactNode }) {
   return (
     <button
       type="button"
@@ -196,39 +188,15 @@ export default function EditorPanel({ data, onChange }: Props) {
       </Section>
 
       <Section title="技能栈">
-        <div className="flex items-center justify-between gap-2">
-          <div className="text-[12px] text-slate-500 dark:text-slate-300">支持添加/删除技能组与技能项</div>
-          <AddButton
-            label="添加技能组"
-            onClick={() => updateSkillGroups([...data.skillGroups, { name: '新技能组', items: [''] }])}
-          />
-        </div>
-
         <div className="space-y-3">
           {data.skillGroups.map((group, groupIndex) => (
             <div key={groupIndex} className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <input
-                  className={inputClassName}
-                  value={group.name}
-                  placeholder="技能组名称"
-                  onChange={(e) =>
-                    updateSkillGroups(updateAt(data.skillGroups, groupIndex, { ...group, name: e.target.value }))
-                  }
-                />
-                <IconButton title="删除技能组" onClick={() => updateSkillGroups(removeAt(data.skillGroups, groupIndex))}>
-                  <Trash2 size={14} />
-                </IconButton>
-              </div>
-
               <StringListEditor
                 label="技能项"
                 items={group.items}
                 placeholder="例如：React / TypeScript / Webpack"
                 addLabel="添加技能项"
-                onChange={(items) =>
-                  updateSkillGroups(updateAt(data.skillGroups, groupIndex, { ...group, items }))
-                }
+                onChange={(items) => updateSkillGroups(updateAt(data.skillGroups, groupIndex, { ...group, items }))}
               />
             </div>
           ))}
@@ -268,7 +236,9 @@ export default function EditorPanel({ data, onChange }: Props) {
                     className={inputClassName}
                     value={exp.period}
                     placeholder="例如：2023.10 – 2025.03"
-                    onChange={(e) => updateExperiences(updateAt(data.experiences, idx, { ...exp, period: e.target.value }))}
+                    onChange={(e) =>
+                      updateExperiences(updateAt(data.experiences, idx, { ...exp, period: e.target.value }))
+                    }
                   />
                 </Field>
                 <Field label="公司">
@@ -276,25 +246,29 @@ export default function EditorPanel({ data, onChange }: Props) {
                     className={inputClassName}
                     value={exp.org}
                     placeholder="公司名称"
-                    onChange={(e) => updateExperiences(updateAt(data.experiences, idx, { ...exp, org: e.target.value }))}
+                    onChange={(e) =>
+                      updateExperiences(updateAt(data.experiences, idx, { ...exp, org: e.target.value }))
+                    }
                   />
                 </Field>
-                <Field label="职位">
+                <Field label="项目名称">
                   <input
                     className={inputClassName}
                     value={exp.role}
-                    placeholder="职位名称"
-                    onChange={(e) => updateExperiences(updateAt(data.experiences, idx, { ...exp, role: e.target.value }))}
+                    placeholder="项目名称"
+                    onChange={(e) =>
+                      updateExperiences(updateAt(data.experiences, idx, { ...exp, role: e.target.value }))
+                    }
                   />
                 </Field>
               </div>
 
               <div className="mt-3">
-                <Field label="职责概述">
+                <Field label="项目概述">
                   <textarea
                     className={textareaClassName}
                     value={exp.overview}
-                    placeholder="1-2 句话概述该阶段主要职责与影响范围"
+                    placeholder="1-2 句话概述该项目"
                     onChange={(e) =>
                       updateExperiences(updateAt(data.experiences, idx, { ...exp, overview: e.target.value }))
                     }
