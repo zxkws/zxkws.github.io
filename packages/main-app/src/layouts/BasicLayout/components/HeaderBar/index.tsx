@@ -90,15 +90,12 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
     setIsMenuOpen(false);
     setIsAboutOpen(true);
     try {
-      // 传递当前时区给后端
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const info = (await httpClient(
-        '/app/about',
-        {},
-        {
-          headers: { 'x-timezone': timezone },
-        },
-      )) as { deploymentTime?: string; version?: string };
+      // 显式指定 method 为 GET，并传入 null 作为 params 以防止自动切换 POST
+      const info = (await httpClient('/app/about', null, {
+        method: 'GET',
+        headers: { 'x-timezone': timezone },
+      })) as { deploymentTime?: string; version?: string };
       setBackendInfo(info);
     } catch (e) {
       console.error('Failed to fetch backend info', e);
