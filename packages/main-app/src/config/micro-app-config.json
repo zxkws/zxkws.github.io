@@ -22,6 +22,17 @@
 			"basename": "/v-react",
 			"sandbox": true,
 			"enabled": true
+		},
+		{
+			"name": "chess-mirror",
+			"displayName": "象棋·镜",
+			"devEntry": "http://localhost:5186",
+			"prodEntry": "/chess-mirror/",
+			"entry": "/chess-mirror/",
+			"activeRule": ["/chess-mirror"],
+			"basename": "/chess-mirror",
+			"sandbox": false,
+			"enabled": true
 		}
 	],
 	"standaloneMenus": [],

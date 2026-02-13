@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 
 import Composer from './Composer';
@@ -10,6 +10,7 @@ import WorkspacePanel, { type WorkspaceDiff, type WorkspaceCodeBlock } from './W
 import { useChatState } from '../hooks/useChatState';
 import type { ChatMessage, ComposerAttachment } from '../types';
 import { ChatServiceError, createChatCompletion } from '../services/chatService';
+import { fetchModelCatalog } from '../services/modelCatalogService';
 import { buildContextPrompt } from '../utils/context';
 import { extractCodeBlocks } from '../utils/markdown';
 import { createId } from '../utils/storage';
@@ -61,6 +62,26 @@ export default function ChatWorkspace() {
   const [draft, setDraft] = useState('');
   const [attachments, setAttachments] = useState<ComposerAttachment[]>([]);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
+  const [modelOptions, setModelOptions] = useState<Array<{ value: string; label: string }>>([]);
+  const [modelOptionsError, setModelOptionsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchModelCatalog({ signal: controller.signal })
+      .then((items) => {
+        setModelOptions(
+          items.map((item) => ({
+            value: item.modelRef,
+            label: item.displayName || item.modelRef,
+          })),
+        );
+        setModelOptionsError(null);
+      })
+      .catch((error) => {
+        setModelOptionsError(error instanceof Error ? error.message : '加载模型目录失败');
+      });
+    return () => controller.abort();
+  }, []);
 
   const messages = useMemo(() => activeConversation?.messages ?? [], [activeConversation?.messages]);
   const workspaceBlocks = useMemo<WorkspaceCodeBlock[]>(() => {
@@ -160,6 +181,55 @@ export default function ChatWorkspace() {
       return;
     }
     updateSettings(activeConversationId, { temperature: value });
+  };
+
+  const handleEnsembleEnabledChange = (enabled: boolean) => {
+    if (!activeConversationId) return;
+    const prev = activeConversation?.settings.ensemble;
+    const currentModel = activeConversation?.settings.model ?? '';
+    const next = {
+      enabled,
+      modelRefs: (prev?.modelRefs?.length ? prev.modelRefs : currentModel ? [currentModel] : []).filter(Boolean),
+      mode: prev?.mode ?? 'compare',
+      judgeModelRef: prev?.judgeModelRef ?? null,
+      viewMode: prev?.viewMode ?? 'auto',
+    };
+    updateSettings(activeConversationId, { ensemble: next });
+  };
+
+  const handleEnsembleModelRefsChange = (modelRefs: string[]) => {
+    if (!activeConversationId) return;
+    const prev = activeConversation?.settings.ensemble;
+    updateSettings(activeConversationId, {
+      ensemble: {
+        enabled: true,
+        modelRefs: (modelRefs ?? []).filter(Boolean),
+        mode: prev?.mode ?? 'compare',
+        judgeModelRef: prev?.judgeModelRef ?? null,
+        viewMode: prev?.viewMode ?? 'auto',
+      },
+    });
+  };
+
+  const handleEnsembleModeChange = (mode: 'compare' | 'deliberate') => {
+    if (!activeConversationId) return;
+    const prev = activeConversation?.settings.ensemble;
+    if (!prev) return;
+    updateSettings(activeConversationId, { ensemble: { ...prev, mode } });
+  };
+
+  const handleEnsembleJudgeModelRefChange = (modelRef: string | null) => {
+    if (!activeConversationId) return;
+    const prev = activeConversation?.settings.ensemble;
+    if (!prev) return;
+    updateSettings(activeConversationId, { ensemble: { ...prev, judgeModelRef: modelRef } });
+  };
+
+  const handleEnsembleViewModeChange = (viewMode: 'auto' | 'columns' | 'tabs') => {
+    if (!activeConversationId) return;
+    const prev = activeConversation?.settings.ensemble;
+    if (!prev) return;
+    updateSettings(activeConversationId, { ensemble: { ...prev, viewMode } });
   };
 
   const handleToggleTool = (tool: Parameters<typeof toggleTool>[1], value: boolean) => {
@@ -345,6 +415,7 @@ export default function ChatWorkspace() {
         <ChatHeader
           activeConversation={activeConversation ?? null}
           isGenerating={isGenerating}
+          modelOptions={modelOptions}
           onNewConversation={handleCreateConversation}
           onDuplicateConversation={handleDuplicate}
           onClearConversation={handleClearConversation}
@@ -371,7 +442,13 @@ export default function ChatWorkspace() {
           onModelChange={handleModelChange}
           onTemperatureChange={handleTemperatureChange}
           onToggleTool={handleToggleTool}
+          onEnsembleEnabledChange={handleEnsembleEnabledChange}
+          onEnsembleModelRefsChange={handleEnsembleModelRefsChange}
+          onEnsembleModeChange={handleEnsembleModeChange}
+          onEnsembleJudgeModelRefChange={handleEnsembleJudgeModelRefChange}
+          onEnsembleViewModeChange={handleEnsembleViewModeChange}
         />
+        {modelOptionsError && <div className="hint-text" style={{ padding: '0 18px' }}>{modelOptionsError}</div>}
         <MessageList
           conversationId={activeConversationId}
           messages={messages}

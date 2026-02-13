@@ -241,7 +241,11 @@ export default function Sidebar({
                   </div>
                   <div className="meta">
                     <span>{formatDate(conversation.updatedAt)}</span>
-                    <span>{conversation.settings.model}</span>
+                    <span>
+                      {conversation.settings.ensemble?.enabled
+                        ? `Ensemble(${conversation.settings.ensemble.modelRefs?.length ?? 0})`
+                        : conversation.settings.model}
+                    </span>
                   </div>
                 </button>
               );

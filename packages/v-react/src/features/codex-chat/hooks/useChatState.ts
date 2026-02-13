@@ -469,6 +469,25 @@ export const useChatState = (): UseChatStateResult => {
                 ...message,
                 status: 'error',
                 content: '已取消生成。',
+                ...(message.ensemble
+                  ? {
+                      ensemble: {
+                        ...message.ensemble,
+                        outputs: message.ensemble.outputs.map((output) => ({
+                          ...output,
+                          status: output.status === 'completed' ? output.status : 'error',
+                          error: output.status === 'completed' ? output.error : '已取消生成。',
+                        })),
+                        final: message.ensemble.final
+                          ? {
+                              ...message.ensemble.final,
+                              status: message.ensemble.final.status === 'completed' ? message.ensemble.final.status : 'error',
+                              error: message.ensemble.final.status === 'completed' ? message.ensemble.final.error : '已取消生成。',
+                            }
+                          : undefined,
+                      },
+                    }
+                  : {}),
               }
             : message,
         ),
@@ -505,12 +524,43 @@ export const useChatState = (): UseChatStateResult => {
         createdAt: timestamp.toISOString(),
         attachments: options.attachments,
       };
+
+      const ensembleSettings = conversation.settings.ensemble;
+      const ensembleEnabled = Boolean(ensembleSettings?.enabled) && (ensembleSettings?.modelRefs?.length ?? 0) > 0;
+      const ensembleModelRefs = ensembleEnabled ? ensembleSettings!.modelRefs.filter(Boolean) : [];
+      const ensembleMode = ensembleSettings?.mode ?? 'compare';
+      const ensembleViewMode = ensembleSettings?.viewMode ?? 'auto';
+      const judgeModelRef = ensembleSettings?.judgeModelRef ?? null;
+
       const assistantMessage: ChatMessage = {
         id: createId('msg'),
         role: 'assistant',
         content: '',
         createdAt: new Date(timestamp.getTime() + 1).toISOString(),
         status: 'pending',
+        ...(ensembleEnabled
+          ? {
+              ensemble: {
+                mode: ensembleMode,
+                viewMode: ensembleViewMode,
+                modelRefs: ensembleModelRefs,
+                outputs: ensembleModelRefs.map((modelRef) => ({
+                  modelRef,
+                  content: '',
+                  status: 'pending',
+                })),
+                ...(ensembleMode === 'deliberate' && judgeModelRef
+                  ? {
+                      final: {
+                        modelRef: judgeModelRef,
+                        content: '',
+                        status: 'pending',
+                      },
+                    }
+                  : {}),
+              },
+            }
+          : {}),
       };
 
       setConversations((prev) =>
@@ -563,7 +613,7 @@ export const useChatState = (): UseChatStateResult => {
       const payloadAttachments = options.attachments ?? [];
 
       const startedAtMs = nowMs();
-      const model = conversation.settings.model;
+      const model = ensembleEnabled ? `ensemble(${ensembleModelRefs.length})` : conversation.settings.model;
       let metricStream = true;
       let trackedStreamConnect = false;
       let trackedFirstToken = false;
@@ -611,27 +661,84 @@ export const useChatState = (): UseChatStateResult => {
         let receivedDelta = false;
         let streamErrored = false;
         let deltaBuffer = '';
+        const deltaBufferByModel = new Map<string, string>();
+        let finalDeltaBuffer = '';
+        let finalModelRef = '';
         let deltaFlushTimer: number | null = null;
 
         const flushBufferedDelta = () => {
-          if (!deltaBuffer) {
+          if (!ensembleEnabled) {
+            if (!deltaBuffer) return;
+            const delta = deltaBuffer;
+            deltaBuffer = '';
+            setConversations((prev) =>
+              updateConversationState(prev, conversationId, (target) => ({
+                ...target,
+                updatedAt: new Date().toISOString(),
+                messages: target.messages.map((message) =>
+                  message.id === assistantMessage.id
+                    ? {
+                        ...message,
+                        status: 'streaming',
+                        content: `${message.content}${delta}`,
+                      }
+                    : message,
+                ),
+              })),
+            );
             return;
           }
-          const delta = deltaBuffer;
-          deltaBuffer = '';
+
+          if (deltaBufferByModel.size === 0 && !finalDeltaBuffer) {
+            return;
+          }
+
+          const deltas = Array.from(deltaBufferByModel.entries());
+          deltaBufferByModel.clear();
+          const finalDelta = finalDeltaBuffer;
+          finalDeltaBuffer = '';
+
           setConversations((prev) =>
             updateConversationState(prev, conversationId, (target) => ({
               ...target,
               updatedAt: new Date().toISOString(),
-              messages: target.messages.map((message) =>
-                message.id === assistantMessage.id
-                  ? {
-                      ...message,
-                      status: 'streaming',
-                      content: `${message.content}${delta}`,
-                    }
-                  : message,
-              ),
+              messages: target.messages.map((message) => {
+                if (message.id !== assistantMessage.id) return message;
+                const ensemble = message.ensemble;
+                if (!ensemble) return message;
+                const outputs = ensemble.outputs.map((output) => {
+                  const delta = deltas.find(([ref]) => ref === output.modelRef)?.[1] ?? '';
+                  if (!delta) return output;
+                  return {
+                    ...output,
+                    status: 'streaming' as const,
+                    content: `${output.content}${delta}`,
+                  };
+                });
+
+                const final = (() => {
+                  if (!finalDelta) return ensemble.final;
+                  const ref = finalModelRef || ensemble.final?.modelRef || '';
+                  if (!ref) return ensemble.final;
+                  const current = ensemble.final ?? { modelRef: ref, content: '', status: 'pending' as const };
+                  return {
+                    ...current,
+                    modelRef: ref,
+                    status: 'streaming' as const,
+                    content: `${current.content}${finalDelta}`,
+                  };
+                })();
+
+                return {
+                  ...message,
+                  status: 'streaming',
+                  ensemble: {
+                    ...ensemble,
+                    outputs,
+                    final,
+                  },
+                };
+              }),
             })),
           );
         };
@@ -667,6 +774,7 @@ export const useChatState = (): UseChatStateResult => {
               settings: conversation.settings,
               tools: conversation.tools,
               attachments: payloadAttachments,
+              ensemble: ensembleSettings,
               stream: true,
             },
             {
@@ -687,12 +795,125 @@ export const useChatState = (): UseChatStateResult => {
                   })),
                 );
               },
-              onDelta: (delta) => {
+              onModelDelta: (modelRef, delta) => {
                 receivedDelta = true;
                 trackStreamConnect();
                 trackFirstToken();
+                if (!ensembleEnabled) {
+                  deltaBuffer += delta;
+                  scheduleDeltaFlush();
+                  return;
+                }
+                const prevDelta = deltaBufferByModel.get(modelRef) ?? '';
+                deltaBufferByModel.set(modelRef, `${prevDelta}${delta}`);
+                scheduleDeltaFlush();
+              },
+              onDelta: (delta) => {
+                // 兼容旧协议
+                receivedDelta = true;
+                trackStreamConnect();
+                trackFirstToken();
+                if (ensembleEnabled) {
+                  const modelRef = ensembleModelRefs[0] ?? '';
+                  if (!modelRef) return;
+                  const prevDelta = deltaBufferByModel.get(modelRef) ?? '';
+                  deltaBufferByModel.set(modelRef, `${prevDelta}${delta}`);
+                  scheduleDeltaFlush();
+                  return;
+                }
                 deltaBuffer += delta;
                 scheduleDeltaFlush();
+              },
+              onModelDone: (modelRef, data) => {
+                setConversations((prev) =>
+                  updateConversationState(prev, conversationId, (target) => ({
+                    ...target,
+                    updatedAt: new Date().toISOString(),
+                    messages: target.messages.map((message) => {
+                      if (message.id !== assistantMessage.id) return message;
+                      if (!message.ensemble) return message;
+                      const record = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : null;
+                      const latencyMs = typeof record?.latencyMs === 'number' ? record.latencyMs : undefined;
+                      return {
+                        ...message,
+                        ensemble: {
+                          ...message.ensemble,
+                          outputs: message.ensemble.outputs.map((output) =>
+                            output.modelRef === modelRef
+                              ? { ...output, status: 'completed', latencyMs }
+                              : output,
+                          ),
+                        },
+                      };
+                    }),
+                  })),
+                );
+              },
+              onModelError: (modelRef, message) => {
+                setConversations((prev) =>
+                  updateConversationState(prev, conversationId, (target) => ({
+                    ...target,
+                    updatedAt: new Date().toISOString(),
+                    messages: target.messages.map((item) => {
+                      if (item.id !== assistantMessage.id) return item;
+                      if (!item.ensemble) {
+                        return {
+                          ...item,
+                          status: 'error',
+                          content: message,
+                        };
+                      }
+                      return {
+                        ...item,
+                        ensemble: {
+                          ...item.ensemble,
+                          outputs: item.ensemble.outputs.map((output) =>
+                            output.modelRef === modelRef
+                              ? { ...output, status: 'error', error: message }
+                              : output,
+                          ),
+                        },
+                      };
+                    }),
+                  })),
+                );
+              },
+              onFinalDelta: (modelRef, delta) => {
+                receivedDelta = true;
+                trackStreamConnect();
+                trackFirstToken();
+                finalModelRef = modelRef;
+                finalDeltaBuffer += delta;
+                scheduleDeltaFlush();
+              },
+              onFinalDone: (modelRef, data) => {
+                cancelDeltaFlush();
+                flushBufferedDelta();
+                const record = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : null;
+                const latencyMs = typeof record?.latencyMs === 'number' ? record.latencyMs : undefined;
+                const content = typeof record?.content === 'string' ? String(record.content) : '';
+                setConversations((prev) =>
+                  updateConversationState(prev, conversationId, (target) => ({
+                    ...target,
+                    updatedAt: new Date().toISOString(),
+                    messages: target.messages.map((message) => {
+                      if (message.id !== assistantMessage.id) return message;
+                      if (!message.ensemble) return message;
+                      return {
+                        ...message,
+                        ensemble: {
+                          ...message.ensemble,
+                          final: {
+                            modelRef,
+                            status: 'completed',
+                            latencyMs,
+                            content: content || message.ensemble.final?.content || '',
+                          },
+                        },
+                      };
+                    }),
+                  })),
+                );
               },
               onError: (message) => {
                 streamErrored = true;
@@ -710,6 +931,25 @@ export const useChatState = (): UseChatStateResult => {
                             ...item,
                             status: 'error',
                             content: message,
+                            ...(item.ensemble
+                              ? {
+                                  ensemble: {
+                                    ...item.ensemble,
+                                    outputs: item.ensemble.outputs.map((output) => ({
+                                      ...output,
+                                      status: output.status === 'completed' ? output.status : 'error',
+                                      error: output.status === 'completed' ? output.error : message,
+                                    })),
+                                    final: item.ensemble.final
+                                      ? {
+                                          ...item.ensemble.final,
+                                          status: item.ensemble.final.status === 'completed' ? item.ensemble.final.status : 'error',
+                                          error: item.ensemble.final.status === 'completed' ? item.ensemble.final.error : message,
+                                        }
+                                      : undefined,
+                                  },
+                                }
+                              : {}),
                           }
                         : item,
                     ),
@@ -751,7 +991,7 @@ export const useChatState = (): UseChatStateResult => {
           }
           cancelDeltaFlush();
           flushBufferedDelta();
-          if (!receivedDelta && error instanceof ChatServiceError) {
+          if (!ensembleEnabled && !receivedDelta && error instanceof ChatServiceError) {
             // 降级为非流式请求（兼容旧服务端/代理）
             metricStream = false;
             if (pendingAssistantRef.current) {

@@ -101,6 +101,11 @@ type RequestOptions = {
 type StreamHandlers = {
   onMeta?: (_data: unknown) => void;
   onDelta?: (_delta: string) => void;
+  onModelDelta?: (_modelRef: string, _delta: string) => void;
+  onModelDone?: (_modelRef: string, _data: unknown) => void;
+  onModelError?: (_modelRef: string, _message: string) => void;
+  onFinalDelta?: (_modelRef: string, _delta: string) => void;
+  onFinalDone?: (_modelRef: string, _data: unknown) => void;
   onDone?: (_data: unknown) => void;
   onError?: (_message: string) => void;
 };
@@ -113,28 +118,36 @@ const resolveApiBase = () => {
       }
     ).__CODEX_CHAT_CONFIG__;
     if (runtimeConfig?.apiBaseUrl) {
-      return runtimeConfig.apiBaseUrl.replace(/\/$/, '');
+      const trimmed = runtimeConfig.apiBaseUrl.replace(/\/$/, '');
+      if (trimmed.endsWith('/v1/ai')) {
+        return trimmed;
+      }
+      if (trimmed.endsWith('/api')) {
+        return `${trimmed}/v1/ai`;
+      }
+      return trimmed;
     }
   }
   if (import.meta.env.VITE_CODEX_CHAT_API_BASE) {
-    return String(import.meta.env.VITE_CODEX_CHAT_API_BASE).replace(/\/$/, '');
+    const trimmed = String(import.meta.env.VITE_CODEX_CHAT_API_BASE).replace(/\/$/, '');
+    if (trimmed.endsWith('/v1/ai')) {
+      return trimmed;
+    }
+    if (trimmed.endsWith('/api')) {
+      return `${trimmed}/v1/ai`;
+    }
+    return trimmed;
   }
-  return '';
+  return '/api/v1/ai';
 };
 
 const buildEndpoint = () => {
   const base = resolveApiBase();
-  if (!base) {
-    return '/api/codex/chat';
-  }
   return `${base}/chat`;
 };
 
 const buildStreamEndpoint = () => {
   const base = resolveApiBase();
-  if (!base) {
-    return '/api/codex/chat/stream';
-  }
   return `${base}/chat/stream`;
 };
 
@@ -193,7 +206,7 @@ export async function createChatCompletion(payload: ChatRequest, options: Reques
   if (response.status === 404 || response.status === 501) {
     throw new ChatServiceError('SERVICE_UNAVAILABLE', '服务端未实现对话接口。', {
       status: response.status,
-      friendlyMessage: '未检测到可用的对话服务端，请按照 README 中的说明实现 /api/codex/chat 接口后重试。',
+      friendlyMessage: '未检测到可用的对话服务端，请检查 /api/v1/ai/chat 是否已部署并可访问。',
     });
   }
 
@@ -245,7 +258,7 @@ export async function createChatCompletionStream(
   if (response.status === 404 || response.status === 501) {
     throw new ChatServiceError('SERVICE_UNAVAILABLE', '服务端未实现对话接口。', {
       status: response.status,
-      friendlyMessage: '未检测到可用的对话服务端，请按照 README 中的说明实现 /api/codex/chat/stream 接口后重试。',
+      friendlyMessage: '未检测到可用的对话服务端，请检查 /api/v1/ai/chat/stream 是否已部署并可访问。',
     });
   }
 
@@ -303,6 +316,61 @@ export async function createChatCompletionStream(
                 : '';
           if (deltaText) {
             handlers.onDelta?.(deltaText);
+          }
+          continue;
+        }
+
+        if (eventName === 'model_delta') {
+          const record = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : null;
+          const modelRef = typeof record?.modelRef === 'string' ? String(record.modelRef) : '';
+          const deltaText = typeof record?.content === 'string' ? String(record.content) : '';
+          if (modelRef && deltaText) {
+            handlers.onModelDelta?.(modelRef, deltaText);
+          }
+          continue;
+        }
+
+        if (eventName === 'model_done') {
+          const record = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : null;
+          const modelRef = typeof record?.modelRef === 'string' ? String(record.modelRef) : '';
+          if (modelRef) {
+            handlers.onModelDone?.(modelRef, data);
+          }
+          continue;
+        }
+
+        if (eventName === 'model_error') {
+          const record = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : null;
+          const modelRef = typeof record?.modelRef === 'string' ? String(record.modelRef) : '';
+          const message =
+            typeof record?.message === 'string'
+              ? String(record.message)
+              : typeof data === 'string'
+                ? data
+                : '模型调用失败。';
+          if (modelRef) {
+            handlers.onModelError?.(modelRef, message);
+          } else {
+            handlers.onError?.(message);
+          }
+          continue;
+        }
+
+        if (eventName === 'final_delta') {
+          const record = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : null;
+          const modelRef = typeof record?.modelRef === 'string' ? String(record.modelRef) : '';
+          const deltaText = typeof record?.content === 'string' ? String(record.content) : '';
+          if (modelRef && deltaText) {
+            handlers.onFinalDelta?.(modelRef, deltaText);
+          }
+          continue;
+        }
+
+        if (eventName === 'final_done') {
+          const record = typeof data === 'object' && data !== null ? (data as Record<string, unknown>) : null;
+          const modelRef = typeof record?.modelRef === 'string' ? String(record.modelRef) : '';
+          if (modelRef) {
+            handlers.onFinalDone?.(modelRef, data);
           }
           continue;
         }

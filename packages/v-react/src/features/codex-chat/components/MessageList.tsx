@@ -3,6 +3,7 @@ import clsx from 'clsx';
 
 import type { ChatMessage } from '../types';
 import Markdown from './Markdown';
+import EnsemblePanel from './EnsemblePanel';
 
 const IconCopy = () => (
   <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
@@ -158,7 +159,11 @@ export default function MessageList({ conversationId, messages, isGenerating, on
                     )}
                   </div>
                   <div className="message-content">
-                    <Markdown content={message.content} />
+                    {message.ensemble ? (
+                      <EnsemblePanel ensemble={message.ensemble} />
+                    ) : (
+                      <Markdown content={message.content} />
+                    )}
                   </div>
 
                   {message.attachments && message.attachments.length > 0 && (
@@ -194,7 +199,7 @@ export default function MessageList({ conversationId, messages, isGenerating, on
                     <button
                       type="button"
                       className="message-action-button"
-                      onClick={() => copyToClipboard(message.content)}
+                      onClick={() => copyToClipboard(message.ensemble?.final?.content || message.content)}
                     >
                       <IconCopy /> 复制
                     </button>

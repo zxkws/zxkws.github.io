@@ -36,6 +36,36 @@ export type ToolCall = {
 
 export type MessageStatus = 'pending' | 'streaming' | 'completed' | 'error';
 
+export type EnsembleMode = 'compare' | 'deliberate';
+
+export type EnsembleViewMode = 'auto' | 'columns' | 'tabs';
+
+export type EnsembleModelOutput = {
+  modelRef: string;
+  content: string;
+  status: MessageStatus;
+  startedAt?: string;
+  latencyMs?: number;
+  error?: string;
+};
+
+export type EnsembleFinalOutput = {
+  modelRef: string;
+  content: string;
+  status: MessageStatus;
+  startedAt?: string;
+  latencyMs?: number;
+  error?: string;
+};
+
+export type EnsembleState = {
+  mode: EnsembleMode;
+  viewMode: EnsembleViewMode;
+  modelRefs: string[];
+  outputs: EnsembleModelOutput[];
+  final?: EnsembleFinalOutput;
+};
+
 export type ChatMessage = {
   id: string;
   role: ChatRole;
@@ -44,12 +74,20 @@ export type ChatMessage = {
   status?: MessageStatus;
   attachments?: Attachment[];
   toolCalls?: ToolCall[];
+  ensemble?: EnsembleState;
 };
 
 export type ConversationSettings = {
   model: string;
   temperature: number;
   maxOutputTokens?: number | null;
+  ensemble?: {
+    enabled: boolean;
+    modelRefs: string[];
+    mode: EnsembleMode;
+    judgeModelRef?: string | null;
+    viewMode: EnsembleViewMode;
+  };
 };
 
 export type ToolConfig = {
@@ -89,6 +127,7 @@ export type ChatRequest = {
   tools: ToolConfig;
   messages: ChatMessage[];
   attachments?: Attachment[];
+  ensemble?: ConversationSettings['ensemble'];
   stream?: boolean;
 };
 
