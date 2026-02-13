@@ -10,6 +10,11 @@ type HeaderBarProps = {
   onMenuToggle?: () => void;
 };
 
+type BackendInfo = {
+  deploymentTime?: string;
+  version?: string;
+};
+
 const readEffectiveTheme = (): 'light' | 'dark' => {
   if (typeof document === 'undefined') return 'light';
   const root = document.documentElement;
@@ -25,10 +30,11 @@ const applyTheme = (next: 'light' | 'dark') => {
   localStorage.setItem('main-app-theme', next);
 };
 
-// 格式化本地时间
-const formatLocalTime = (isoString: string) => {
+const formatLocalTime = (isoString: string | undefined) => {
   if (!isoString || isoString === 'Unknown') return isoString;
   try {
+    const date = new Date(isoString);
+    if (Number.isNaN(date.getTime())) return isoString;
     return new Intl.DateTimeFormat('zh-CN', {
       year: 'numeric',
       month: '2-digit',
@@ -37,8 +43,8 @@ const formatLocalTime = (isoString: string) => {
       minute: '2-digit',
       second: '2-digit',
       hour12: false,
-    }).format(new Date(isoString));
-  } catch (e) {
+    }).format(date);
+  } catch (_e) {
     return isoString;
   }
 };
@@ -47,30 +53,18 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [backendInfo, setBackendInfo] = useState<{ deploymentTime?: string; version?: string } | null>(null);
+  const [backendInfo, setBackendInfo] = useState<BackendInfo | null>(null);
   const { user, clearUser } = useUser();
 
   useEffect(() => {
     setTheme(readEffectiveTheme());
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (
-          mutation.type === 'attributes' &&
-          (mutation.attributeName === 'data-theme' || mutation.attributeName === 'class')
-        ) {
-          setTheme(readEffectiveTheme());
-        }
-      });
-    });
-
+    const observer = new MutationObserver(() => setTheme(readEffectiveTheme()));
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
     return () => observer.disconnect();
   }, []);
 
   const toggleTheme = () => {
-    const current = readEffectiveTheme();
-    const next = current === 'dark' ? 'light' : 'dark';
+    const next = readEffectiveTheme() === 'dark' ? 'light' : 'dark';
     applyTheme(next);
     setTheme(next);
   };
@@ -91,17 +85,25 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
     setIsAboutOpen(true);
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      // 这里的 httpClient 可能返回的是包装过的响应 { data: { ... } } 或直接是数据
-      // 我们通过逻辑判断兼容两种情况
-      const res = (await httpClient('/app/about', null, {
+      const res = await httpClient<any>('/app/about', null, {
         method: 'GET',
         headers: { 'x-timezone': timezone },
-      })) as any;
+      });
 
-      const info = res?.data || res;
+      let info: BackendInfo = {};
+      if (res && typeof res === 'object') {
+        if (res.data && typeof res.data === 'object' && 'deploymentTime' in res.data) {
+          info = res.data;
+        } else if (res.code === 200 && res.data) {
+          info = res.data;
+        } else {
+          info = res as BackendInfo;
+        }
+      }
       setBackendInfo(info);
     } catch (e) {
       console.error('Failed to fetch backend info', e);
+      setBackendInfo({ deploymentTime: '获取失败' });
     }
   };
 
@@ -112,16 +114,8 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
       <div className={styles.leftArea}>
         {isMobile && (
           <button className={styles.menuToggle} onClick={onMenuToggle} type="button">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-labelledby="menuIconTitle"
-            >
-              <title id="menuIconTitle">Menu</title>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <title>Toggle Menu</title>
               <path d="M3 12h18M3 6h18M3 18h18" />
             </svg>
           </button>
@@ -129,25 +123,22 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
       </div>
 
       <div className={styles.actions}>
-        <button className={styles.themeBtn} onClick={toggleTheme} aria-label="Toggle Theme" type="button">
+        <button className={styles.themeBtn} onClick={toggleTheme} type="button" aria-label="Toggle Theme">
           {theme === 'dark' ? '🌙' : '☀️'}
         </button>
 
         <div className={styles.userProfile}>
           <button className={styles.userBtn} onClick={() => setIsMenuOpen(!isMenuOpen)} type="button">
             <img
-              src={
-                user.avatar ||
-                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces'
-              }
+              src={user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64'}
               className={styles.avatar}
-              alt="User"
+              alt="User Avatar"
             />
             <span className={styles.username}>{user.username}</span>
           </button>
 
           {isMenuOpen && (
-            <div className={styles.dropdown} onMouseLeave={() => setIsMenuOpen(false)} role="menu" tabIndex={-1}>
+            <div className={styles.dropdown} onMouseLeave={() => setIsMenuOpen(false)} role="menu">
               <a href="/profile" className={styles.menuItem} role="menuitem">
                 个人资料
               </a>
@@ -155,7 +146,7 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
                 关于
               </button>
               <button onClick={handleClearCaches} className={styles.menuItem} type="button" role="menuitem">
-                清理缓存并刷新
+                清理缓存
               </button>
               <button onClick={handleLogout} className={styles.menuItem} type="button" role="menuitem">
                 退出登录
@@ -166,19 +157,30 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
       </div>
 
       {isAboutOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-[var(--card-bg)] border border-[var(--color-divider)] rounded-2xl shadow-2xl p-6 max-w-sm w-full animate-in fade-in zoom-in duration-200">
-            <h3 className="text-xl font-bold mb-4 text-[var(--color-text)]">关于系统</h3>
-            <div className="space-y-3 text-sm text-[var(--color-text)] opacity-80">
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={() => setIsAboutOpen(false)}
+          onKeyDown={(e) => e.key === 'Escape' && setIsAboutOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="bg-[var(--card-bg)] border border-[var(--color-divider)] rounded-2xl shadow-2xl p-6 max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="document"
+          >
+            <h3 className="text-xl font-bold mb-4">关于系统</h3>
+            <div className="space-y-3 text-sm">
               <div>
                 <div className="font-semibold text-[var(--color-primary)]">前端构建时间</div>
-                <div>{formatLocalTime((process.env as any).BUILD_TIME) || 'Unknown'}</div>
+                <div className="opacity-80">{formatLocalTime((process.env as any).BUILD_TIME) || 'Unknown'}</div>
               </div>
               <div>
                 <div className="font-semibold text-[var(--color-primary)]">后端部署时间</div>
-                <div>{backendInfo?.deploymentTime || '加载失败'}</div>
+                <div className="opacity-80">{backendInfo?.deploymentTime || '加载中...'}</div>
               </div>
-              <div className="pt-2 border-t border-[var(--color-divider)] flex justify-between">
+              <div className="pt-2 border-t border-[var(--color-divider)] flex justify-between opacity-60">
                 <span>系统版本</span>
                 <span className="font-mono">{backendInfo?.version || '1.0.0'}</span>
               </div>
