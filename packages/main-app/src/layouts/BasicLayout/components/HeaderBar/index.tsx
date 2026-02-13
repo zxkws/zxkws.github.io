@@ -91,11 +91,14 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
     setIsAboutOpen(true);
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      // 显式指定 method 为 GET，并传入 null 作为 params 以防止自动切换 POST
-      const info = (await httpClient('/app/about', null, {
+      // 这里的 httpClient 可能返回的是包装过的响应 { data: { ... } } 或直接是数据
+      // 我们通过逻辑判断兼容两种情况
+      const res = (await httpClient('/app/about', null, {
         method: 'GET',
         headers: { 'x-timezone': timezone },
-      })) as { deploymentTime?: string; version?: string };
+      })) as any;
+
+      const info = res?.data || res;
       setBackendInfo(info);
     } catch (e) {
       console.error('Failed to fetch backend info', e);
@@ -173,7 +176,7 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
               </div>
               <div>
                 <div className="font-semibold text-[var(--color-primary)]">后端部署时间</div>
-                <div>{backendInfo?.deploymentTime || '加载中...'}</div>
+                <div>{backendInfo?.deploymentTime || '加载失败'}</div>
               </div>
               <div className="pt-2 border-t border-[var(--color-divider)] flex justify-between">
                 <span>系统版本</span>
