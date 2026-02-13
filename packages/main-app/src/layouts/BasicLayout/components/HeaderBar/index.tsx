@@ -28,10 +28,11 @@ const applyTheme = (next: 'light' | 'dark') => {
 const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [backendInfo, setBackendInfo] = useState<{ deploymentTime?: string; version?: string } | null>(null);
   const { user, clearUser } = useUser();
 
   useEffect(() => {
-    // Initial Theme Sync (support both `data-theme` and `html.dark` from micro-apps)
     setTheme(readEffectiveTheme());
 
     const observer = new MutationObserver((mutations) => {
@@ -60,12 +61,22 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
     await httpClient('/auth/logout', {}, { method: 'POST' });
     clearAuthArtifacts();
     clearUser();
-    // BasicLayout 的 useEffect 会捕捉到 user 为空，并执行跳转
   };
 
   const handleClearCaches = () => {
     setIsMenuOpen(false);
     void clearPwaCachesAndReload();
+  };
+
+  const handleOpenAbout = async () => {
+    setIsMenuOpen(false);
+    setIsAboutOpen(true);
+    try {
+      const info = await httpClient('/app/about');
+      setBackendInfo(info);
+    } catch (e) {
+      console.error('Failed to fetch backend info', e);
+    }
   };
 
   if (!user) return null;
@@ -114,6 +125,9 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
               <a href="/profile" className={styles.menuItem} role="menuitem">
                 个人资料
               </a>
+              <button onClick={handleOpenAbout} className={styles.menuItem} type="button" role="menuitem">
+                关于
+              </button>
               <button onClick={handleClearCaches} className={styles.menuItem} type="button" role="menuitem">
                 清理缓存并刷新
               </button>
@@ -124,6 +138,35 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
           )}
         </div>
       </div>
+
+      {isAboutOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-[var(--card-bg)] border border-[var(--color-divider)] rounded-2xl shadow-2xl p-6 max-w-sm w-full animate-in fade-in zoom-in duration-200">
+            <h3 className="text-xl font-bold mb-4 text-[var(--color-text)]">关于系统</h3>
+            <div className="space-y-3 text-sm text-[var(--color-text)] opacity-80">
+              <div>
+                <div className="font-semibold text-[var(--color-primary)]">前端部署时间</div>
+                <div>{(process.env as any).BUILD_TIME || 'Unknown'}</div>
+              </div>
+              <div>
+                <div className="font-semibold text-[var(--color-primary)]">后端部署时间</div>
+                <div>{backendInfo?.deploymentTime || '加载中...'}</div>
+              </div>
+              <div className="pt-2 border-t border-[var(--color-divider)] flex justify-between">
+                <span>系统版本</span>
+                <span className="font-mono">{backendInfo?.version || '1.0.0'}</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsAboutOpen(false)}
+              className="mt-6 w-full py-2 bg-[var(--color-primary)] text-white rounded-xl hover:opacity-90 transition-opacity"
+              type="button"
+            >
+              确定
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 };
