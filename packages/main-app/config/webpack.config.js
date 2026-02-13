@@ -93,6 +93,10 @@ module.exports = {
     // PWA Service Worker Configuration
     isProd &&
       new WorkboxPlugin.GenerateSW({
+        // Workbox 默认会在 production mode 下对 SW 做 terser 压缩；
+        // 当前环境会触发 “Unexpected early exit (terser renderChunk)”。
+        // 先用 development mode 生成未压缩的 SW，保证构建可用。
+        mode: 'development',
         // 这些选项帮助快速启用 ServiceWorkers
         // 不允许遗留的 SW 控制页面
         clientsClaim: true,
@@ -210,6 +214,17 @@ module.exports = {
         target: API_PROXY_TARGET,
         changeOrigin: true,
         secure: false,
+        cookieDomainRewrite: 'localhost',
+        cookiePathRewrite: '/',
+      },
+      {
+        // Watch Together 使用 socket.io：前端 dev server 需要把 /socket.io 代理到后端
+        // 才能在本地开发时通过同源脚本地址加载 socket.io 客户端并建立 WS 连接。
+        context: ['/socket.io'],
+        target: API_PROXY_TARGET,
+        changeOrigin: true,
+        secure: false,
+        ws: true,
         cookieDomainRewrite: 'localhost',
         cookiePathRewrite: '/',
       },

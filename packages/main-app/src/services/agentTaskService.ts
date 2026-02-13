@@ -26,7 +26,9 @@ export type McpConnection = {
   id: string;
   name: string;
   serverUrl: string;
-  tools?: Array<{ name?: string; description?: string; id?: string }>;
+  tools?: unknown;
+  credentials?: unknown;
+  status?: string;
 };
 
 export const parseTaskByNl = (text: string) =>
@@ -50,12 +52,52 @@ export const executeAgentTask = (id: string) => client(`/v1/agent-tasks/${id}/ex
 
 export const listMcpConnections = () => client<McpConnection[]>('/v1/mcp/connections', undefined, { method: 'GET' });
 
+export const createMcpConnection = (payload: {
+  name: string;
+  serverUrl: string;
+  tools?: Record<string, unknown> | unknown[] | null;
+  credentials?: Record<string, unknown> | null;
+  status?: string;
+}) => client<McpConnection>('/v1/mcp/connections', payload, { method: 'POST' });
+
+export const importMcpConnection = (payload: {
+  configJson: string;
+  nameOverride?: string;
+  statusOverride?: string;
+  serverName?: string;
+}) => client<McpConnection>('/v1/mcp/connections/import', payload, { method: 'POST' });
+
+export const updateMcpConnection = (
+  id: string,
+  payload: Partial<{
+    name: string;
+    serverUrl: string;
+    tools: Record<string, unknown> | unknown[] | null;
+    credentials: Record<string, unknown> | null;
+    status: string;
+  }>,
+) => client<McpConnection>(`/v1/mcp/connections/${id}`, payload, { method: 'PATCH' });
+
+export const deleteMcpConnection = (id: string) =>
+  client<{ deleted: boolean }>(`/v1/mcp/connections/${id}`, undefined, { method: 'DELETE' });
+
 export type PushSubscriptionPayload = {
   endpoint: string;
   p256dh: string;
   auth: string;
   ua?: string;
 };
+
+export type AgentTaskEvent = {
+  id: string;
+  status: 'success' | 'fail' | 'skip';
+  payload?: Record<string, unknown> | null;
+  error?: string | null;
+  createdAt: string;
+};
+
+export const listAgentTaskEvents = (id: string) =>
+  client<AgentTaskEvent[]>(`/v1/agent-tasks/${id}/events`, undefined, { method: 'GET' });
 
 export const fetchVapidPublicKey = async () => {
   const res = await client<{ publicKey: string | null; hint?: string }>('/v1/agent-tasks/push/public-key', undefined, {

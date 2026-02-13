@@ -4,9 +4,14 @@ import { useUser } from '../../context/UserContext';
 import {
   type AgentTask,
   type AgentTaskCondition,
+  type AgentTaskEvent,
   createAgentTask,
+  createMcpConnection,
+  deleteMcpConnection,
   executeAgentTask,
   fetchVapidPublicKey,
+  importMcpConnection,
+  listAgentTaskEvents,
   listAgentTasks,
   listMcpConnections,
   listPushSubscriptions,
@@ -14,6 +19,7 @@ import {
   type PushSubscriptionPayload,
   parseTaskByNl,
   savePushSubscription,
+  updateMcpConnection,
 } from '../../services/agentTaskService';
 
 const inlineSwSource = `
@@ -52,6 +58,79 @@ const defaultCondition: AgentTaskCondition = {
 
 const pretty = (obj: unknown) => JSON.stringify(obj, null, 2);
 
+const safeJsonStringify = (value: unknown) => {
+  if (value === undefined) return '';
+  if (value === null) return 'null';
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return '';
+  }
+};
+
+const safeJsonParse = (text: string): unknown => {
+  const trimmed = text.trim();
+  if (!trimmed) return undefined;
+  return JSON.parse(trimmed);
+};
+
+const normalizeJsonObjectOrArray = (raw: unknown): Record<string, unknown> | unknown[] | null | undefined => {
+  if (raw === undefined) return undefined;
+  if (raw === null) return null;
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'object') return raw as Record<string, unknown>;
+  return undefined;
+};
+
+const normalizeJsonObject = (raw: unknown): Record<string, unknown> | null | undefined => {
+  if (raw === undefined) return undefined;
+  if (raw === null) return null;
+  if (typeof raw === 'object' && !Array.isArray(raw)) return raw as Record<string, unknown>;
+  return undefined;
+};
+
+const extractToolList = (raw: unknown): Array<{ id: string; name?: string; description?: string }> => {
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw
+      .map((t) => {
+        if (!t || typeof t !== 'object') return null;
+        const record = t as Record<string, unknown>;
+        const id = String(record.id ?? record.name ?? '').trim();
+        if (!id) return null;
+        return {
+          id,
+          name: typeof record.name === 'string' ? record.name : undefined,
+          description: typeof record.description === 'string' ? record.description : undefined,
+        };
+      })
+      .filter(Boolean) as Array<{ id: string; name?: string; description?: string }>;
+  }
+
+  if (typeof raw === 'object') {
+    const record = raw as Record<string, unknown>;
+    if (Array.isArray(record.tools)) {
+      return extractToolList(record.tools);
+    }
+    return Object.entries(record)
+      .map(([id, v]) => {
+        if (!id) return null;
+        if (v && typeof v === 'object') {
+          const r = v as Record<string, unknown>;
+          return {
+            id,
+            name: typeof r.name === 'string' ? r.name : undefined,
+            description: typeof r.description === 'string' ? r.description : undefined,
+          };
+        }
+        return { id, name: undefined, description: undefined };
+      })
+      .filter(Boolean) as Array<{ id: string; name?: string; description?: string }>;
+  }
+
+  return [];
+};
+
 const urlBase64ToUint8Array = (base64String: string) => {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -87,9 +166,27 @@ const AgentTaskPage = () => {
   const [creating, setCreating] = useState(false);
   const [execLoadingId, setExecLoadingId] = useState<string | null>(null);
   const [mcpConnections, setMcpConnections] = useState<McpConnection[]>([]);
+  const [connEditingId, setConnEditingId] = useState<string | null>(null);
+  const [connName, setConnName] = useState('');
+  const [connServerUrl, setConnServerUrl] = useState('');
+  const [connStatus, setConnStatus] = useState('active');
+  const [connToolsText, setConnToolsText] = useState('');
+  const [connCredsText, setConnCredsText] = useState('');
+  const [connSaving, setConnSaving] = useState(false);
+  const [connError, setConnError] = useState<string>('');
+  const [importConfigJson, setImportConfigJson] = useState('');
+  const [importServerName, setImportServerName] = useState('');
+  const [importNameOverride, setImportNameOverride] = useState('');
+  const [importing, setImporting] = useState(false);
+
   const [subs, setSubs] = useState<PushSubscriptionPayload[]>([]);
   const [pushStatus, setPushStatus] = useState<string>('');
   const [vapidKey, setVapidKey] = useState<string | null | undefined>(undefined);
+
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [taskEvents, setTaskEvents] = useState<AgentTaskEvent[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsError, setEventsError] = useState<string>('');
   const inlineSwUrl = useMemo(() => {
     if (typeof window === 'undefined') return '';
     const blob = new Blob([inlineSwSource], { type: 'application/javascript' });
@@ -99,12 +196,13 @@ const AgentTaskPage = () => {
   const toolOptions = useMemo(() => {
     const list: Array<{ id: string; label: string }> = [];
     mcpConnections.forEach((conn) => {
-      conn.tools?.forEach((tool) => {
-        const id = tool.id || tool.name || '';
+      const tools = extractToolList(conn.tools);
+      tools.forEach((tool) => {
+        const id = tool.id || '';
         if (id) {
           list.push({
             id,
-            label: `${conn.name}: ${tool.name || tool.id || ''}`,
+            label: `${conn.name}: ${tool.name || tool.id || id}`,
           });
         }
       });
@@ -130,6 +228,113 @@ const AgentTaskPage = () => {
       setMcpConnections(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const resetConnForm = () => {
+    setConnEditingId(null);
+    setConnName('');
+    setConnServerUrl('');
+    setConnStatus('active');
+    setConnToolsText('');
+    setConnCredsText('');
+    setConnError('');
+  };
+
+  const resetImportForm = () => {
+    setImportConfigJson('');
+    setImportServerName('');
+    setImportNameOverride('');
+  };
+
+  const startEditConn = (conn: McpConnection) => {
+    setConnEditingId(conn.id);
+    setConnName(conn.name || '');
+    setConnServerUrl(conn.serverUrl || '');
+    setConnStatus(conn.status || 'active');
+    setConnToolsText(safeJsonStringify(conn.tools));
+    setConnCredsText(safeJsonStringify(conn.credentials));
+    setConnError('');
+  };
+
+  const saveConn = async () => {
+    setConnSaving(true);
+    setConnError('');
+    try {
+      const parsedTools = connToolsText.trim() ? safeJsonParse(connToolsText) : undefined;
+      const parsedCreds = connCredsText.trim() ? safeJsonParse(connCredsText) : undefined;
+      const payload = {
+        name: connName.trim(),
+        serverUrl: connServerUrl.trim(),
+        status: connStatus.trim() || 'active',
+        tools: normalizeJsonObjectOrArray(parsedTools),
+        credentials: normalizeJsonObject(parsedCreds),
+      };
+
+      if (!payload.name) throw new Error('连接名不能为空');
+      if (!payload.serverUrl) throw new Error('serverUrl 不能为空');
+
+      if (connEditingId) {
+        await updateMcpConnection(connEditingId, payload);
+      } else {
+        await createMcpConnection(payload);
+      }
+      await loadConnections();
+      resetConnForm();
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : '保存失败';
+      setConnError(msg);
+    } finally {
+      setConnSaving(false);
+    }
+  };
+
+  const doImportConn = async () => {
+    setImporting(true);
+    setConnError('');
+    try {
+      const configJson = importConfigJson.trim();
+      if (!configJson) throw new Error('请粘贴 MCP JSON 配置');
+      await importMcpConnection({
+        configJson,
+        serverName: importServerName.trim() || undefined,
+        nameOverride: importNameOverride.trim() || undefined,
+      });
+      await loadConnections();
+      resetImportForm();
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : '导入失败';
+      setConnError(msg);
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const removeConn = async (id: string) => {
+    if (!window.confirm('确认删除该 MCP 连接？')) return;
+    try {
+      await deleteMcpConnection(id);
+      if (connEditingId === id) {
+        resetConnForm();
+      }
+      await loadConnections();
+    } catch (error) {
+      setConnError(error instanceof Error ? error.message : '删除失败');
+    }
+  };
+
+  const loadEvents = async (taskId: string) => {
+    setSelectedTaskId(taskId);
+    setEventsLoading(true);
+    setEventsError('');
+    try {
+      const data = await listAgentTaskEvents(taskId);
+      setTaskEvents(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setTaskEvents([]);
+      setEventsError(error instanceof Error ? error.message : '加载事件失败');
+    } finally {
+      setEventsLoading(false);
     }
   };
 
@@ -219,6 +424,9 @@ const AgentTaskPage = () => {
     try {
       await executeAgentTask(id);
       await loadTasks();
+      if (selectedTaskId === id) {
+        await loadEvents(id);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -305,7 +513,194 @@ const AgentTaskPage = () => {
 
       <section className="rounded-lg border border-[var(--header-border)] bg-[var(--card-bg)] p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">2) 创建任务</h2>
+          <h2 className="text-lg font-semibold">2) MCP 连接管理</h2>
+          <button type="button" className="text-sm text-blue-600" onClick={loadConnections}>
+            刷新
+          </button>
+        </div>
+        {connError && <div className="mb-3 text-sm text-red-600">{connError}</div>}
+
+        <div className="rounded border border-slate-200 bg-slate-50 p-3 text-sm">
+          <div className="mb-2 font-semibold">快速接入：粘贴 MCP JSON</div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <label className="flex flex-col gap-1 text-sm">
+              serverName（可选）
+              <input
+                className="rounded border border-slate-200 bg-white p-2"
+                value={importServerName}
+                onChange={(e) => setImportServerName(e.target.value)}
+                placeholder="当配置包含 mcpServers 时可指定，例如 github"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              nameOverride（可选）
+              <input
+                className="rounded border border-slate-200 bg-white p-2"
+                value={importNameOverride}
+                onChange={(e) => setImportNameOverride(e.target.value)}
+                placeholder="覆盖解析到的连接名"
+              />
+            </label>
+          </div>
+          <label className="mt-3 flex flex-col gap-1 text-sm">
+            MCP JSON（支持字段 serverUrl/url/endpoint，或 Claude Desktop 的 mcpServers 形态）
+            <textarea
+              className="min-h-[120px] w-full rounded border border-slate-200 bg-white p-2 font-mono text-xs"
+              value={importConfigJson}
+              onChange={(e) => setImportConfigJson(e.target.value)}
+              placeholder='例如：{"name":"GitHub","serverUrl":"https://example.com/mcp","headers":{"Authorization":"Bearer xxx"}}'
+            />
+          </label>
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              type="button"
+              className="rounded bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700 disabled:opacity-60"
+              onClick={doImportConn}
+              disabled={importing}
+            >
+              {importing ? '导入中...' : '一键导入'}
+            </button>
+            <button
+              type="button"
+              className="rounded border border-slate-200 px-4 py-2 text-sm"
+              onClick={resetImportForm}
+            >
+              清空
+            </button>
+            <div className="flex gap-2 ml-auto">
+              <span className="text-xs text-slate-500 self-center">快速预设:</span>
+              <button
+                type="button"
+                className="text-xs text-blue-600 border border-blue-200 rounded px-2 py-1 hover:bg-blue-50"
+                onClick={() => {
+                  setImportConfigJson(
+                    JSON.stringify(
+                      {
+                        name: 'LocalEcho',
+                        command: 'node',
+                        args: [
+                          '-e',
+                          "process.stdin.on('data', d => { const j=JSON.parse(d); if(j.method==='tools/call') console.log(JSON.stringify({jsonrpc:'2.0',id:j.id,result:{content:[{type:'text',text:'Hello from local node'}]}})) })",
+                        ],
+                        tools: [{ id: 'echo', name: 'Echo Tool' }],
+                      },
+                      null,
+                      2,
+                    ),
+                  );
+                }}
+              >
+                LocalEcho (Node)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="flex flex-col gap-1 text-sm">
+            连接名
+            <input
+              className="rounded border border-slate-200 p-2"
+              value={connName}
+              onChange={(e) => setConnName(e.target.value)}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            serverUrl
+            <input
+              className="rounded border border-slate-200 p-2"
+              value={connServerUrl}
+              onChange={(e) => setConnServerUrl(e.target.value)}
+              placeholder="https://example.com/mcp"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            状态
+            <input
+              className="rounded border border-slate-200 p-2"
+              value={connStatus}
+              onChange={(e) => setConnStatus(e.target.value)}
+            />
+          </label>
+        </div>
+
+        <div className="mt-3 grid gap-4 md:grid-cols-2">
+          <label className="flex flex-col gap-1 text-sm">
+            tools(JSON，可选)
+            <textarea
+              className="min-h-[110px] w-full rounded border border-slate-200 p-2 font-mono text-xs"
+              value={connToolsText}
+              onChange={(e) => setConnToolsText(e.target.value)}
+              placeholder='例如：[{"id":"github.pr.list","name":"List PRs"}]'
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-sm">
+            credentials(JSON，可选)
+            <textarea
+              className="min-h-[110px] w-full rounded border border-slate-200 p-2 font-mono text-xs"
+              value={connCredsText}
+              onChange={(e) => setConnCredsText(e.target.value)}
+              placeholder='例如：{"token":"***"}（注意不要在前端长期保存敏感信息）'
+            />
+          </label>
+        </div>
+
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="button"
+            className="rounded bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700 disabled:opacity-60"
+            onClick={saveConn}
+            disabled={connSaving}
+          >
+            {connSaving ? '保存中...' : connEditingId ? '保存修改' : '新增连接'}
+          </button>
+          <button type="button" className="rounded border border-slate-200 px-4 py-2 text-sm" onClick={resetConnForm}>
+            重置
+          </button>
+          {connEditingId && <span className="text-xs text-slate-600">编辑中：{connEditingId}</span>}
+        </div>
+
+        <div className="mt-4 overflow-x-auto text-sm">
+          <table className="min-w-full border border-slate-200">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-3 py-2 text-left">名称</th>
+                <th className="px-3 py-2 text-left">serverUrl</th>
+                <th className="px-3 py-2 text-center">状态</th>
+                <th className="px-3 py-2 text-center">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {mcpConnections.map((c) => (
+                <tr key={c.id} className="border-t">
+                  <td className="px-3 py-2">{c.name}</td>
+                  <td className="px-3 py-2 font-mono text-xs">{c.serverUrl}</td>
+                  <td className="px-3 py-2 text-center">{c.status || '-'}</td>
+                  <td className="px-3 py-2 text-center">
+                    <button type="button" className="mr-2 text-blue-600" onClick={() => startEditConn(c)}>
+                      编辑
+                    </button>
+                    <button type="button" className="text-red-600" onClick={() => removeConn(c.id)}>
+                      删除
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {mcpConnections.length === 0 && (
+                <tr>
+                  <td className="px-3 py-4 text-center text-slate-500" colSpan={4}>
+                    暂无连接
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-[var(--header-border)] bg-[var(--card-bg)] p-4 shadow-sm">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">3) 创建任务</h2>
           <button
             type="button"
             className="rounded bg-green-600 px-4 py-2 text-white shadow hover:bg-green-700 disabled:opacity-60"
@@ -440,7 +835,7 @@ const AgentTaskPage = () => {
 
       <section className="rounded-lg border border-[var(--header-border)] bg-[var(--card-bg)] p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">3) 任务列表</h2>
+          <h2 className="text-lg font-semibold">4) 任务列表</h2>
           <button type="button" className="text-sm text-blue-600" onClick={loadTasks} disabled={taskLoading}>
             刷新
           </button>
@@ -469,6 +864,13 @@ const AgentTaskPage = () => {
                     <td className="px-3 py-2 text-center">
                       <button
                         type="button"
+                        className="mr-2 text-sm text-slate-700 underline"
+                        onClick={() => loadEvents(task.id)}
+                      >
+                        事件
+                      </button>
+                      <button
+                        type="button"
                         className="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600 disabled:opacity-60"
                         onClick={() => handleExecute(task.id)}
                         disabled={execLoadingId === task.id}
@@ -493,7 +895,7 @@ const AgentTaskPage = () => {
 
       <section className="rounded-lg border border-[var(--header-border)] bg-[var(--card-bg)] p-4 shadow-sm">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">4) Web Push 订阅</h2>
+          <h2 className="text-lg font-semibold">5) Web Push 订阅</h2>
           <button
             type="button"
             className="rounded bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700"
@@ -514,6 +916,30 @@ const AgentTaskPage = () => {
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-lg border border-[var(--header-border)] bg-[var(--card-bg)] p-4 shadow-sm">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">6) 任务事件审计</h2>
+          {selectedTaskId && (
+            <button type="button" className="text-sm text-blue-600" onClick={() => loadEvents(selectedTaskId)}>
+              刷新
+            </button>
+          )}
+        </div>
+        {!selectedTaskId ? (
+          <div className="text-sm text-slate-600">在“任务列表”里点「事件」查看执行记录。</div>
+        ) : eventsLoading ? (
+          <PageLoading loading />
+        ) : (
+          <div>
+            {eventsError && <div className="mb-2 text-sm text-red-600">{eventsError}</div>}
+            <div className="mb-2 text-xs text-slate-600">taskId: {selectedTaskId}</div>
+            <pre className="max-h-64 overflow-auto rounded bg-slate-50 p-3 text-xs text-slate-700">
+              {pretty(taskEvents)}
+            </pre>
           </div>
         )}
       </section>

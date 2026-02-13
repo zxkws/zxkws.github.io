@@ -13,6 +13,7 @@ export const builtInAsideMenus: MenuItem[] = [
   { name: 'PDF 编辑器', path: '/v-react/pdf-editor' },
   { name: '模型对话', path: '/v-react/codex-chat' },
   { name: '智能代理', path: '/app/agent-tasks' },
+  { name: '一起看', path: '/app/watch-together' },
   { name: '数据库管控', path: '/v-react/db-ops' },
   { name: '权限管理', path: '/app/permission-admin' },
   { name: '用户管理', path: '/app/user-admin' },

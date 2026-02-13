@@ -39,6 +39,7 @@ const UserAdmin = lazy(() => import('./pages/UserAdmin'));
 const AgentTaskPage = lazy(() => import('./pages/AgentTask'));
 const Profile = lazy(() => import('./pages/Profile'));
 const MonitorDashboard = lazy(() => import('./pages/MonitorDashboard')); // Import MonitorDashboard
+const WatchTogetherPage = lazy(() => import('./pages/WatchTogether'));
 
 const MicroAppLoading = () => (
   <div className="absolute inset-0 z-[2000] flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -94,6 +95,7 @@ const LocalRoutes = ({ pathname }: { pathname: string }) => {
     if (pathname === '/app/permission-admin') return <PermissionAdmin />;
     if (pathname === '/app/user-admin') return <UserAdmin />;
     if (pathname === '/app/agent-tasks') return <AgentTaskPage />;
+    if (pathname === '/app/watch-together') return <WatchTogetherPage />;
     if (pathname === '/monitor-dashboard') return <MonitorDashboard />; // New Monitor Dashboard Route
 
     const iframe = IFRAME_MICRO_APPS.find((app) => pathname === app.path);

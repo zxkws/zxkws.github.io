@@ -15,6 +15,13 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useUser();
   const [menus, setMenus] = useState<MenuItem[]>(builtInAsideMenus);
 
+  const isPublicRoute = (() => {
+    if (typeof window === 'undefined') return true;
+    const pathname = window.location.pathname || '/';
+    // 兜底与注释保持一致：未登录可见主页与工具页；另外 Watch Together 需要可分享链接，默认公开。
+    return pathname === '/' || pathname.startsWith('/tools/') || pathname === '/app/watch-together';
+  })();
+
   const commandItems = useMemo<CommandItem[]>(() => {
     const flatten = (items: MenuItem[], prefix: string[] = []) => {
       const out: CommandItem[] = [];
@@ -71,14 +78,14 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
 
   // 核心鉴权逻辑：如果没有用户信息且加载已完成，强制跳转登录
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !isPublicRoute) {
       // 记录当前 URL 以便登录后跳转回来
       const currentUrl = window.location.href;
       const isDev = process.env.NODE_ENV === 'development';
       const authBase = isDev ? 'http://localhost:5183' : `${window.location.origin}/auth-app`;
       window.location.href = `${authBase}/#/login?redirect=${encodeURIComponent(currentUrl)}`;
     }
-  }, [user, loading]);
+  }, [user, loading, isPublicRoute]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -110,7 +117,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
   }, [user]);
 
   // 如果正在检查登录状态，或者未登录（即将跳转），显示全屏 Loading 或空状态，避免闪屏
-  if (loading || !user) {
+  if (loading || (!user && !isPublicRoute)) {
     return <PageLoading loading />; // 避免首屏空白，同时给跳转登录留出过渡
   }
 
