@@ -25,6 +25,24 @@ const applyTheme = (next: 'light' | 'dark') => {
   localStorage.setItem('main-app-theme', next);
 };
 
+// 格式化本地时间
+const formatLocalTime = (isoString: string) => {
+  if (!isoString || isoString === 'Unknown') return isoString;
+  try {
+    return new Intl.DateTimeFormat('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).format(new Date(isoString));
+  } catch (e) {
+    return isoString;
+  }
+};
+
 const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -72,7 +90,15 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
     setIsMenuOpen(false);
     setIsAboutOpen(true);
     try {
-      const info = (await httpClient('/app/about')) as { deploymentTime?: string; version?: string };
+      // 传递当前时区给后端
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const info = (await httpClient(
+        '/app/about',
+        {},
+        {
+          headers: { 'x-timezone': timezone },
+        },
+      )) as { deploymentTime?: string; version?: string };
       setBackendInfo(info);
     } catch (e) {
       console.error('Failed to fetch backend info', e);
@@ -145,8 +171,8 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
             <h3 className="text-xl font-bold mb-4 text-[var(--color-text)]">关于系统</h3>
             <div className="space-y-3 text-sm text-[var(--color-text)] opacity-80">
               <div>
-                <div className="font-semibold text-[var(--color-primary)]">前端部署时间</div>
-                <div>{(process.env as any).BUILD_TIME || 'Unknown'}</div>
+                <div className="font-semibold text-[var(--color-primary)]">前端构建时间</div>
+                <div>{formatLocalTime((process.env as any).BUILD_TIME) || 'Unknown'}</div>
               </div>
               <div>
                 <div className="font-semibold text-[var(--color-primary)]">后端部署时间</div>
