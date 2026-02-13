@@ -72,7 +72,7 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
     setIsMenuOpen(false);
     setIsAboutOpen(true);
     try {
-      const info = await httpClient('/app/about');
+      const info = (await httpClient('/app/about')) as { deploymentTime?: string; version?: string };
       setBackendInfo(info);
     } catch (e) {
       console.error('Failed to fetch backend info', e);
