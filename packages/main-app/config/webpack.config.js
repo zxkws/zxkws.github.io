@@ -80,6 +80,11 @@ module.exports = {
       to: '', // 目标目录为空，表示直接复制到 output.path 根目录
       ignore: ['index.html'], // 忽略 index.html，因为它由 HtmlWebpackPlugin 处理
     }),
+    new SimpleCopyPlugin({
+      from: resolve(__dirname, '../../chess-mirror-app/dist'),
+      to: 'chess-mirror',
+      ignore: ['index.html'],
+    }),
     new webpack.DefinePlugin({
       'process.env': JSON.stringify({
         NODE_ENV: process.env.NODE_ENV,
