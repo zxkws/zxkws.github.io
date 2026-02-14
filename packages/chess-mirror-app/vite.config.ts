@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
         preserveEntrySignatures: 'exports-only',
       }),
     ],
-    base: isProd ? '/chess-mirror/' : '/',
+    base: isProd ? '/chess-mirror-app/' : '/',
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
@@ -31,13 +31,9 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
       target: 'esnext',
       rollupOptions: {
-        external: ['react', 'react-dom/client'],
-        preserveEntrySignatures: 'exports-only',
+        // Removed external: ['react', ...] to bundle dependencies, matching v-react pattern.
+        // This prevents 404s on the 'react' module at runtime.
         output: {
-          globals: {
-            react: 'React',
-            'react-dom/client': 'ReactDOM',
-          },
           entryFileNames: 'entry.js',
           chunkFileNames: 'chunks/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash][extname]',

@@ -48,7 +48,7 @@ jobs:
               filter: 'vue',
             },
             'chess-mirror-app': {
-              deploy_subdir: 'chess-mirror',
+              deploy_subdir: 'chess-mirror-app',
               filter: 'chess-mirror-app',
             },
           };
