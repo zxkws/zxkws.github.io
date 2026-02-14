@@ -82,8 +82,8 @@ module.exports = {
     }),
     new SimpleCopyPlugin({
       from: resolve(__dirname, '../../chess-mirror-app/dist'),
-      to: 'chess-mirror-app',
-      ignore: ['index.html'],
+      to: 'chess-mirror',
+      ignore: [],
     }),
     new webpack.DefinePlugin({
       'process.env': JSON.stringify({

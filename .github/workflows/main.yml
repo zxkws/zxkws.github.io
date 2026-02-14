@@ -47,6 +47,10 @@ jobs:
               deploy_subdir: 'vue',
               filter: 'vue',
             },
+            'chess-mirror-app': {
+              deploy_subdir: 'chess-mirror',
+              filter: 'chess-mirror-app',
+            },
           };
 
           const entries = fs.readdirSync(packagesDir).filter((name) =>

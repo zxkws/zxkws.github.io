@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
         preserveEntrySignatures: 'exports-only',
       }),
     ],
-    base: isProd ? '/chess-mirror-app/' : '/',
+    base: isProd ? '/chess-mirror/' : '/',
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
