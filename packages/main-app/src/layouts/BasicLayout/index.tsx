@@ -22,13 +22,13 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
   const isPublicRoute = (() => {
     if (typeof window === 'undefined') return true;
     const pathname = window.location.pathname || '/';
-    // 兜底与注释保持一致：未登录可见主页与工具页；另外 Watch Together 需要可分享链接，默认公开。
+    // 允许首页、工具页、以及象棋·镜在未登录时完全公开访问
     return (
       pathname === '/' ||
-      pathname.startsWith('/tools/') ||
-      pathname === '/app/watch-together' ||
       pathname === '/chess-mirror' ||
-      pathname.startsWith('/chess-mirror/')
+      pathname.startsWith('/chess-mirror/') ||
+      pathname.startsWith('/tools/') ||
+      pathname === '/app/watch-together'
     );
   })();
 

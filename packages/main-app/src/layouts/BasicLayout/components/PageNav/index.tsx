@@ -22,6 +22,7 @@ const getIcon = (name: string) => {
     文本比对: '📝',
     Curl转换: '🔄',
     象棋·镜: '🪞',
+    象棋: '🪞',
   };
   if (map[cleaned]) {
     return map[cleaned];
