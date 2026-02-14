@@ -27,11 +27,11 @@
 			"name": "chess-mirror",
 			"displayName": "象棋·镜",
 			"devEntry": "http://localhost:5186",
-			"prodEntry": "/chess-mirror/",
-			"entry": "/chess-mirror/",
+			"prodEntry": "/chess-mirror-app/entry.js",
+			"entry": "/chess-mirror-app/entry.js",
 			"activeRule": ["/chess-mirror"],
 			"basename": "/chess-mirror",
-			"sandbox": false,
+			"sandbox": true,
 			"enabled": true
 		}
 	],

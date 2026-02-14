@@ -15,7 +15,7 @@
     "dev:v-react": "pnpm --filter v-react dev",
     "dev:chess": "pnpm --filter chess-mirror-app dev",
     "build": "pnpm run build:all",
-    "build:all": "pnpm --filter main-app build && pnpm --filter v-app build && pnpm --filter auth-app build && pnpm --filter textdifference build && pnpm --filter v-react build && pnpm --filter chess-mirror-app build",
+    "build:all": "pnpm --filter v-app build && pnpm --filter auth-app build && pnpm --filter textdifference build && pnpm --filter v-react build && pnpm --filter chess-mirror-app build && pnpm --filter main-app build",
     "postinstall": "pnpm i @google/gemini-cli @anthropic-ai/claude-code -g || true",
     "prepare": "husky"
   },

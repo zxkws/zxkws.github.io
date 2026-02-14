@@ -82,7 +82,7 @@ module.exports = {
     }),
     new SimpleCopyPlugin({
       from: resolve(__dirname, '../../chess-mirror-app/dist'),
-      to: 'chess-mirror',
+      to: 'chess-mirror-app',
       ignore: ['index.html'],
     }),
     new webpack.DefinePlugin({
