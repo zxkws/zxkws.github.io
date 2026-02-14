@@ -21,6 +21,7 @@ const getIcon = (name: string) => {
     Agent任务: '🤖',
     文本比对: '📝',
     Curl转换: '🔄',
+    象棋·镜: '🪞',
   };
   if (map[cleaned]) {
     return map[cleaned];

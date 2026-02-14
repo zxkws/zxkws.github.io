@@ -15,11 +15,21 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useUser();
   const [menus, setMenus] = useState<MenuItem[]>(builtInAsideMenus);
 
+  useEffect(() => {
+    console.log('[BasicLayout] Current menus:', menus);
+  }, [menus]);
+
   const isPublicRoute = (() => {
     if (typeof window === 'undefined') return true;
     const pathname = window.location.pathname || '/';
     // 兜底与注释保持一致：未登录可见主页与工具页；另外 Watch Together 需要可分享链接，默认公开。
-    return pathname === '/' || pathname.startsWith('/tools/') || pathname === '/app/watch-together';
+    return (
+      pathname === '/' ||
+      pathname.startsWith('/tools/') ||
+      pathname === '/app/watch-together' ||
+      pathname === '/chess-mirror' ||
+      pathname.startsWith('/chess-mirror/')
+    );
   })();
 
   const commandItems = useMemo<CommandItem[]>(() => {
