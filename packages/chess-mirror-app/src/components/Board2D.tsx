@@ -82,7 +82,7 @@ export const Board2D: React.FC<Board2DProps> = ({ fen, onFenChange }) => {
 
   return (
     <div className="w-full max-w-md aspect-[9/10] bg-[#fdf5e6] rounded-xl shadow-2xl p-4 border-8 border-[#5d4037] relative overflow-hidden select-none">
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')] opacity-20 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('/wood-pattern.png')] opacity-20 pointer-events-none" />
       
       {/* Board Grid */}
       <div className="relative w-full h-full border-2 border-[#5d4037]">
