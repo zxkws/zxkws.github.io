@@ -15,19 +15,12 @@ import { DEFAULT_MODEL_ID } from '../constants/models';
 import { createChatCompletion, createChatCompletionStream, ChatServiceError } from '../services/chatService';
 import { buildContextPrompt, DEFAULT_CONTEXT_BUDGET_CHARS } from '../utils/context';
 import { createId, loadSnapshot, persistSnapshot } from '../utils/storage';
-import { trackCustom } from '@zxkws/web-monitor-sdk';
 
 const DEFAULT_TITLE = '新对话';
 
 const nowMs = () => (typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : Date.now());
 
-const safeTrack = (type: string, data: Record<string, unknown>) => {
-  try {
-    trackCustom(type, data);
-  } catch {
-    // ignore tracking errors
-  }
-};
+const safeTrack = (_type: string, _data: Record<string, unknown>) => {};
 
 const createWelcomeConversation = (): Conversation => {
   const now = new Date();

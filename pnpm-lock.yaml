@@ -226,9 +226,6 @@ importers:
       '@zxkws/shared-theme':
         specifier: workspace:*
         version: link:../shared-theme
-      '@zxkws/web-monitor-sdk':
-        specifier: workspace:*
-        version: link:../web-monitor-sdk
       antd:
         specifier: ^5.20.2
         version: 5.29.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -432,9 +429,6 @@ importers:
       '@zxkws/shared-theme':
         specifier: workspace:*
         version: link:../shared-theme
-      '@zxkws/web-monitor-sdk':
-        specifier: workspace:*
-        version: link:../web-monitor-sdk
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -560,12 +554,6 @@ importers:
       vue-tsc:
         specifier: ^3.1.1
         version: 3.2.1(typescript@5.9.3)
-
-  packages/web-monitor-sdk:
-    devDependencies:
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
 
 packages:
 

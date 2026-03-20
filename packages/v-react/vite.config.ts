@@ -21,7 +21,6 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
-        '@zxkws/web-monitor-sdk': resolve(__dirname, '../web-monitor-sdk/src/index.ts'),
       },
     },
     server: {
