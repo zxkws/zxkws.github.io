@@ -1,0 +1,812 @@
+/*
+  DB Ops console styles (Design System v2)
+
+  Scope:
+  - Only apply inside `.dbops-root` (micro-frontend safe).
+  - Use shared theme semantic tokens so light/dark only changes tokens.
+*/
+
+.dbops-root,
+.dbops-root * {
+  box-sizing: border-box;
+}
+
+.dbops-root {
+  padding: 24px clamp(16px, 4vw, 36px);
+  max-width: 1600px;
+  margin: 0 auto;
+  color: var(--color-fg);
+}
+
+/* Header */
+.dbops-root .page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.dbops-root .page-header h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 36px;
+  letter-spacing: -0.01em;
+}
+
+.dbops-root .page-header .sub {
+  margin: 6px 0 0;
+  color: var(--color-fg-tertiary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.dbops-root .header-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Buttons & links */
+.dbops-root .btn {
+  appearance: none;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.dbops-root .btn:hover {
+  background: var(--color-surface-3);
+}
+
+.dbops-root .btn:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.dbops-root .btn.primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 600;
+}
+
+.dbops-root .btn.primary:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.dbops-root .btn.ghost {
+  background: transparent;
+}
+
+.dbops-root .btn.ghost:hover {
+  background: var(--color-surface-2);
+}
+
+.dbops-root .btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dbops-root .link {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.dbops-root .link:hover {
+  text-decoration: underline;
+}
+
+.dbops-root .link:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Global loading overlay */
+.dbops-root .db-global-loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--space-4);
+  pointer-events: none;
+  z-index: 2000;
+}
+
+.dbops-root .db-global-loading .pill {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-fg);
+  border: 1px solid var(--color-divider);
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dbops-root .db-global-loading .spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 3px solid rgba(148, 163, 184, 0.35);
+  border-top-color: var(--color-primary);
+  animation: db-spin 0.75s linear infinite;
+}
+
+.dbops-root .db-global-loading .text {
+  white-space: nowrap;
+}
+
+@keyframes db-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Toolbar */
+.dbops-root .toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-3);
+}
+
+.dbops-root .toolbar-left,
+.dbops-root .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* Tabs */
+.dbops-root .tabs {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+  margin: var(--space-3) 0;
+}
+
+.dbops-root .tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-fg-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.dbops-root .tab:hover {
+  background: var(--color-surface-3);
+  color: var(--color-fg);
+}
+
+.dbops-root .tab.active {
+  background: var(--color-surface-3);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.dbops-root .tab-badge {
+  font-size: 12px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  color: var(--color-fg-tertiary);
+}
+
+/* Summary */
+.dbops-root .summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.dbops-root .stat {
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.dbops-root .stat .k {
+  color: var(--color-fg-tertiary);
+  font-size: 12px;
+}
+
+.dbops-root .stat .v {
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* Workspace split */
+.dbops-root .workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 440px);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.dbops-root .workspace-main,
+.dbops-root .workspace-side {
+  min-width: 0;
+}
+
+/* Table */
+.dbops-root .table-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.dbops-root .table-panel .toolbar {
+  border: none;
+  box-shadow: none;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--color-divider);
+  border-radius: 0;
+}
+
+.dbops-root .data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dbops-root .data-table thead th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-fg-tertiary);
+  padding: 10px 12px;
+  background: var(--color-surface-2);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.dbops-root .data-table tbody td {
+  padding: 10px 12px;
+  border-top: 1px solid var(--color-divider);
+  vertical-align: middle;
+  color: var(--color-fg);
+}
+
+.dbops-root .data-table tbody tr {
+  cursor: pointer;
+}
+
+.dbops-root .data-table tbody tr:hover {
+  background: var(--color-surface-3);
+}
+
+.dbops-root .data-table tbody tr.selected {
+  background: var(--color-surface-3);
+}
+
+.dbops-root .cell-actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.dbops-root .cell-actions .link {
+  font-size: 12px;
+}
+
+/* Side panel */
+.dbops-root .sidepanel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.dbops-root .sidepanel-head {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+  background: var(--color-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.dbops-root .sidepanel-title {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+}
+
+.dbops-root .sidepanel-title h3 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dbops-root .sidepanel-body {
+  padding: var(--space-3) var(--space-4);
+}
+
+.dbops-root .kv {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 8px 10px;
+  align-items: start;
+  font-size: 13px;
+}
+
+.dbops-root .kv .k {
+  color: var(--color-fg-tertiary);
+}
+
+.dbops-root .kv .v {
+  min-width: 0;
+}
+
+.dbops-root .divider {
+  height: 1px;
+  background: var(--color-divider);
+  margin: var(--space-3) 0;
+}
+
+/* Form */
+.dbops-root .field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.dbops-root .field-label {
+  font-size: 12px;
+  color: var(--color-fg-tertiary);
+}
+
+.dbops-root .field input,
+.dbops-root .field select,
+.dbops-root .field textarea {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-fg);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  min-height: 36px;
+}
+
+.dbops-root .field input::placeholder,
+.dbops-root .field textarea::placeholder {
+  color: var(--color-fg-tertiary);
+}
+
+.dbops-root .field input:focus,
+.dbops-root .field select:focus,
+.dbops-root .field textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.dbops-root .field textarea {
+  resize: vertical;
+  min-height: 84px;
+}
+
+.dbops-root .field.full {
+  width: 100%;
+}
+
+/* Panels */
+.dbops-root .panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.dbops-root .panel.muted {
+  color: var(--color-fg-tertiary);
+}
+
+.dbops-root .panel.danger {
+  border-color: var(--color-danger);
+  background: var(--color-surface-2);
+  color: var(--color-danger);
+}
+
+/* List / cards */
+.dbops-root .list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.dbops-root .card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.dbops-root .card-head,
+.dbops-root .card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.dbops-root .card-body {
+  margin: var(--space-3) 0;
+  padding: var(--space-3);
+  background: var(--color-surface-2);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--color-divider);
+}
+
+.dbops-root .card-title {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.dbops-root .name-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.dbops-root .name {
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 26px;
+}
+
+.dbops-root .actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.dbops-root .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.dbops-root .label {
+  margin: 0;
+  color: var(--color-fg-tertiary);
+  font-size: 12px;
+}
+
+.dbops-root .value {
+  margin: 4px 0 0;
+  font-weight: 500;
+}
+
+.dbops-root .mono,
+.dbops-root .value .mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.dbops-root .ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dbops-root .note {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-fg-secondary);
+}
+
+.dbops-root .note strong {
+  margin-right: 6px;
+  color: var(--color-fg);
+}
+
+.dbops-root .card-foot .meta {
+  color: var(--color-fg-tertiary);
+  font-size: 12px;
+}
+
+/* Badges / pills / status */
+.dbops-root .badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-fg-secondary);
+}
+
+.dbops-root .badge-blue {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.dbops-root .badge-red {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.dbops-root .badge-green {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.dbops-root .pill {
+  border: 1px solid var(--color-border);
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--color-fg-tertiary);
+  font-size: 12px;
+  background: var(--color-surface-2);
+}
+
+.dbops-root .pill.running {
+  border-color: var(--color-info);
+  color: var(--color-info);
+}
+
+.dbops-root .pill.success {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.dbops-root .pill.failed {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.dbops-root .sub,
+.dbops-root .muted {
+  color: var(--color-fg-tertiary);
+}
+
+.dbops-root .status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--color-fg-secondary);
+}
+
+.dbops-root .status-text {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+}
+
+.dbops-root .latency {
+  color: var(--color-fg-tertiary);
+}
+
+.dbops-root .status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.18);
+}
+
+.dbops-root .status-dot.online {
+  background: var(--color-success);
+}
+
+.dbops-root .status-dot.offline {
+  background: var(--color-danger);
+}
+
+.dbops-root .status-dot.idle {
+  background: var(--color-fg-tertiary);
+}
+
+/* Modal */
+.dbops-root .modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 20;
+}
+
+.dbops-root .modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-md);
+  width: min(900px, 95vw);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-md);
+}
+
+.dbops-root .modal-head,
+.dbops-root .modal-foot {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+  background: var(--color-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.dbops-root .modal-head h3 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.dbops-root .modal-foot {
+  border-top: 1px solid var(--color-divider);
+  border-bottom: none;
+}
+
+.dbops-root .modal-body {
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.dbops-root .form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+/* Toast */
+.dbops-root .toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  color: var(--color-fg);
+  z-index: 2000;
+}
+
+@supports (background: color-mix(in srgb, #000, #fff)) {
+  .dbops-root .tab.active {
+    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
+    border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  }
+
+  .dbops-root .data-table tbody tr.selected {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  }
+
+  .dbops-root .panel.danger {
+    border-color: color-mix(in srgb, var(--color-danger) 40%, var(--color-border));
+    background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
+  }
+
+  .dbops-root .pill.running {
+    border-color: color-mix(in srgb, var(--color-info) 40%, var(--color-border));
+    background: color-mix(in srgb, var(--color-info) 12%, var(--color-surface));
+  }
+
+  .dbops-root .pill.success {
+    border-color: color-mix(in srgb, var(--color-success) 40%, var(--color-border));
+    background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
+  }
+
+  .dbops-root .pill.failed {
+    border-color: color-mix(in srgb, var(--color-danger) 40%, var(--color-border));
+    background: color-mix(in srgb, var(--color-danger) 12%, var(--color-surface));
+  }
+
+  .dbops-root .badge-blue {
+    border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  }
+
+  .dbops-root .badge-red {
+    border-color: color-mix(in srgb, var(--color-danger) 35%, var(--color-border));
+    background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
+  }
+
+  .dbops-root .badge-green {
+    border-color: color-mix(in srgb, var(--color-success) 35%, var(--color-border));
+    background: color-mix(in srgb, var(--color-success) 10%, var(--color-surface));
+  }
+}
+
+@media (max-width: 720px) {
+  .dbops-root {
+    padding: 20px 14px;
+  }
+
+  .dbops-root .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dbops-root .toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dbops-root .card-head,
+  .dbops-root .card-foot {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dbops-root .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .dbops-root .workspace {
+    grid-template-columns: 1fr;
+  }
+}
