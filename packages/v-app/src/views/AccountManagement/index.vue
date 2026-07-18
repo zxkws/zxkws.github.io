@@ -45,8 +45,8 @@
                   {{ account.platform }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ account.account || '-' }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ new Date(account.uts).toLocaleString() }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ account.account }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ account.uts }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button @click="editAccount(account)" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-300 dark:hover:text-indigo-200 mr-4">编辑</button>
                 <button @click="deleteAccount(account.id)" class="text-red-600 hover:text-red-900 dark:text-red-300 dark:hover:text-red-200">删除</button>
@@ -68,26 +68,22 @@
 
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue';
-import { createAccount, getAccounts, updateAccount, deleteAccount as deleteAccountApi } from '@/http';
+import {
+  createAccount,
+  getAccounts,
+  updateAccount,
+  deleteAccount as deleteAccountApi,
+  type AccountDto,
+} from '@/http';
 import AccountModal from './components/AccountModal.vue';
 
-interface Account {
-  id: number;
-  name: string;
-  platform: string;
-  account: string;
-  secret?: string; // only for form, not returned by list usually
-  extra?: any;
-  uts: string;
-}
-
-const accounts = ref<Account[]>([]);
+const accounts = ref<AccountDto[]>([]);
 const loadingAccounts = ref(false);
 const error = ref('');
 
 const modalVisible = ref(false);
 const submitting = ref(false);
-const editingAccount = ref<Account | null>(null);
+const editingAccount = ref<AccountDto | null>(null);
 
 onMounted(() => {
   fetchAccounts();
@@ -110,7 +106,7 @@ const openCreateModal = () => {
   modalVisible.value = true;
 };
 
-const editAccount = (account: Account) => {
+const editAccount = (account: AccountDto) => {
   editingAccount.value = account;
   modalVisible.value = true;
 };
@@ -119,11 +115,13 @@ const handleModalSubmit = async (formData: any) => {
   try {
     submitting.value = true;
     error.value = '';
+    const payload = { ...formData };
 
     if (editingAccount.value) {
-      await updateAccount(editingAccount.value.id, formData);
+      if (!payload.secret) delete payload.secret;
+      await updateAccount(editingAccount.value.id, payload);
     } else {
-      await createAccount(formData);
+      await createAccount(payload);
     }
 
     modalVisible.value = false;
@@ -136,7 +134,7 @@ const handleModalSubmit = async (formData: any) => {
   }
 };
 
-const deleteAccount = async (id: number) => {
+const deleteAccount = async (id: string) => {
   if (!confirm('确定要删除此账户吗？')) return;
 
   try {

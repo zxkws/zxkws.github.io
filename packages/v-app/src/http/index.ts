@@ -12,8 +12,8 @@ export interface TodoResponse {
   completed?: boolean;
 }
 
-interface AccountDto {
-  id: number;
+export interface AccountDto {
+  id: string;
   name: string;
   platform: string;
   account: string;
@@ -85,18 +85,22 @@ export const createAccount = (params: CreateAccountDto) => {
 };
 
 export const getAccounts = () => {
-  return fetch<AccountDto[]>('/v1/account-manage', {});
+  return fetch<ApiResponse<AccountDto[]>>('/v1/account-manage', {}, { method: 'GET' }).then(
+    (response) => response.data,
+  );
 };
 
-export const getAccount = (id: number) => {
-  return fetch<AccountDto>(`/v1/account-manage/${id}`, {});
+export const getAccount = (id: string) => {
+  return fetch<ApiResponse<AccountDto>>(`/v1/account-manage/${id}`, {}, { method: 'GET' }).then(
+    (response) => response.data,
+  );
 };
 
-export const updateAccount = (id: number, params: UpdateAccountDto) => {
+export const updateAccount = (id: string, params: UpdateAccountDto) => {
   return fetch<void>(`/v1/account-manage/${id}`, params, { method: 'PATCH' });
 };
 
-export const deleteAccount = (id: number) => {
+export const deleteAccount = (id: string) => {
   return fetch<void>(`/v1/account-manage/${id}`, {}, { method: 'DELETE' });
 };
 
