@@ -35,7 +35,7 @@ export const mount = async (options: MountOptions = {}) => {
   const fallbackSelector = isInIcestark() ? undefined : '#root';
   const containerSource = container ?? customProps?.container ?? fallbackSelector;
   const target = resolveContainer(containerSource);
-  
+
   if (!target) {
     console.warn('[chess-mirror] mount skipped: container missing');
     return;
@@ -51,5 +51,9 @@ export const mount = async (options: MountOptions = {}) => {
 };
 
 if (!isInIcestark()) {
+  document.documentElement.style.height = '100%';
+  document.body.style.height = '100%';
+  document.body.style.margin = '0';
+  document.body.style.background = '#020617';
   mount({ container: '#root' });
 }

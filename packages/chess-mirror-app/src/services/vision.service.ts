@@ -9,19 +9,26 @@ export type RecognitionResult = {
   confidence: number | null;
   model: string;
   latencyMs: number;
+  board?: Array<Array<string | null>>;
 };
 
 export type ChessMove = {
   move: string;
+  moveText?: string;
   score?: string;
   rank?: string;
   note?: string;
   winrate?: string;
+  tags?: string[];
 };
 
 export type AnalysisResult = {
   fen: string;
   bestMove: string;
+  bestMoveText?: string;
+  evaluation?: number | null;
+  evaluationText?: string;
+  lines?: ChessMove[];
   moves: ChessMove[];
   source: string;
 };
@@ -58,82 +65,32 @@ const sourceReady = (source: ImageSource) => {
 };
 
 export class ChessVisionService {
-  private cv: any;
-
   async init() {
-    const startedAt = Date.now();
-    while (!(window as any).cv?.Mat) {
-      if (Date.now() - startedAt > 15_000) {
-        throw new Error('OpenCV 加载失败');
-      }
-      await new Promise((resolve) => window.setTimeout(resolve, 100));
-    }
-    this.cv = (window as any).cv;
+    return Promise.resolve();
   }
 
   isReady() {
-    return Boolean(this.cv?.Mat);
+    return true;
   }
 
   findBoardCorners(source: ImageSource): Point[] | null {
-    if (!this.cv || !sourceReady(source)) return null;
+    if (!sourceReady(source)) return null;
     const { width, height } = sourceSize(source);
-    const scale = Math.min(1, 1100 / Math.max(width, height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(width * scale);
-    canvas.height = Math.round(height * scale);
-    canvas.getContext('2d')?.drawImage(source, 0, 0, canvas.width, canvas.height);
-
-    const src = this.cv.imread(canvas);
-    const gray = new this.cv.Mat();
-    const edges = new this.cv.Mat();
-    const contours = new this.cv.MatVector();
-    const hierarchy = new this.cv.Mat();
-    const kernel = this.cv.Mat.ones(3, 3, this.cv.CV_8U);
-    let result: Point[] | null = null;
-
-    try {
-      this.cv.cvtColor(src, gray, this.cv.COLOR_RGBA2GRAY);
-      this.cv.GaussianBlur(gray, gray, new this.cv.Size(5, 5), 0);
-      this.cv.Canny(gray, edges, 45, 140);
-      this.cv.dilate(edges, edges, kernel);
-      this.cv.findContours(edges, contours, hierarchy, this.cv.RETR_LIST, this.cv.CHAIN_APPROX_SIMPLE);
-
-      const imageArea = canvas.width * canvas.height;
-      let maxArea = imageArea * 0.08;
-      for (let index = 0; index < contours.size(); index += 1) {
-        const contour = contours.get(index);
-        const area = this.cv.contourArea(contour);
-        if (area <= maxArea) {
-          contour.delete();
-          continue;
-        }
-        const perimeter = this.cv.arcLength(contour, true);
-        const polygon = new this.cv.Mat();
-        this.cv.approxPolyDP(contour, polygon, perimeter * 0.025, true);
-        if (polygon.rows === 4 && this.cv.isContourConvex(polygon)) {
-          const points: Point[] = [];
-          for (let pointIndex = 0; pointIndex < 4; pointIndex += 1) {
-            points.push({
-              x: polygon.data32S[pointIndex * 2] / scale,
-              y: polygon.data32S[pointIndex * 2 + 1] / scale,
-            });
-          }
-          result = this.sortPoints(points);
-          maxArea = area;
-        }
-        polygon.delete();
-        contour.delete();
-      }
-    } finally {
-      src.delete();
-      gray.delete();
-      edges.delete();
-      contours.delete();
-      hierarchy.delete();
-      kernel.delete();
+    const padding = 0.08;
+    let boardHeight = height * (1 - padding * 2);
+    let boardWidth = boardHeight * 0.9;
+    if (boardWidth > width * (1 - padding * 2)) {
+      boardWidth = width * (1 - padding * 2);
+      boardHeight = boardWidth / 0.9;
     }
-    return result;
+    const left = (width - boardWidth) / 2;
+    const top = (height - boardHeight) / 2;
+    return [
+      { x: left, y: top },
+      { x: left + boardWidth, y: top },
+      { x: left + boardWidth, y: top + boardHeight },
+      { x: left, y: top + boardHeight },
+    ];
   }
 
   capture(source: ImageSource, corners?: Point[] | null) {
@@ -144,65 +101,43 @@ export class ChessVisionService {
     input.height = height;
     input.getContext('2d')?.drawImage(source, 0, 0, width, height);
 
-    if (!this.cv || !corners || corners.length !== 4) {
+    if (!corners || corners.length !== 4) {
       return this.toLimitedJpeg(input);
     }
-
-    const src = this.cv.imread(input);
-    const output = new this.cv.Mat();
-    const from = this.cv.matFromArray(
-      4,
-      1,
-      this.cv.CV_32FC2,
-      corners.flatMap((point) => [point.x, point.y]),
-    );
-    const to = this.cv.matFromArray(4, 1, this.cv.CV_32FC2, [0, 0, 899, 0, 899, 999, 0, 999]);
-    const transform = this.cv.getPerspectiveTransform(from, to);
-    const warped = document.createElement('canvas');
-    warped.width = 900;
-    warped.height = 1000;
-    try {
-      this.cv.warpPerspective(
-        src,
-        output,
-        transform,
-        new this.cv.Size(900, 1000),
-        this.cv.INTER_LINEAR,
-        this.cv.BORDER_REPLICATE,
-      );
-      this.cv.imshow(warped, output);
-      return warped.toDataURL('image/jpeg', 0.84);
-    } finally {
-      src.delete();
-      output.delete();
-      from.delete();
-      to.delete();
-      transform.delete();
-    }
+    const left = Math.max(0, Math.min(...corners.map((point) => point.x)));
+    const top = Math.max(0, Math.min(...corners.map((point) => point.y)));
+    const right = Math.min(width, Math.max(...corners.map((point) => point.x)));
+    const bottom = Math.min(height, Math.max(...corners.map((point) => point.y)));
+    const cropped = document.createElement('canvas');
+    cropped.width = 900;
+    cropped.height = 1000;
+    cropped
+      .getContext('2d')
+      ?.drawImage(input, left, top, right - left, bottom - top, 0, 0, cropped.width, cropped.height);
+    return cropped.toDataURL('image/jpeg', 0.84);
   }
 
   frameHash(source: ImageSource, corners?: Point[] | null) {
-    const jpeg = this.capture(source, corners);
-    const image = new Image();
-    return new Promise<Uint8Array>((resolve, reject) => {
-      image.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 18;
-        canvas.height = 20;
-        const context = canvas.getContext('2d', { willReadFrequently: true });
-        if (!context) return reject(new Error('无法读取画面'));
-        context.drawImage(image, 0, 0, 18, 20);
-        const pixels = context.getImageData(0, 0, 18, 20).data;
-        const values = new Uint8Array(360);
-        for (let index = 0; index < values.length; index += 1) {
-          const offset = index * 4;
-          values[index] = Math.round(pixels[offset] * 0.299 + pixels[offset + 1] * 0.587 + pixels[offset + 2] * 0.114);
-        }
-        resolve(values);
-      };
-      image.onerror = () => reject(new Error('无法读取画面'));
-      image.src = jpeg;
-    });
+    if (!sourceReady(source)) return Promise.reject(new Error('无法读取画面'));
+    const { width, height } = sourceSize(source);
+    const points = corners?.length === 4 ? corners : this.findBoardCorners(source);
+    const left = points ? Math.max(0, Math.min(...points.map((point) => point.x))) : 0;
+    const top = points ? Math.max(0, Math.min(...points.map((point) => point.y))) : 0;
+    const right = points ? Math.min(width, Math.max(...points.map((point) => point.x))) : width;
+    const bottom = points ? Math.min(height, Math.max(...points.map((point) => point.y))) : height;
+    const canvas = document.createElement('canvas');
+    canvas.width = 18;
+    canvas.height = 20;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) return Promise.reject(new Error('无法读取画面'));
+    context.drawImage(source, left, top, right - left, bottom - top, 0, 0, 18, 20);
+    const pixels = context.getImageData(0, 0, 18, 20).data;
+    const values = new Uint8Array(360);
+    for (let index = 0; index < values.length; index += 1) {
+      const offset = index * 4;
+      values[index] = Math.round(pixels[offset] * 0.299 + pixels[offset + 1] * 0.587 + pixels[offset + 2] * 0.114);
+    }
+    return Promise.resolve(values);
   }
 
   frameDifference(first?: Uint8Array | null, second?: Uint8Array | null) {
@@ -282,12 +217,6 @@ export class ChessVisionService {
     output.height = Math.round(source.height * scale);
     output.getContext('2d')?.drawImage(source, 0, 0, output.width, output.height);
     return output.toDataURL('image/jpeg', 0.82);
-  }
-
-  private sortPoints(points: Point[]) {
-    const bySum = [...points].sort((a, b) => a.x + a.y - (b.x + b.y));
-    const byDifference = [...points].sort((a, b) => a.x - a.y - (b.x - b.y));
-    return [bySum[0], byDifference[3], bySum[3], byDifference[0]];
   }
 
   private movePoint(corners: Point[], square: string, bottomSide: BottomSide) {

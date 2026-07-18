@@ -8,8 +8,10 @@ function cn(...inputs: ClassValue[]) {
 
 interface Board2DProps {
   fen: string;
-  onFenChange: (fen: string) => void;
+  onFenChange?: (fen: string) => void;
   bestMove?: string | null;
+  flipped?: boolean;
+  editable?: boolean;
 }
 
 const PIECE_MAP: Record<string, string> = {
@@ -29,145 +31,153 @@ const PIECE_MAP: Record<string, string> = {
   P: '兵',
 };
 
-const PIECES_CYCLE = ['r', 'n', 'b', 'a', 'k', 'c', 'p', 'R', 'N', 'B', 'A', 'K', 'C', 'P', ' '];
+const RED_PIECES = ['R', 'N', 'B', 'A', 'K', 'C', 'P'];
+const BLACK_PIECES = ['r', 'n', 'b', 'a', 'k', 'c', 'p'];
 
-export const Board2D: React.FC<Board2DProps> = ({ fen, onFenChange, bestMove }) => {
-  const [dragging, setDragging] = useState<{ r: number; c: number; piece: string } | null>(null);
+const parseFen = (fen: string) => {
+  const rows = fen.split(' ')[0].split('/');
+  const board = rows.map((row) => {
+    const cells: (string | null)[] = [];
+    for (const value of row) {
+      const count = Number(value);
+      if (Number.isInteger(count) && count > 0) cells.push(...Array<null>(count).fill(null));
+      else cells.push(value);
+    }
+    return cells;
+  });
+  return board.length === 10 && board.every((row) => row.length === 9)
+    ? board
+    : Array.from({ length: 10 }, () => Array<string | null>(9).fill(null));
+};
 
-  const parseFen = (f: string) => {
-    const rows = f.split(' ')[0].split('/');
-    const board: (string | null)[][] = rows.map((row) => {
-      const res: (string | null)[] = [];
-      for (const char of row) {
-        if (isNaN(parseInt(char))) {
-          res.push(char);
-        } else {
-          for (let i = 0; i < parseInt(char); i++) res.push(null);
+const serializeFen = (board: (string | null)[][], fen: string) => {
+  const placement = board
+    .map((row) => {
+      let result = '';
+      let empty = 0;
+      row.forEach((piece) => {
+        if (!piece) {
+          empty += 1;
+          return;
         }
-      }
-      return res;
-    });
-    return board.length === 10 && board.every((row) => row.length === 9)
-      ? board
-      : Array.from({ length: 10 }, () => Array<string | null>(9).fill(null));
-  };
+        if (empty) result += empty;
+        result += piece;
+        empty = 0;
+      });
+      if (empty) result += empty;
+      return result;
+    })
+    .join('/');
+  return `${placement} ${fen.split(' ')[1] === 'b' ? 'b' : 'w'} - - 0 1`;
+};
 
-  const serializeFen = (board: (string | null)[][]) => {
-    let res = board
-      .map((row) => {
-        let rowStr = '';
-        let empty = 0;
-        row.forEach((cell) => {
-          if (cell) {
-            if (empty) rowStr += empty;
-            rowStr += cell;
-            empty = 0;
-          } else {
-            empty++;
-          }
-        });
-        if (empty) rowStr += empty;
-        return rowStr;
-      })
-      .join('/');
-    const side = fen.split(' ')[1] === 'b' ? 'b' : 'w';
-    return `${res} ${side} - - 0 1`;
-  };
+const moveCell = (square: string) => ({ row: 9 - Number(square[1]), column: square.charCodeAt(0) - 97 });
 
+export const Board2D: React.FC<Board2DProps> = ({ fen, onFenChange, bestMove, flipped = false, editable = true }) => {
+  const [selected, setSelected] = useState<{ row: number; column: number } | null>(null);
   const board = parseFen(fen);
-  const moveSquares = (() => {
-    if (!bestMove || !/^[a-i][0-9][a-i][0-9]$/.test(bestMove)) return null;
-    const toCell = (square: string) => ({
-      r: 9 - Number(square[1]),
-      c: square.charCodeAt(0) - 97,
-    });
-    return { from: toCell(bestMove.slice(0, 2)), to: toCell(bestMove.slice(2, 4)) };
-  })();
+  const displayRows = flipped ? [...board].reverse().map((row) => [...row].reverse()) : board;
+  const move =
+    bestMove && /^[a-i][0-9][a-i][0-9]$/.test(bestMove)
+      ? { from: moveCell(bestMove.slice(0, 2)), to: moveCell(bestMove.slice(2, 4)) }
+      : null;
 
-  const handleCellClick = (r: number, c: number) => {
-    const newBoard = [...board.map((row) => [...row])];
-    const current = newBoard[r][c] || ' ';
-    const nextIdx = (PIECES_CYCLE.indexOf(current) + 1) % PIECES_CYCLE.length;
-    const nextPiece = PIECES_CYCLE[nextIdx].trim() || null;
-    newBoard[r][c] = nextPiece;
-    onFenChange(serializeFen(newBoard));
+  const displayCell = (cell: { row: number; column: number }) =>
+    flipped ? { row: 9 - cell.row, column: 8 - cell.column } : cell;
+  const displayMove = move ? { from: displayCell(move.from), to: displayCell(move.to) } : null;
+
+  const selectDisplayCell = (row: number, column: number) => {
+    if (!editable) return;
+    setSelected(flipped ? { row: 9 - row, column: 8 - column } : { row, column });
   };
 
-  const onDragStart = (r: number, c: number, piece: string) => {
-    setDragging({ r, c, piece });
+  const replaceSelected = (piece: string | null) => {
+    if (!selected || !onFenChange) return;
+    const next = board.map((row) => [...row]);
+    next[selected.row][selected.column] = piece;
+    onFenChange(serializeFen(next, fen));
+    setSelected(null);
   };
 
-  const onDrop = (r: number, c: number) => {
-    if (!dragging) return;
-    const newBoard = [...board.map((row) => [...row])];
-    newBoard[dragging.r][dragging.c] = null;
-    newBoard[r][c] = dragging.piece;
-    onFenChange(serializeFen(newBoard));
-    setDragging(null);
-  };
+  const selectedDisplay = selected ? displayCell(selected) : null;
 
   return (
-    <div className="w-full max-w-md aspect-[9/10] bg-[#f2d49b] rounded-xl shadow-2xl p-4 border-8 border-[#5d4037] relative overflow-hidden select-none">
-      {/* Board Grid */}
-      <div className="relative w-full h-full border-2 border-[#5d4037]">
-        {/* River */}
-        <div className="absolute top-[45%] left-0 w-full h-[10%] border-y-2 border-[#5d4037] flex items-center justify-around text-[#5d4037] font-bold text-2xl tracking-[1em] px-4 opacity-60">
+    <div className="board-editor">
+      <div className="xiangqi-board">
+        <div className="board-grid-lines" />
+        <div className="board-river">
           <span>楚河</span>
           <span>汉界</span>
         </div>
-
-        {/* Vertical/Horizontal Lines */}
-        <div className="absolute inset-0 grid grid-cols-8 grid-rows-9">
-          {Array.from({ length: 72 }).map((_, i) => (
-            <div key={i} className="border-[0.5px] border-[#5d4037]/30" />
-          ))}
-        </div>
-
-        {/* Palace Diagonals */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-[#5d4037]/30" viewBox="0 0 800 900">
+        <svg className="board-palaces" viewBox="0 0 800 900" aria-hidden="true">
           <line x1="300" y1="0" x2="500" y2="200" />
           <line x1="500" y1="0" x2="300" y2="200" />
           <line x1="300" y1="700" x2="500" y2="900" />
           <line x1="500" y1="700" x2="300" y2="900" />
         </svg>
-
-        {/* Pieces Layer */}
-        <div className="absolute inset-0 grid grid-cols-9 grid-rows-10">
-          {board.map((row, r) =>
-            row.map((piece, c) => (
-              <div
-                key={`${r}-${c}`}
+        {displayMove && (
+          <svg className="board-move-arrow" viewBox="0 0 800 900" aria-hidden="true">
+            <defs>
+              <marker id="move-head" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L7,3 z" />
+              </marker>
+            </defs>
+            <line
+              x1={displayMove.from.column * 100}
+              y1={displayMove.from.row * 100}
+              x2={displayMove.to.column * 100}
+              y2={displayMove.to.row * 100}
+              markerEnd="url(#move-head)"
+            />
+          </svg>
+        )}
+        <div className="board-pieces">
+          {displayRows.map((row, rowIndex) =>
+            row.map((piece, columnIndex) => (
+              <button
+                type="button"
+                key={`${rowIndex}-${columnIndex}`}
                 className={cn(
-                  'flex items-center justify-center relative',
-                  dragging?.r === r && dragging?.c === c && 'opacity-20',
-                  moveSquares?.from.r === r && moveSquares.from.c === c && 'bg-sky-400/30',
-                  moveSquares?.to.r === r && moveSquares.to.c === c && 'bg-green-500/40',
+                  'board-cell',
+                  selectedDisplay?.row === rowIndex && selectedDisplay.column === columnIndex && 'board-cell-selected',
+                  displayMove?.from.row === rowIndex && displayMove.from.column === columnIndex && 'board-cell-from',
+                  displayMove?.to.row === rowIndex && displayMove.to.column === columnIndex && 'board-cell-to',
                 )}
-                onClick={() => handleCellClick(r, c)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => onDrop(r, c)}
+                onClick={() => selectDisplayCell(rowIndex, columnIndex)}
+                aria-label={piece ? PIECE_MAP[piece] : '空位'}
               >
                 {piece && (
-                  <div
-                    draggable
-                    onDragStart={() => onDragStart(r, c, piece)}
-                    className={cn(
-                      'w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold text-xl shadow-lg cursor-grab active:cursor-grabbing transform transition-transform hover:scale-110',
-                      piece === piece.toUpperCase()
-                        ? 'bg-[#fffafa] border-[#b71c1c] text-[#b71c1c]'
-                        : 'bg-[#fffafa] border-[#212121] text-[#212121]',
-                    )}
-                  >
-                    <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
-                      {PIECE_MAP[piece] || piece}
-                    </div>
-                  </div>
+                  <span className={piece === piece.toUpperCase() ? 'piece piece-red' : 'piece piece-black'}>
+                    {PIECE_MAP[piece]}
+                  </span>
                 )}
-              </div>
+              </button>
             )),
           )}
         </div>
       </div>
+
+      {editable && selected && (
+        <div className="piece-picker" role="dialog" aria-label="选择棋子">
+          <div className="piece-picker-row">
+            {RED_PIECES.map((piece) => (
+              <button key={piece} onClick={() => replaceSelected(piece)} className="picker-piece piece-red">
+                {PIECE_MAP[piece]}
+              </button>
+            ))}
+          </div>
+          <div className="piece-picker-row">
+            {BLACK_PIECES.map((piece) => (
+              <button key={piece} onClick={() => replaceSelected(piece)} className="picker-piece piece-black">
+                {PIECE_MAP[piece]}
+              </button>
+            ))}
+          </div>
+          <button className="picker-clear" onClick={() => replaceSelected(null)}>
+            清空此位
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -4,7 +4,7 @@ const path = require('path');
 /**
  * @zxkws/build-tools: SimpleCopyPlugin
  * 一个简单的 Webpack 插件，用于在构建过程中将指定目录下的静态文件复制到输出目录。
- * 
+ *
  * 为什么需要这个插件？
  * Webpack 默认只处理其依赖图中的模块（JS/CSS 引入的资源）。
  * 对于像 `manifest.json`, `robots.txt` 或根目录下的图标文件等，它们没有被任何 JS/CSS 模块引用，
@@ -26,14 +26,16 @@ class SimpleCopyPlugin {
    * @param {string} options.from - 源目录的路径，可以是相对路径或绝对路径。
    * @param {string} [options.to=''] - 目标子目录的路径，相对于 Webpack 的 `output.path`。
    * @param {Array<string|RegExp>} [options.ignore=[]] - 忽略的文件或路径模式列表。
+   * @param {boolean} [options.alreadyOptimized=false] - 源文件是否已经完成构建优化。
    */
   constructor(options = {}) {
     if (!options.from) {
       throw new Error('SimpleCopyPlugin: "from" option is required.');
     }
     this.from = options.from;
-    this.to = options.to || ''; 
+    this.to = options.to || '';
     this.ignore = options.ignore || [];
+    this.alreadyOptimized = options.alreadyOptimized || false;
     this.pluginName = 'SimpleCopyPlugin'; // 插件名称，用于调试和日志
   }
 
@@ -55,9 +57,7 @@ class SimpleCopyPlugin {
         (assets, callback) => {
           // 确定源目录的绝对路径
           // 如果 this.from 是相对路径，它将相对于 Webpack 的 context (通常是项目根目录) 解析
-          const absoluteFrom = path.isAbsolute(this.from) 
-            ? this.from 
-            : path.resolve(compiler.context, this.from);
+          const absoluteFrom = path.isAbsolute(this.from) ? this.from : path.resolve(compiler.context, this.from);
 
           // 检查源目录是否存在
           if (!fs.existsSync(absoluteFrom)) {
@@ -78,7 +78,7 @@ class SimpleCopyPlugin {
               const assetRelativePath = path.join(relativePrefix, file); // 文件在输出目录中的相对路径
 
               // 检查文件是否应该被忽略
-              const shouldIgnore = this.ignore.some(pattern => {
+              const shouldIgnore = this.ignore.some((pattern) => {
                 // 如果是正则表达式，则测试路径
                 if (pattern instanceof RegExp) return pattern.test(assetRelativePath);
                 // 如果是字符串，则检查路径是否包含该字符串
@@ -98,14 +98,18 @@ class SimpleCopyPlugin {
               } else {
                 // 如果是文件，则读取其内容并添加到 Webpack 资产中
                 const content = fs.readFileSync(fullPath);
-                
+
                 // assetPath 是最终在输出目录中的路径
                 // path.join 会处理不同操作系统的路径分隔符，然后将路径分隔符统一为 Unix 风格
                 const assetPath = path.join(this.to, assetRelativePath).replace(/\\/g, '/');
-                
+
                 // compilation.emitAsset 用于将资源添加到 Webpack 的输出中
                 // RawSource 是 Webpack 提供的用于包装原始文件内容的 Source 类型
-                compilation.emitAsset(assetPath, new compiler.webpack.sources.RawSource(content));
+                compilation.emitAsset(
+                  assetPath,
+                  new compiler.webpack.sources.RawSource(content),
+                  this.alreadyOptimized ? { minimized: true } : undefined,
+                );
                 // console.log(`[${this.pluginName}] Copied: ${fullPath} to ${assetPath}`);
               }
             });
@@ -114,7 +118,7 @@ class SimpleCopyPlugin {
           // 从源目录开始读取并复制
           readDir(absoluteFrom);
           callback(); // 告知 Webpack 异步操作已完成
-        }
+        },
       );
     });
   }

@@ -84,6 +84,7 @@ module.exports = {
       from: resolve(__dirname, '../../chess-mirror-app/dist'),
       to: 'chess-mirror-app',
       ignore: [],
+      alreadyOptimized: true,
     }),
     new webpack.DefinePlugin({
       'process.env': JSON.stringify({

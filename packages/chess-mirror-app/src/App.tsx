@@ -1,29 +1,65 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import { Camera, CircleStop, ImageUp, LoaderCircle, ScanLine, Video } from 'lucide-react';
+import {
+  Camera,
+  FlipVertical2,
+  ImageUp,
+  LoaderCircle,
+  Pause,
+  Play,
+  Redo2,
+  RotateCcw,
+  Undo2,
+  Video,
+} from 'lucide-react';
 import { Board2D } from './components/Board2D';
 import { type BottomSide, type Point, type SideToMove, visionService } from './services/vision.service';
 
 const START_FEN = 'rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1';
 
 type View = 'photo' | 'video' | 'board';
+type Phase = 'capture' | 'confirm' | 'result';
 type SourceElement = HTMLVideoElement | HTMLImageElement;
+type AnalysisMove = {
+  move: string;
+  moveText?: string;
+  score?: string;
+  rank?: string;
+  note?: string;
+  winrate?: string;
+  tags?: string[];
+};
+type AnalysisView = {
+  fen: string;
+  bestMove: string;
+  bestMoveText?: string;
+  evaluation?: string | number | null;
+  evaluationText?: string;
+  assessment?: string;
+  lines?: AnalysisMove[];
+  moves?: AnalysisMove[];
+  source?: string;
+};
 
 const errorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>('photo');
+  const [phase, setPhase] = useState<Phase>('capture');
   const [cvReady, setCvReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [boardFound, setBoardFound] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [currentFen, setCurrentFen] = useState(START_FEN);
-  const [bestMove, setBestMove] = useState<string | null>(null);
-  const [sourceName, setSourceName] = useState<string | null>(null);
+  const [history, setHistory] = useState([START_FEN]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const [analysis, setAnalysis] = useState<AnalysisView | null>(null);
   const [status, setStatus] = useState('请将完整棋盘放入画面');
   const [error, setError] = useState<string | null>(null);
   const [sideToMove, setSideToMove] = useState<SideToMove>('w');
   const [bottomSide, setBottomSide] = useState<BottomSide>('red');
+  const [flipped, setFlipped] = useState(false);
+  const [videoPaused, setVideoPaused] = useState(false);
 
   const webcamRef = useRef<Webcam>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -37,12 +73,44 @@ const App: React.FC = () => {
   const stableFramesRef = useRef(0);
   const lastVideoRequestRef = useRef(0);
 
+  const bestMove = analysis?.bestMove || null;
+  const bestMoveLabel = analysis?.bestMoveText || analysis?.bestMove || null;
+
   useEffect(() => {
     visionService
       .init()
       .then(() => setCvReady(true))
-      .catch((reason) => setError(errorMessage(reason)));
+      .catch((reason) => {
+        setError(errorMessage(reason));
+        setStatus('识别组件加载失败');
+      });
   }, []);
+
+  const replaceBoard = useCallback((fen: string) => {
+    setCurrentFen(fen);
+    setHistory([fen]);
+    setHistoryIndex(0);
+    setSideToMove(fen.split(' ')[1] === 'b' ? 'b' : 'w');
+  }, []);
+
+  const editBoard = (fen: string) => {
+    const nextHistory = [...history.slice(0, historyIndex + 1), fen];
+    setCurrentFen(fen);
+    setHistory(nextHistory);
+    setHistoryIndex(nextHistory.length - 1);
+    setSideToMove(fen.split(' ')[1] === 'b' ? 'b' : 'w');
+    setAnalysis(null);
+    setPhase('confirm');
+  };
+
+  const moveHistory = (index: number) => {
+    const fen = history[index];
+    if (!fen) return;
+    setHistoryIndex(index);
+    setCurrentFen(fen);
+    setSideToMove(fen.split(' ')[1] === 'b' ? 'b' : 'w');
+    setAnalysis(null);
+  };
 
   const getSource = useCallback((): SourceElement | null => {
     if (preview) return imageRef.current;
@@ -51,40 +119,48 @@ const App: React.FC = () => {
   }, [preview]);
 
   const analyzeFen = useCallback(async (fen: string) => {
-    setStatus('正在计算最佳着法');
-    const analysis = await visionService.analyze(fen);
-    setCurrentFen(analysis.fen);
-    setBestMove(analysis.bestMove);
-    setSourceName(analysis.source);
-    setStatus(`推荐着法：${analysis.bestMove}`);
-    return analysis;
+    setStatus('正在分析局面');
+    const result = (await visionService.analyze(fen)) as AnalysisView;
+    setAnalysis(result);
+    setCurrentFen(result.fen);
+    setSideToMove(result.fen.split(' ')[1] === 'b' ? 'b' : 'w');
+    setPhase('result');
+    setStatus(result.bestMoveText || result.bestMove);
+    return result;
   }, []);
 
-  const solveSource = useCallback(
-    async (source: SourceElement, detectedCorners?: Point[] | null) => {
-      if (busyRef.current) return;
+  const recognizeSource = useCallback(
+    async (source: SourceElement, detectedCorners?: Point[] | null, analyzeImmediately = false) => {
+      if (busyRef.current) return false;
       busyRef.current = true;
       setBusy(true);
-      setBestMove(null);
-      setSourceName(null);
+      setAnalysis(null);
       setError(null);
       setStatus('正在识别棋盘');
       try {
         const corners = detectedCorners ?? cornersRef.current;
         const imageUrl = visionService.capture(source, corners);
         const recognition = await visionService.recognize(imageUrl, sideToMove, bottomSide);
-        setCurrentFen(recognition.fen);
-        await analyzeFen(recognition.fen);
+        replaceBoard(recognition.fen);
+        if (analyzeImmediately) {
+          await analyzeFen(recognition.fen);
+          navigator.vibrate?.(80);
+        } else {
+          setView('board');
+          setPhase('confirm');
+          setStatus('请确认识别结果');
+        }
+        return true;
       } catch (reason) {
-        const message = errorMessage(reason);
-        setError(message);
-        setStatus('识别失败，请调整角度后重试');
+        setError(errorMessage(reason));
+        setStatus('识别失败，请调整后重试');
+        return false;
       } finally {
         busyRef.current = false;
         setBusy(false);
       }
     },
-    [analyzeFen, bottomSide, sideToMove],
+    [analyzeFen, bottomSide, replaceBoard, sideToMove],
   );
 
   useEffect(() => {
@@ -103,8 +179,8 @@ const App: React.FC = () => {
         const corners = visionService.findBoardCorners(source);
         cornersRef.current = corners;
         setBoardFound(Boolean(corners));
-        const displayCorners = corners ? visionService.mapCornersToCanvas(corners, source, overlay) : null;
-        visionService.drawOverlay(overlay, displayCorners, bestMove, bottomSide);
+        const displayed = corners ? visionService.mapCornersToCanvas(corners, source, overlay) : null;
+        visionService.drawOverlay(overlay, displayed, bestMove, bottomSide);
       } finally {
         detecting = false;
       }
@@ -116,17 +192,17 @@ const App: React.FC = () => {
     previousHashRef.current = null;
     analyzedHashRef.current = null;
     stableFramesRef.current = 0;
-  }, [bottomSide, sideToMove, view]);
+  }, [bottomSide, sideToMove, view, videoPaused]);
 
   useEffect(() => {
-    if (!cvReady || view !== 'video' || preview) return;
+    if (!cvReady || view !== 'video' || preview || videoPaused) return;
     let checking = false;
     const timer = window.setInterval(async () => {
       if (checking || busyRef.current) return;
       const source = getSource();
       const corners = cornersRef.current;
       if (!source || !corners) {
-        setStatus('视频识别中：等待定位完整棋盘');
+        setStatus('寻找棋盘');
         return;
       }
       checking = true;
@@ -135,23 +211,16 @@ const App: React.FC = () => {
         const frameDifference = visionService.frameDifference(previousHashRef.current, hash);
         previousHashRef.current = hash;
         stableFramesRef.current = frameDifference <= 3.5 ? stableFramesRef.current + 1 : 0;
-
         if (stableFramesRef.current < 2) {
-          setStatus('视频识别中：等待棋局稳定');
+          setStatus('请保持稳定');
           return;
         }
-
         const boardDifference = visionService.frameDifference(analyzedHashRef.current, hash);
-        const now = Date.now();
-        if (analyzedHashRef.current && boardDifference < 4.5) {
-          setStatus(bestMove ? `推荐着法：${bestMove}` : '视频识别中');
-          return;
-        }
-        if (now - lastVideoRequestRef.current < 3_000) return;
-
-        lastVideoRequestRef.current = now;
-        analyzedHashRef.current = hash;
-        await solveSource(source, corners);
+        if (analyzedHashRef.current && boardDifference < 4.5) return;
+        if (Date.now() - lastVideoRequestRef.current < 3_000) return;
+        lastVideoRequestRef.current = Date.now();
+        const succeeded = await recognizeSource(source, corners, true);
+        analyzedHashRef.current = succeeded ? hash : null;
       } catch (reason) {
         setError(errorMessage(reason));
       } finally {
@@ -159,12 +228,12 @@ const App: React.FC = () => {
       }
     }, 1_200);
     return () => window.clearInterval(timer);
-  }, [bestMove, cvReady, getSource, preview, solveSource, view]);
+  }, [cvReady, getSource, preview, recognizeSource, videoPaused, view]);
 
   const handlePhoto = async () => {
     const source = getSource();
-    if (!source) return;
-    await solveSource(source);
+    if (source) await recognizeSource(source);
+    else setError('摄像头画面尚未准备好');
   };
 
   const handleFile = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -181,11 +250,10 @@ const App: React.FC = () => {
       const image = new Image();
       image.onload = async () => {
         setPreview(dataUrl);
-        setView('photo');
         const corners = cvReady ? visionService.findBoardCorners(image) : null;
         cornersRef.current = corners;
         setBoardFound(Boolean(corners));
-        await solveSource(image, corners);
+        await recognizeSource(image, corners);
       };
       image.onerror = () => setError('图片读取失败');
       image.src = dataUrl;
@@ -193,19 +261,12 @@ const App: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleFenChange = (fen: string) => {
-    setCurrentFen(fen);
-    setSideToMove(fen.split(' ')[1] === 'b' ? 'b' : 'w');
-    setBestMove(null);
-  };
-
   const selectSide = (side: SideToMove) => {
     setSideToMove(side);
-    setCurrentFen((fen) => `${fen.split(' ')[0]} ${side} - - 0 1`);
-    setBestMove(null);
+    editBoard(`${currentFen.split(' ')[0]} ${side} - - 0 1`);
   };
 
-  const analyzeCorrectedBoard = async () => {
+  const confirmBoard = async () => {
     if (busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
@@ -214,168 +275,258 @@ const App: React.FC = () => {
       await analyzeFen(currentFen);
     } catch (reason) {
       setError(errorMessage(reason));
+      setStatus('分析失败，请重试');
     } finally {
       busyRef.current = false;
       setBusy(false);
     }
   };
 
-  const switchView = (nextView: View) => {
-    setView(nextView);
-    if (nextView === 'video') {
-      setPreview(null);
-      setStatus('视频识别中：等待定位完整棋盘');
-    }
+  const switchCapture = (next: 'photo' | 'video') => {
+    setView(next);
+    setPhase('capture');
+    setPreview(null);
+    setVideoPaused(false);
+    setAnalysis(null);
+    setError(null);
+    setStatus(next === 'video' ? '寻找棋盘' : '请将完整棋盘放入画面');
+  };
+
+  const pauseAndCorrect = () => {
+    setVideoPaused(true);
+    setView('board');
+    setPhase('confirm');
+    setAnalysis(null);
+    setStatus('调整后确认局面');
+  };
+
+  const adjustBoard = () => {
+    if (view === 'video') setVideoPaused(true);
+    setView('board');
+    setPhase('confirm');
+    setAnalysis(null);
+    setStatus('调整后确认局面');
+  };
+
+  const resumeVideo = () => {
+    setView('video');
+    setPhase('result');
+    setPreview(null);
+    setVideoPaused(false);
+    setStatus('寻找棋盘');
   };
 
   return (
-    <div className="h-full min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden">
-      <header className="border-b border-white/10 bg-slate-900 px-4 py-3">
-        <div className="mx-auto max-w-6xl flex items-center justify-between gap-3">
-          <div>
-            <h1 className="font-semibold">象棋·镜</h1>
-            <p className="text-xs text-slate-400">拍照或视频识别棋局并给出下一步</p>
-          </div>
-          <div className="text-right text-xs">
-            <div className={cvReady ? 'text-green-400' : 'text-amber-400'}>
-              {cvReady ? '识别组件已就绪' : '正在加载识别组件'}
-            </div>
-            {sourceName && <div className="text-slate-500">{sourceName}</div>}
-          </div>
+    <div className="chess-app">
+      <header className="app-header">
+        <div>
+          <h1>象棋·镜</h1>
+          <p>拍一下，看清下一步</p>
         </div>
+        <span className={cvReady ? 'ready-dot ready' : 'ready-dot'}>{cvReady ? '已就绪' : '加载中'}</span>
       </header>
 
-      <main className="flex-1 min-h-0 mx-auto w-full max-w-6xl grid lg:grid-cols-[minmax(0,1fr)_340px]">
-        <section className="min-h-0 flex flex-col bg-black">
+      <main className="app-main">
+        <section className="workspace">
           {view === 'board' ? (
-            <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
-              <Board2D fen={currentFen} onFenChange={handleFenChange} bestMove={bestMove} />
+            <div className="board-workspace">
+              <div className="board-step-title">
+                <strong>{phase === 'confirm' ? '确认局面' : '分析结果'}</strong>
+                <span>{phase === 'confirm' ? '点击错误位置即可修改' : status}</span>
+              </div>
+              <Board2D
+                fen={currentFen}
+                onFenChange={editBoard}
+                bestMove={bestMove}
+                flipped={flipped}
+                editable={phase === 'confirm'}
+              />
+              {phase === 'confirm' && (
+                <div className="board-toolbar">
+                  <button
+                    className="icon-action"
+                    disabled={historyIndex === 0}
+                    onClick={() => moveHistory(historyIndex - 1)}
+                  >
+                    <Undo2 size={18} />
+                    撤销
+                  </button>
+                  <button
+                    className="icon-action"
+                    disabled={historyIndex >= history.length - 1}
+                    onClick={() => moveHistory(historyIndex + 1)}
+                  >
+                    <Redo2 size={18} />
+                    恢复
+                  </button>
+                  <button className="icon-action" onClick={() => setFlipped((value) => !value)}>
+                    <FlipVertical2 size={18} />
+                    翻转
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
-            <div ref={stageRef} className="relative flex-1 min-h-[360px] overflow-hidden">
+            <div ref={stageRef} className="camera-stage">
               {preview ? (
-                <img
-                  ref={imageRef}
-                  src={preview}
-                  alt="待识别棋盘"
-                  className="absolute inset-0 h-full w-full object-contain"
-                />
+                <img ref={imageRef} src={preview} alt="待识别棋盘" />
               ) : (
                 <Webcam
                   ref={webcamRef}
                   audio={false}
                   screenshotFormat="image/jpeg"
                   videoConstraints={{ facingMode: { ideal: 'environment' } }}
-                  className="absolute inset-0 h-full w-full object-contain"
+                  onUserMedia={() => {
+                    setError(null);
+                    setStatus('请将完整棋盘放入画面');
+                  }}
+                  onUserMediaError={(reason) => {
+                    setError(errorMessage(reason));
+                    setStatus('无法使用摄像头');
+                  }}
                 />
               )}
-              <canvas ref={overlayRef} className="absolute inset-0 h-full w-full pointer-events-none" />
-              <div className="absolute left-3 top-3 rounded-lg bg-black/70 px-3 py-2 text-xs">
-                {boardFound ? '已定位棋盘' : '请对准完整棋盘'}
+              <canvas ref={overlayRef} />
+              <div className={boardFound ? 'camera-state found' : 'camera-state'}>
+                {view === 'video' && bestMoveLabel ? bestMoveLabel : status}
               </div>
               {busy && (
-                <div className="absolute inset-0 bg-black/45 flex items-center justify-center">
-                  <div className="rounded-xl bg-slate-900 px-5 py-4 flex items-center gap-3">
-                    <LoaderCircle className="animate-spin" size={20} />
-                    {status}
-                  </div>
+                <div className="busy-layer">
+                  <LoaderCircle className="animate-spin" size={22} />
+                  {status}
                 </div>
               )}
             </div>
           )}
 
-          <div className="border-t border-white/10 bg-slate-900 p-3 flex items-center justify-center gap-2">
-            <button className={view === 'photo' ? 'tab-active' : 'tab'} onClick={() => switchView('photo')}>
-              <Camera size={17} />
+          <nav className="mode-switch" aria-label="识别模式">
+            <button className={view === 'photo' ? 'tab-active' : 'tab'} onClick={() => switchCapture('photo')}>
+              <Camera size={18} />
               拍照
             </button>
-            <button className={view === 'video' ? 'tab-active' : 'tab'} onClick={() => switchView('video')}>
-              {view === 'video' ? <CircleStop size={17} /> : <Video size={17} />}视频
+            <button
+              className={view === 'video' || videoPaused ? 'tab-active' : 'tab'}
+              onClick={() => switchCapture('video')}
+            >
+              <Video size={18} />
+              视频
             </button>
-            <button className={view === 'board' ? 'tab-active' : 'tab'} onClick={() => switchView('board')}>
-              <ScanLine size={17} />
-              校正棋盘
-            </button>
-          </div>
+          </nav>
         </section>
 
-        <aside className="border-l border-white/10 bg-slate-900 p-4 overflow-auto space-y-4">
-          <div>
-            <div className="setting-title">当前走棋方</div>
-            <div className="grid grid-cols-2 gap-2">
-              <button className={sideToMove === 'w' ? 'choice-active' : 'choice'} onClick={() => selectSide('w')}>
-                红方
+        <aside className="control-panel">
+          {error && <div className="error-box">{error}</div>}
+
+          {view !== 'board' && (
+            <>
+              <div className="compact-settings">
+                <div>
+                  <span>轮到</span>
+                  <button className={sideToMove === 'w' ? 'choice-active' : 'choice'} onClick={() => selectSide('w')}>
+                    红方
+                  </button>
+                  <button className={sideToMove === 'b' ? 'choice-active' : 'choice'} onClick={() => selectSide('b')}>
+                    黑方
+                  </button>
+                </div>
+                <div>
+                  <span>靠近镜头</span>
+                  <button
+                    className={bottomSide === 'red' ? 'choice-active' : 'choice'}
+                    onClick={() => setBottomSide('red')}
+                  >
+                    红方
+                  </button>
+                  <button
+                    className={bottomSide === 'black' ? 'choice-active' : 'choice'}
+                    onClick={() => setBottomSide('black')}
+                  >
+                    黑方
+                  </button>
+                </div>
+              </div>
+              {view === 'photo' ? (
+                <div className="capture-actions">
+                  <button className="primary" disabled={busy || !cvReady} onClick={handlePhoto}>
+                    <Camera size={19} />
+                    拍照识别
+                  </button>
+                  <button className="secondary" disabled={busy} onClick={() => fileRef.current?.click()}>
+                    <ImageUp size={19} />
+                    选择图片
+                  </button>
+                </div>
+              ) : (
+                <button className="secondary full-action" disabled={!analysis} onClick={pauseAndCorrect}>
+                  <Pause size={18} />
+                  暂停并修正
+                </button>
+              )}
+            </>
+          )}
+
+          {view === 'board' && phase === 'confirm' && (
+            <>
+              <div className="compact-settings">
+                <div>
+                  <span>轮到</span>
+                  <button className={sideToMove === 'w' ? 'choice-active' : 'choice'} onClick={() => selectSide('w')}>
+                    红方
+                  </button>
+                  <button className={sideToMove === 'b' ? 'choice-active' : 'choice'} onClick={() => selectSide('b')}>
+                    黑方
+                  </button>
+                </div>
+              </div>
+              <button className="primary full-action" disabled={busy} onClick={confirmBoard}>
+                {busy ? <LoaderCircle className="animate-spin" size={18} /> : null}确认并分析
               </button>
-              <button className={sideToMove === 'b' ? 'choice-active' : 'choice'} onClick={() => selectSide('b')}>
-                黑方
+              <button className="secondary full-action" onClick={() => switchCapture(videoPaused ? 'video' : 'photo')}>
+                <RotateCcw size={18} />
+                重新识别
               </button>
+            </>
+          )}
+
+          {analysis && (
+            <div className="analysis-card">
+              <span>建议着法</span>
+              <strong>{bestMoveLabel}</strong>
+              {(analysis.evaluationText !== undefined ||
+                analysis.assessment !== undefined ||
+                analysis.evaluation !== undefined) && (
+                <div className="evaluation">
+                  {analysis.evaluationText ?? analysis.assessment ?? analysis.evaluation}
+                </div>
+              )}
+              {(analysis.lines ?? analysis.moves)?.length > 0 && (
+                <div className="candidate-list">
+                  {(analysis.lines ?? analysis.moves ?? []).map((move, index) => (
+                    <div key={`${move.move}-${index}`}>
+                      <b>{index + 1}</b>
+                      <span className="candidate-move">
+                        <span>{move.moveText || move.move}</span>
+                        {move.tags?.map((tag) => (
+                          <i key={tag}>{tag}</i>
+                        ))}
+                      </span>
+                      {move.score !== undefined && <small>{move.score}</small>}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button className="secondary full-action" onClick={adjustBoard}>
+                调整局面
+              </button>
+              {videoPaused && (
+                <button className="primary full-action" onClick={resumeVideo}>
+                  <Play size={18} />
+                  继续看棋
+                </button>
+              )}
             </div>
-          </div>
-
-          <div>
-            <div className="setting-title">靠近镜头的一方</div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                className={bottomSide === 'red' ? 'choice-active' : 'choice'}
-                onClick={() => setBottomSide('red')}
-              >
-                红方
-              </button>
-              <button
-                className={bottomSide === 'black' ? 'choice-active' : 'choice'}
-                onClick={() => setBottomSide('black')}
-              >
-                黑方
-              </button>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-white/10 bg-slate-950 p-4">
-            <div className="text-xs text-slate-400 mb-1">下一步</div>
-            <div className="text-3xl font-semibold text-green-400 min-h-9">{bestMove || '—'}</div>
-            <div className="mt-2 text-xs text-slate-400">{status}</div>
-          </div>
-
-          {error && (
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>
           )}
 
-          {view === 'photo' && (
-            <div className="grid grid-cols-2 gap-2">
-              <button className="primary" disabled={busy || !cvReady} onClick={handlePhoto}>
-                <Camera size={18} />
-                拍照识别
-              </button>
-              <button className="secondary" disabled={busy} onClick={() => fileRef.current?.click()}>
-                <ImageUp size={18} />
-                选择图片
-              </button>
-            </div>
-          )}
-
-          {view === 'video' && (
-            <div className="rounded-lg bg-sky-500/10 p-3 text-sm text-sky-300">
-              视频模式会在棋盘稳定且局面发生变化后自动识别。
-            </div>
-          )}
-
-          {view === 'board' && (
-            <button className="primary w-full" disabled={busy} onClick={analyzeCorrectedBoard}>
-              <ScanLine size={18} />
-              按当前棋盘分析
-            </button>
-          )}
-
-          <div>
-            <div className="setting-title">FEN</div>
-            <div className="rounded-lg bg-black/40 p-3 font-mono text-xs break-all text-slate-300">{currentFen}</div>
-          </div>
-
-          {preview && view === 'photo' && (
-            <button className="secondary w-full" onClick={() => setPreview(null)}>
-              返回摄像头
-            </button>
-          )}
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFile} />
         </aside>
       </main>
