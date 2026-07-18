@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   color-scheme: dark;
@@ -7,6 +7,65 @@
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
   background: #0f172a;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.tab,
+.tab-active,
+.choice,
+.choice-active,
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  padding: 0.65rem 0.8rem;
+  font-size: 0.875rem;
+  transition:
+    background-color 150ms,
+    border-color 150ms;
+}
+
+.tab,
+.choice,
+.secondary {
+  background: rgb(255 255 255 / 0.04);
+  color: rgb(203 213 225);
+}
+
+.tab-active,
+.choice-active {
+  border-color: rgb(56 189 248 / 0.7);
+  background: rgb(14 165 233 / 0.18);
+  color: rgb(125 211 252);
+}
+
+.primary {
+  border-color: rgb(14 165 233);
+  background: rgb(2 132 199);
+  color: white;
+}
+
+.secondary:hover,
+.tab:hover,
+.choice:hover {
+  background: rgb(255 255 255 / 0.09);
+}
+
+.setting-title {
+  margin-bottom: 0.45rem;
+  color: rgb(148 163 184);
+  font-size: 0.75rem;
 }

@@ -1,156 +1,312 @@
-export interface Point {
-  x: number;
-  y: number;
-}
+import { createFetchClient, resolveApiBase, type FetchResponse } from '@zxkws/shared-fetch';
+
+export type Point = { x: number; y: number };
+export type BottomSide = 'red' | 'black';
+export type SideToMove = 'w' | 'b';
+
+export type RecognitionResult = {
+  fen: string;
+  confidence: number | null;
+  model: string;
+  latencyMs: number;
+};
+
+export type ChessMove = {
+  move: string;
+  score?: string;
+  rank?: string;
+  note?: string;
+  winrate?: string;
+};
+
+export type AnalysisResult = {
+  fen: string;
+  bestMove: string;
+  moves: ChessMove[];
+  source: string;
+};
+
+type ImageSource = HTMLVideoElement | HTMLImageElement;
+
+const api = createFetchClient({
+  baseURL: resolveApiBase({
+    rawBase: import.meta.env.API_BASE_URL,
+    dev: import.meta.env.DEV || import.meta.env.MODE === 'development',
+  }),
+  responseInterceptors: [
+    {
+      onFulfilled: (response: FetchResponse<unknown>) => {
+        const payload = response.data;
+        const data =
+          payload && typeof payload === 'object' && 'data' in payload ? (payload as { data: unknown }).data : payload;
+        return { ...response, data };
+      },
+    },
+  ],
+});
+
+const sourceSize = (source: ImageSource) => {
+  if (source instanceof HTMLVideoElement) {
+    return { width: source.videoWidth, height: source.videoHeight };
+  }
+  return { width: source.naturalWidth, height: source.naturalHeight };
+};
+
+const sourceReady = (source: ImageSource) => {
+  const { width, height } = sourceSize(source);
+  return width > 0 && height > 0;
+};
 
 export class ChessVisionService {
   private cv: any;
 
   async init() {
-    this.cv = (window as any).cv;
-    if (!this.cv || !this.cv.Mat) {
-      await new Promise((resolve) => {
-        const check = setInterval(() => {
-          if ((window as any).cv && (window as any).cv.Mat) {
-            clearInterval(check);
-            resolve(true);
-          }
-        }, 100);
-      });
-      this.cv = (window as any).cv;
+    const startedAt = Date.now();
+    while (!(window as any).cv?.Mat) {
+      if (Date.now() - startedAt > 15_000) {
+        throw new Error('OpenCV 加载失败');
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 100));
     }
-    console.log('OpenCV.js Ready');
+    this.cv = (window as any).cv;
   }
 
-  findBoardCorners(canvas: HTMLCanvasElement): Point[] | null {
-    if (!this.cv) return null;
-    let src = this.cv.imread(canvas);
-    let gray = new this.cv.Mat();
-    this.cv.cvtColor(src, gray, this.cv.COLOR_RGBA2GRAY);
-    this.cv.GaussianBlur(gray, gray, new this.cv.Size(5, 5), 0);
-    this.cv.threshold(gray, gray, 120, 255, this.cv.THRESH_BINARY);
+  isReady() {
+    return Boolean(this.cv?.Mat);
+  }
 
-    let contours = new this.cv.MatVector();
-    let hierarchy = new this.cv.Mat();
-    this.cv.findContours(gray, contours, hierarchy, this.cv.RETR_EXTERNAL, this.cv.CHAIN_APPROX_SIMPLE);
+  findBoardCorners(source: ImageSource): Point[] | null {
+    if (!this.cv || !sourceReady(source)) return null;
+    const { width, height } = sourceSize(source);
+    const scale = Math.min(1, 1100 / Math.max(width, height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
+    canvas.getContext('2d')?.drawImage(source, 0, 0, canvas.width, canvas.height);
 
-    let maxArea = 0;
-    let bestPoly = null;
+    const src = this.cv.imread(canvas);
+    const gray = new this.cv.Mat();
+    const edges = new this.cv.Mat();
+    const contours = new this.cv.MatVector();
+    const hierarchy = new this.cv.Mat();
+    const kernel = this.cv.Mat.ones(3, 3, this.cv.CV_8U);
+    let result: Point[] | null = null;
 
-    for (let i = 0; i < contours.size(); ++i) {
-      let cnt = contours.get(i);
-      let area = this.cv.contourArea(cnt);
-      if (area > 5000) {
-        let peri = this.cv.arcLength(cnt, true);
-        let approx = new this.cv.Mat();
-        this.cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
-        if (approx.rows === 4 && area > maxArea) {
-          maxArea = area;
-          bestPoly = approx;
-        } else {
-          approx.delete();
+    try {
+      this.cv.cvtColor(src, gray, this.cv.COLOR_RGBA2GRAY);
+      this.cv.GaussianBlur(gray, gray, new this.cv.Size(5, 5), 0);
+      this.cv.Canny(gray, edges, 45, 140);
+      this.cv.dilate(edges, edges, kernel);
+      this.cv.findContours(edges, contours, hierarchy, this.cv.RETR_LIST, this.cv.CHAIN_APPROX_SIMPLE);
+
+      const imageArea = canvas.width * canvas.height;
+      let maxArea = imageArea * 0.08;
+      for (let index = 0; index < contours.size(); index += 1) {
+        const contour = contours.get(index);
+        const area = this.cv.contourArea(contour);
+        if (area <= maxArea) {
+          contour.delete();
+          continue;
         }
+        const perimeter = this.cv.arcLength(contour, true);
+        const polygon = new this.cv.Mat();
+        this.cv.approxPolyDP(contour, polygon, perimeter * 0.025, true);
+        if (polygon.rows === 4 && this.cv.isContourConvex(polygon)) {
+          const points: Point[] = [];
+          for (let pointIndex = 0; pointIndex < 4; pointIndex += 1) {
+            points.push({
+              x: polygon.data32S[pointIndex * 2] / scale,
+              y: polygon.data32S[pointIndex * 2 + 1] / scale,
+            });
+          }
+          result = this.sortPoints(points);
+          maxArea = area;
+        }
+        polygon.delete();
+        contour.delete();
       }
+    } finally {
+      src.delete();
+      gray.delete();
+      edges.delete();
+      contours.delete();
+      hierarchy.delete();
+      kernel.delete();
     }
-
-    let result = null;
-    if (bestPoly) {
-      const points = [
-        { x: bestPoly.data32S[0], y: bestPoly.data32S[1] },
-        { x: bestPoly.data32S[2], y: bestPoly.data32S[3] },
-        { x: bestPoly.data32S[4], y: bestPoly.data32S[5] },
-        { x: bestPoly.data32S[6], y: bestPoly.data32S[7] },
-      ];
-      // Sort points: top-left, top-right, bottom-right, bottom-left
-      result = this.sortPoints(points);
-      bestPoly.delete();
-    }
-
-    src.delete(); gray.delete(); contours.delete(); hierarchy.delete();
     return result;
   }
 
-  private sortPoints(pts: Point[]): Point[] {
-    const sorted = [...pts].sort((a, b) => a.y - b.y);
-    const top = sorted.slice(0, 2).sort((a, b) => a.x - b.x);
-    const bottom = sorted.slice(2, 4).sort((a, b) => b.x - a.x);
-    return [top[0], top[1], bottom[0], bottom[1]];
+  capture(source: ImageSource, corners?: Point[] | null) {
+    if (!sourceReady(source)) throw new Error('摄像头画面尚未准备好');
+    const { width, height } = sourceSize(source);
+    const input = document.createElement('canvas');
+    input.width = width;
+    input.height = height;
+    input.getContext('2d')?.drawImage(source, 0, 0, width, height);
+
+    if (!this.cv || !corners || corners.length !== 4) {
+      return this.toLimitedJpeg(input);
+    }
+
+    const src = this.cv.imread(input);
+    const output = new this.cv.Mat();
+    const from = this.cv.matFromArray(
+      4,
+      1,
+      this.cv.CV_32FC2,
+      corners.flatMap((point) => [point.x, point.y]),
+    );
+    const to = this.cv.matFromArray(4, 1, this.cv.CV_32FC2, [0, 0, 899, 0, 899, 999, 0, 999]);
+    const transform = this.cv.getPerspectiveTransform(from, to);
+    const warped = document.createElement('canvas');
+    warped.width = 900;
+    warped.height = 1000;
+    try {
+      this.cv.warpPerspective(
+        src,
+        output,
+        transform,
+        new this.cv.Size(900, 1000),
+        this.cv.INTER_LINEAR,
+        this.cv.BORDER_REPLICATE,
+      );
+      this.cv.imshow(warped, output);
+      return warped.toDataURL('image/jpeg', 0.84);
+    } finally {
+      src.delete();
+      output.delete();
+      from.delete();
+      to.delete();
+      transform.delete();
+    }
   }
 
-  /**
-   * Draws a 3D-looking arrow on the canvas using the perspective of the board.
-   */
-  drawARArrow(ctx: CanvasRenderingContext2D, corners: Point[], move: string) {
-    if (!corners || corners.length !== 4) return;
-
-    // Xiangqi board is 9x10 (8x9 intervals)
-    const srcCoords = this.cv.matFromArray(4, 1, this.cv.CV_32FC2, [
-      0, 0, 800, 0, 800, 900, 0, 900
-    ]);
-    const dstCoords = this.cv.matFromArray(4, 1, this.cv.CV_32FC2, [
-      corners[0].x, corners[0].y,
-      corners[1].x, corners[1].y,
-      corners[2].x, corners[2].y,
-      corners[3].x, corners[3].y
-    ]);
-
-    const M = this.cv.getPerspectiveTransform(srcCoords, dstCoords);
-
-    const getPixel = (col: number, row: number) => {
-      // row 0-9, col 0-8. Red is bottom. 
-      // Mapping move 'h2e2' -> col 7, row 7 to col 4, row 7 (approx)
-      const x = col * 100;
-      const y = (9 - row) * 100;
-      const vec = this.cv.matFromArray(3, 1, this.cv.CV_64FC1, [x, y, 1]);
-      const res = this.cv.matFromArray(3, 1, this.cv.CV_64FC1, [0, 0, 0]);
-      
-      // Manual matrix multiplication because OpenCV.js gemm is overkill here
-      const m = M.data64F;
-      const rx = m[0]*x + m[1]*y + m[2];
-      const ry = m[3]*x + m[4]*y + m[5];
-      const rw = m[6]*x + m[7]*y + m[8];
-      
-      vec.delete(); res.delete();
-      return { x: rx / rw, y: ry / rw };
-    };
-
-    // Parse UCI move (e.g., h2e2)
-    const colMap: any = { a:0, b:1, c:2, d:3, e:4, f:5, g:6, h:7, i:8 };
-    const from = getPixel(colMap[move[0]], parseInt(move[1]) - 1);
-    const to = getPixel(colMap[move[2]], parseInt(move[3]) - 1);
-
-    // Draw Arrow
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = '#0ea5e9';
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 8;
-    ctx.lineCap = 'round';
-    
-    ctx.beginPath();
-    ctx.moveTo(from.x, from.y);
-    ctx.lineTo(to.x, to.y);
-    ctx.stroke();
-
-    // Arrow Head
-    const angle = Math.atan2(to.y - from.y, to.x - from.x);
-    ctx.beginPath();
-    ctx.moveTo(to.x, to.y);
-    ctx.lineTo(to.x - 20 * Math.cos(angle - Math.PI / 6), to.y - 20 * Math.sin(angle - Math.PI / 6));
-    ctx.moveTo(to.x, to.y);
-    ctx.lineTo(to.x - 20 * Math.cos(angle + Math.PI / 6), to.y - 20 * Math.sin(angle + Math.PI / 6));
-    ctx.stroke();
-
-    M.delete(); srcCoords.delete(); dstCoords.delete();
-  }
-
-  async recognizeCloud(imageUrl: string, provider = 'modelscope') {
-    const response = await fetch('/api/chess-vision/recognize', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageUrl, provider }),
+  frameHash(source: ImageSource, corners?: Point[] | null) {
+    const jpeg = this.capture(source, corners);
+    const image = new Image();
+    return new Promise<Uint8Array>((resolve, reject) => {
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 18;
+        canvas.height = 20;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        if (!context) return reject(new Error('无法读取画面'));
+        context.drawImage(image, 0, 0, 18, 20);
+        const pixels = context.getImageData(0, 0, 18, 20).data;
+        const values = new Uint8Array(360);
+        for (let index = 0; index < values.length; index += 1) {
+          const offset = index * 4;
+          values[index] = Math.round(pixels[offset] * 0.299 + pixels[offset + 1] * 0.587 + pixels[offset + 2] * 0.114);
+        }
+        resolve(values);
+      };
+      image.onerror = () => reject(new Error('无法读取画面'));
+      image.src = jpeg;
     });
-    if (!response.ok) throw new Error('API Error');
-    return response.json();
+  }
+
+  frameDifference(first?: Uint8Array | null, second?: Uint8Array | null) {
+    if (!first || !second || first.length !== second.length) return Number.POSITIVE_INFINITY;
+    let difference = 0;
+    for (let index = 0; index < first.length; index += 1) {
+      difference += Math.abs(first[index] - second[index]);
+    }
+    return difference / first.length;
+  }
+
+  mapCornersToCanvas(corners: Point[], source: ImageSource, canvas: HTMLCanvasElement) {
+    const { width, height } = sourceSize(source);
+    const scale = Math.min(canvas.width / width, canvas.height / height);
+    const offsetX = (canvas.width - width * scale) / 2;
+    const offsetY = (canvas.height - height * scale) / 2;
+    return corners.map((point) => ({
+      x: point.x * scale + offsetX,
+      y: point.y * scale + offsetY,
+    }));
+  }
+
+  drawOverlay(canvas: HTMLCanvasElement, corners: Point[] | null, move: string | null, bottomSide: BottomSide) {
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    if (!corners) return;
+
+    context.strokeStyle = '#38bdf8';
+    context.lineWidth = 3;
+    context.beginPath();
+    context.moveTo(corners[0].x, corners[0].y);
+    corners.slice(1).forEach((point) => context.lineTo(point.x, point.y));
+    context.closePath();
+    context.stroke();
+
+    if (!move || !/^[a-i][0-9][a-i][0-9]$/.test(move)) return;
+    const from = this.movePoint(corners, move.slice(0, 2), bottomSide);
+    const to = this.movePoint(corners, move.slice(2, 4), bottomSide);
+    const angle = Math.atan2(to.y - from.y, to.x - from.x);
+    context.strokeStyle = '#22c55e';
+    context.fillStyle = '#22c55e';
+    context.lineWidth = 9;
+    context.lineCap = 'round';
+    context.shadowBlur = 12;
+    context.shadowColor = '#22c55e';
+    context.beginPath();
+    context.moveTo(from.x, from.y);
+    context.lineTo(to.x, to.y);
+    context.stroke();
+    context.beginPath();
+    context.moveTo(to.x, to.y);
+    context.lineTo(to.x - 24 * Math.cos(angle - Math.PI / 6), to.y - 24 * Math.sin(angle - Math.PI / 6));
+    context.lineTo(to.x - 24 * Math.cos(angle + Math.PI / 6), to.y - 24 * Math.sin(angle + Math.PI / 6));
+    context.closePath();
+    context.fill();
+    context.shadowBlur = 0;
+  }
+
+  recognize(imageUrl: string, sideToMove: SideToMove, bottomSide: BottomSide, provider = 'modelscope') {
+    return api<RecognitionResult>(
+      '/chess-vision/recognize',
+      { imageUrl, sideToMove, bottomSide, provider },
+      { method: 'POST' },
+    );
+  }
+
+  analyze(fen: string) {
+    return api<AnalysisResult>('/chess-vision/analyze', { fen }, { method: 'POST' });
+  }
+
+  private toLimitedJpeg(source: HTMLCanvasElement) {
+    const scale = Math.min(1, 1280 / Math.max(source.width, source.height));
+    if (scale === 1) return source.toDataURL('image/jpeg', 0.82);
+    const output = document.createElement('canvas');
+    output.width = Math.round(source.width * scale);
+    output.height = Math.round(source.height * scale);
+    output.getContext('2d')?.drawImage(source, 0, 0, output.width, output.height);
+    return output.toDataURL('image/jpeg', 0.82);
+  }
+
+  private sortPoints(points: Point[]) {
+    const bySum = [...points].sort((a, b) => a.x + a.y - (b.x + b.y));
+    const byDifference = [...points].sort((a, b) => a.x - a.y - (b.x - b.y));
+    return [bySum[0], byDifference[3], bySum[3], byDifference[0]];
+  }
+
+  private movePoint(corners: Point[], square: string, bottomSide: BottomSide) {
+    const column = square.charCodeAt(0) - 97;
+    const rank = Number(square[1]);
+    const x = bottomSide === 'red' ? column / 8 : (8 - column) / 8;
+    const y = bottomSide === 'red' ? (9 - rank) / 9 : rank / 9;
+    const top = {
+      x: corners[0].x + (corners[1].x - corners[0].x) * x,
+      y: corners[0].y + (corners[1].y - corners[0].y) * x,
+    };
+    const bottom = {
+      x: corners[3].x + (corners[2].x - corners[3].x) * x,
+      y: corners[3].y + (corners[2].y - corners[3].y) * x,
+    };
+    return {
+      x: top.x + (bottom.x - top.x) * y,
+      y: top.y + (bottom.y - top.y) * y,
+    };
   }
 }
 

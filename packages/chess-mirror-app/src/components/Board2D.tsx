@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState } from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -9,21 +9,34 @@ function cn(...inputs: ClassValue[]) {
 interface Board2DProps {
   fen: string;
   onFenChange: (fen: string) => void;
+  bestMove?: string | null;
 }
 
 const PIECE_MAP: Record<string, string> = {
-  'r': '车', 'n': '马', 'b': '相', 'a': '仕', 'k': '帅', 'c': '炮', 'p': '兵',
-  'R': '俥', 'N': '傌', 'B': '象', 'A': '士', 'K': '将', 'C': '砲', 'P': '卒'
+  r: '车',
+  n: '马',
+  b: '象',
+  a: '士',
+  k: '将',
+  c: '炮',
+  p: '卒',
+  R: '车',
+  N: '马',
+  B: '相',
+  A: '仕',
+  K: '帅',
+  C: '炮',
+  P: '兵',
 };
 
 const PIECES_CYCLE = ['r', 'n', 'b', 'a', 'k', 'c', 'p', 'R', 'N', 'B', 'A', 'K', 'C', 'P', ' '];
 
-export const Board2D: React.FC<Board2DProps> = ({ fen, onFenChange }) => {
-  const [dragging, setDragging] = useState<{ r: number, c: number, piece: string } | null>(null);
-  
+export const Board2D: React.FC<Board2DProps> = ({ fen, onFenChange, bestMove }) => {
+  const [dragging, setDragging] = useState<{ r: number; c: number; piece: string } | null>(null);
+
   const parseFen = (f: string) => {
     const rows = f.split(' ')[0].split('/');
-    const board: (string | null)[][] = rows.map(row => {
+    const board: (string | null)[][] = rows.map((row) => {
       const res: (string | null)[] = [];
       for (const char of row) {
         if (isNaN(parseInt(char))) {
@@ -34,32 +47,45 @@ export const Board2D: React.FC<Board2DProps> = ({ fen, onFenChange }) => {
       }
       return res;
     });
-    return board;
+    return board.length === 10 && board.every((row) => row.length === 9)
+      ? board
+      : Array.from({ length: 10 }, () => Array<string | null>(9).fill(null));
   };
 
   const serializeFen = (board: (string | null)[][]) => {
-    let res = board.map(row => {
-      let rowStr = '';
-      let empty = 0;
-      row.forEach(cell => {
-        if (cell) {
-          if (empty) rowStr += empty;
-          rowStr += cell;
-          empty = 0;
-        } else {
-          empty++;
-        }
-      });
-      if (empty) rowStr += empty;
-      return rowStr;
-    }).join('/');
-    return res + ' w - - 0 1';
+    let res = board
+      .map((row) => {
+        let rowStr = '';
+        let empty = 0;
+        row.forEach((cell) => {
+          if (cell) {
+            if (empty) rowStr += empty;
+            rowStr += cell;
+            empty = 0;
+          } else {
+            empty++;
+          }
+        });
+        if (empty) rowStr += empty;
+        return rowStr;
+      })
+      .join('/');
+    const side = fen.split(' ')[1] === 'b' ? 'b' : 'w';
+    return `${res} ${side} - - 0 1`;
   };
 
   const board = parseFen(fen);
+  const moveSquares = (() => {
+    if (!bestMove || !/^[a-i][0-9][a-i][0-9]$/.test(bestMove)) return null;
+    const toCell = (square: string) => ({
+      r: 9 - Number(square[1]),
+      c: square.charCodeAt(0) - 97,
+    });
+    return { from: toCell(bestMove.slice(0, 2)), to: toCell(bestMove.slice(2, 4)) };
+  })();
 
   const handleCellClick = (r: number, c: number) => {
-    const newBoard = [...board.map(row => [...row])];
+    const newBoard = [...board.map((row) => [...row])];
     const current = newBoard[r][c] || ' ';
     const nextIdx = (PIECES_CYCLE.indexOf(current) + 1) % PIECES_CYCLE.length;
     const nextPiece = PIECES_CYCLE[nextIdx].trim() || null;
@@ -73,7 +99,7 @@ export const Board2D: React.FC<Board2DProps> = ({ fen, onFenChange }) => {
 
   const onDrop = (r: number, c: number) => {
     if (!dragging) return;
-    const newBoard = [...board.map(row => [...row])];
+    const newBoard = [...board.map((row) => [...row])];
     newBoard[dragging.r][dragging.c] = null;
     newBoard[r][c] = dragging.piece;
     onFenChange(serializeFen(newBoard));
@@ -81,9 +107,7 @@ export const Board2D: React.FC<Board2DProps> = ({ fen, onFenChange }) => {
   };
 
   return (
-    <div className="w-full max-w-md aspect-[9/10] bg-[#fdf5e6] rounded-xl shadow-2xl p-4 border-8 border-[#5d4037] relative overflow-hidden select-none">
-      <div className="absolute inset-0 bg-[url('/wood-pattern.png')] opacity-20 pointer-events-none" />
-      
+    <div className="w-full max-w-md aspect-[9/10] bg-[#f2d49b] rounded-xl shadow-2xl p-4 border-8 border-[#5d4037] relative overflow-hidden select-none">
       {/* Board Grid */}
       <div className="relative w-full h-full border-2 border-[#5d4037]">
         {/* River */}
@@ -109,35 +133,39 @@ export const Board2D: React.FC<Board2DProps> = ({ fen, onFenChange }) => {
 
         {/* Pieces Layer */}
         <div className="absolute inset-0 grid grid-cols-9 grid-rows-10">
-          {board.map((row, r) => row.map((piece, c) => (
-            <div 
-              key={`${r}-${c}`} 
-              className={cn(
-                "flex items-center justify-center relative",
-                dragging?.r === r && dragging?.c === c && "opacity-20"
-              )}
-              onClick={() => handleCellClick(r, c)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => onDrop(r, c)}
-            >
-              {piece && (
-                <div 
-                  draggable
-                  onDragStart={() => onDragStart(r, c, piece)}
-                  className={cn(
-                    "w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold text-xl shadow-lg cursor-grab active:cursor-grabbing transform transition-transform hover:scale-110",
-                    piece === piece.toUpperCase() 
-                      ? "bg-[#fffafa] border-[#b71c1c] text-[#b71c1c]" 
-                      : "bg-[#fffafa] border-[#212121] text-[#212121]"
-                  )}
-                >
-                  <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
-                    {PIECE_MAP[piece] || piece}
+          {board.map((row, r) =>
+            row.map((piece, c) => (
+              <div
+                key={`${r}-${c}`}
+                className={cn(
+                  'flex items-center justify-center relative',
+                  dragging?.r === r && dragging?.c === c && 'opacity-20',
+                  moveSquares?.from.r === r && moveSquares.from.c === c && 'bg-sky-400/30',
+                  moveSquares?.to.r === r && moveSquares.to.c === c && 'bg-green-500/40',
+                )}
+                onClick={() => handleCellClick(r, c)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => onDrop(r, c)}
+              >
+                {piece && (
+                  <div
+                    draggable
+                    onDragStart={() => onDragStart(r, c, piece)}
+                    className={cn(
+                      'w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold text-xl shadow-lg cursor-grab active:cursor-grabbing transform transition-transform hover:scale-110',
+                      piece === piece.toUpperCase()
+                        ? 'bg-[#fffafa] border-[#b71c1c] text-[#b71c1c]'
+                        : 'bg-[#fffafa] border-[#212121] text-[#212121]',
+                    )}
+                  >
+                    <div className="w-8 h-8 rounded-full border border-current flex items-center justify-center">
+                      {PIECE_MAP[piece] || piece}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          )))}
+                )}
+              </div>
+            )),
+          )}
         </div>
       </div>
     </div>

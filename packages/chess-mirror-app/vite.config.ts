@@ -7,6 +7,7 @@ export default defineConfig(({ mode }) => {
   const isProd = mode === 'production';
 
   return {
+    envPrefix: ['VITE_', 'API_BASE_URL'],
     plugins: [
       react(),
       htmlPlugin({
@@ -25,6 +26,9 @@ export default defineConfig(({ mode }) => {
       cors: true,
       headers: {
         'Access-Control-Allow-Origin': '*',
+      },
+      proxy: {
+        '/api': 'http://127.0.0.1:3333',
       },
     },
     build: {
