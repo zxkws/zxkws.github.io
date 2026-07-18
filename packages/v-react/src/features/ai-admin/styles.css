@@ -1,0 +1,89 @@
+.ai-admin-root,
+.ai-admin-state {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px;
+  color: var(--color-text, #17202a);
+}
+
+.ai-admin-root header,
+.ai-admin-root section,
+.ai-admin-state {
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 1px solid var(--color-border, #dfe4ea);
+  border-radius: 10px;
+  background: var(--color-bg-container, #fff);
+}
+
+.ai-admin-root header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ai-admin-root h1,
+.ai-admin-root p {
+  margin: 0;
+}
+
+.ai-admin-root header p {
+  margin-top: 8px;
+  color: var(--color-text-secondary, #65717e);
+}
+
+.ai-admin-root section,
+.ai-model-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.ai-admin-root label {
+  display: grid;
+  gap: 7px;
+}
+
+.ai-admin-root input,
+.ai-admin-root select,
+.ai-admin-root button {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border, #b8c0ca);
+  border-radius: 7px;
+  font: inherit;
+}
+
+.ai-admin-root button {
+  cursor: pointer;
+}
+
+.ai-admin-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.ai-admin-status {
+  min-height: 22px;
+  margin-top: 14px !important;
+  white-space: pre-wrap;
+}
+
+.ai-admin-root pre {
+  max-height: 320px;
+  overflow: auto;
+  padding: 14px;
+  border-radius: 8px;
+  background: #101820;
+  color: #e6edf3;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 720px) {
+  .ai-admin-root section,
+  .ai-model-grid {
+    grid-template-columns: 1fr;
+  }
+}

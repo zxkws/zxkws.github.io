@@ -659,6 +659,11 @@ export default function App({ basename: _basename }: { basename?: string }) {
           </p>
         </div>
         <div className="header-actions">
+          {authState === 'ok' && (
+            <button className="btn" onClick={() => (window.location.href = '/v-react/ai-admin')}>
+              AI 模型配置
+            </button>
+          )}
           <button className="btn" onClick={refreshAll} disabled={loading}>
             刷新
           </button>

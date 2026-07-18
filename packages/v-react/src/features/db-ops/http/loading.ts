@@ -21,7 +21,9 @@ export const stopLoading = () => {
 export const subscribeLoading = (listener: Listener) => {
   listeners.add(listener);
   listener(counter > 0);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 };
 
 export const isLoading = () => counter > 0;
