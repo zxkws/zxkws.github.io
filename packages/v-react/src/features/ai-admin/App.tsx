@@ -11,6 +11,9 @@ type AiConfig = {
   hasApiKey?: boolean;
   models?: ModelSelections;
 };
+type AiModel = {
+  id: string;
+};
 
 const capabilities: Array<[Capability, string]> = [
   ['text', '文本'],
@@ -28,21 +31,13 @@ const unwrap = <T,>(payload: unknown): T => {
   return payload as T;
 };
 
-const modelId = (item: unknown) => {
-  if (typeof item === 'string' || typeof item === 'number') return String(item);
-  if (!item || typeof item !== 'object') return String(item);
-  const value = item as Record<string, unknown>;
-  return String(value.id ?? value.model ?? value.name ?? JSON.stringify(item));
-};
-
 export default function AiAdminApp() {
   const [authState, setAuthState] = useState<AuthState>('pending');
   const [baseUrl, setBaseUrl] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [hasApiKey, setHasApiKey] = useState(false);
   const [models, setModels] = useState<ModelSelections>({});
-  const [availableModels, setAvailableModels] = useState<unknown[]>([]);
-  const [rawModels, setRawModels] = useState<unknown>(null);
+  const [availableModels, setAvailableModels] = useState<AiModel[]>([]);
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -83,10 +78,9 @@ export default function AiAdminApp() {
     try {
       const payload: { baseUrl?: string; apiKey?: string } = { baseUrl };
       if (apiKey) payload.apiKey = apiKey;
-      const result = unwrap<unknown[]>(await client('/ai/admin/models/refresh', payload, { method: 'POST' }));
+      const result = unwrap<AiModel[]>(await client('/ai/admin/models/refresh', payload, { method: 'POST' }));
       const list = Array.isArray(result) ? result : [];
       setAvailableModels(list);
-      setRawModels(result);
       setStatus('模型获取成功');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : String(error));
@@ -124,7 +118,7 @@ export default function AiAdminApp() {
     return <div className="ai-admin-state">{message}</div>;
   }
 
-  const ids = availableModels.map(modelId);
+  const ids = availableModels.map((model) => model.id);
   return (
     <main className="ai-admin-root">
       <header>
@@ -132,7 +126,6 @@ export default function AiAdminApp() {
           <h1>AI 模型配置</h1>
           <p>配置 OpenAI-compatible 服务，并为不同能力指定模型。</p>
         </div>
-        <button onClick={() => (window.location.href = '/v-react/db-ops')}>返回数据库管控</button>
       </header>
 
       <section>
@@ -185,7 +178,6 @@ export default function AiAdminApp() {
         </button>
       </div>
       <p className="ai-admin-status">{status}</p>
-      {rawModels !== null && <pre>{JSON.stringify(rawModels, null, 2)}</pre>}
     </main>
   );
 }

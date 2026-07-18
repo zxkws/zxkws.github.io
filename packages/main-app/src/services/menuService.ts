@@ -20,6 +20,8 @@ const normalizeMenus = (list: unknown): MenuItem[] => {
       order: typeof m.order === 'number' ? m.order : 0,
       visible: m.visible !== false,
       permission: typeof m.permission === 'string' ? m.permission : null,
+      adminOnly: m.adminOnly === true,
+      requiresAuth: m.requiresAuth === true,
       children,
     };
   });

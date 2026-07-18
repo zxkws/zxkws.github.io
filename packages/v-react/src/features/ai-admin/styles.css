@@ -71,16 +71,6 @@
   white-space: pre-wrap;
 }
 
-.ai-admin-root pre {
-  max-height: 320px;
-  overflow: auto;
-  padding: 14px;
-  border-radius: 8px;
-  background: #101820;
-  color: #e6edf3;
-  white-space: pre-wrap;
-}
-
 @media (max-width: 720px) {
   .ai-admin-root section,
   .ai-model-grid {

@@ -15,6 +15,17 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useUser();
   const [menus, setMenus] = useState<MenuItem[]>(builtInAsideMenus);
 
+  const visibleMenus = useMemo(() => {
+    const isAdmin = user?.role === 'admin' || user?.roles?.includes('admin');
+    const filterMenus = (items: MenuItem[]): MenuItem[] =>
+      items.flatMap((item) => {
+        if (item.visible === false || (item.requiresAuth && !user) || (item.adminOnly && !isAdmin)) return [];
+        const children = item.children ? filterMenus(item.children) : undefined;
+        return [{ ...item, children }];
+      });
+    return filterMenus(menus);
+  }, [menus, user]);
+
   useEffect(() => {
     console.log('[BasicLayout] Current menus:', menus);
   }, [menus]);
@@ -61,7 +72,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
       return out;
     };
 
-    const routes = flatten(menus);
+    const routes = flatten(visibleMenus);
     const actions: CommandItem[] = [
       {
         id: 'action:reload',
@@ -89,7 +100,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
       seen.add(item.id);
       return true;
     });
-  }, [menus]);
+  }, [visibleMenus]);
 
   // 核心鉴权逻辑：如果没有用户信息且加载已完成，强制跳转登录
   useEffect(() => {
@@ -144,7 +155,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
 
       {/* 2) Body: Left Dock + Main Stage */}
       <div className="flex flex-1 min-h-0 relative overflow-hidden">
-        <PageNav isMobile={isMobile} isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} menus={menus} />
+        <PageNav isMobile={isMobile} isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} menus={visibleMenus} />
 
         <div className="flex-1 flex flex-col min-w-0 h-full relative z-10">
           {/* The "Main Stage" - A floating glass card */}
