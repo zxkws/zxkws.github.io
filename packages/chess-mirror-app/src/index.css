@@ -96,6 +96,42 @@
 .camera-stage > canvas {
   pointer-events: none;
 }
+.camera-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #64748b;
+  background: #020617;
+}
+.camera-placeholder strong {
+  color: #cbd5e1;
+}
+.camera-placeholder span {
+  font-size: 13px;
+}
+.camera-placeholder .primary {
+  margin-top: 4px;
+}
+.camera-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 9px;
+  background: rgb(15 23 42 / 0.82);
+  color: #cbd5e1;
+  font-size: 12px;
+  backdrop-filter: blur(8px);
+}
 .camera-state {
   position: absolute;
   top: 14px;

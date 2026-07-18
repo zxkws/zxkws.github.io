@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import {
   Camera,
+  CameraOff,
   FlipVertical2,
   ImageUp,
   LoaderCircle,
@@ -60,8 +61,10 @@ const App: React.FC = () => {
   const [bottomSide, setBottomSide] = useState<BottomSide>('red');
   const [flipped, setFlipped] = useState(false);
   const [videoPaused, setVideoPaused] = useState(false);
+  const [cameraEnabled, setCameraEnabled] = useState(false);
 
   const webcamRef = useRef<Webcam>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLCanvasElement>(null);
@@ -85,6 +88,29 @@ const App: React.FC = () => {
         setStatus('识别组件加载失败');
       });
   }, []);
+
+  const releaseCamera = useCallback(() => {
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaStreamRef.current = null;
+    const video = webcamRef.current?.video;
+    if (video) video.srcObject = null;
+  }, []);
+
+  const closeCamera = useCallback(() => {
+    releaseCamera();
+    setCameraEnabled(false);
+    setBoardFound(false);
+    cornersRef.current = null;
+    setStatus('摄像头已关闭');
+  }, [releaseCamera]);
+
+  const openCamera = () => {
+    setError(null);
+    setCameraEnabled(true);
+    setStatus('正在打开摄像头');
+  };
+
+  useEffect(() => () => releaseCamera(), [releaseCamera]);
 
   const replaceBoard = useCallback((fen: string) => {
     setCurrentFen(fen);
@@ -146,6 +172,7 @@ const App: React.FC = () => {
           await analyzeFen(recognition.fen);
           navigator.vibrate?.(80);
         } else {
+          closeCamera();
           setView('board');
           setPhase('confirm');
           setStatus('请确认识别结果');
@@ -160,11 +187,11 @@ const App: React.FC = () => {
         setBusy(false);
       }
     },
-    [analyzeFen, bottomSide, replaceBoard, sideToMove],
+    [analyzeFen, bottomSide, closeCamera, replaceBoard, sideToMove],
   );
 
   useEffect(() => {
-    if (!cvReady || view === 'board') return;
+    if (!cvReady || view === 'board' || (!cameraEnabled && !preview)) return;
     let detecting = false;
     const timer = window.setInterval(() => {
       if (detecting) return;
@@ -186,7 +213,7 @@ const App: React.FC = () => {
       }
     }, 450);
     return () => window.clearInterval(timer);
-  }, [bestMove, bottomSide, cvReady, getSource, view]);
+  }, [bestMove, bottomSide, cameraEnabled, cvReady, getSource, preview, view]);
 
   useEffect(() => {
     previousHashRef.current = null;
@@ -195,7 +222,7 @@ const App: React.FC = () => {
   }, [bottomSide, sideToMove, view, videoPaused]);
 
   useEffect(() => {
-    if (!cvReady || view !== 'video' || preview || videoPaused) return;
+    if (!cvReady || !cameraEnabled || view !== 'video' || preview || videoPaused) return;
     let checking = false;
     const timer = window.setInterval(async () => {
       if (checking || busyRef.current) return;
@@ -228,7 +255,7 @@ const App: React.FC = () => {
       }
     }, 1_200);
     return () => window.clearInterval(timer);
-  }, [cvReady, getSource, preview, recognizeSource, videoPaused, view]);
+  }, [cameraEnabled, cvReady, getSource, preview, recognizeSource, videoPaused, view]);
 
   const handlePhoto = async () => {
     const source = getSource();
@@ -244,6 +271,7 @@ const App: React.FC = () => {
       setError('请选择图片文件');
       return;
     }
+    closeCamera();
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = String(reader.result || '');
@@ -289,10 +317,11 @@ const App: React.FC = () => {
     setVideoPaused(false);
     setAnalysis(null);
     setError(null);
-    setStatus(next === 'video' ? '寻找棋盘' : '请将完整棋盘放入画面');
+    setStatus(cameraEnabled ? (next === 'video' ? '寻找棋盘' : '请将完整棋盘放入画面') : '摄像头未开启');
   };
 
   const pauseAndCorrect = () => {
+    closeCamera();
     setVideoPaused(true);
     setView('board');
     setPhase('confirm');
@@ -301,6 +330,7 @@ const App: React.FC = () => {
   };
 
   const adjustBoard = () => {
+    closeCamera();
     if (view === 'video') setVideoPaused(true);
     setView('board');
     setPhase('confirm');
@@ -313,7 +343,7 @@ const App: React.FC = () => {
     setPhase('result');
     setPreview(null);
     setVideoPaused(false);
-    setStatus('寻找棋盘');
+    openCamera();
   };
 
   return (
@@ -370,26 +400,46 @@ const App: React.FC = () => {
             <div ref={stageRef} className="camera-stage">
               {preview ? (
                 <img ref={imageRef} src={preview} alt="待识别棋盘" />
-              ) : (
+              ) : cameraEnabled ? (
                 <Webcam
                   ref={webcamRef}
                   audio={false}
                   screenshotFormat="image/jpeg"
                   videoConstraints={{ facingMode: { ideal: 'environment' } }}
-                  onUserMedia={() => {
+                  onUserMedia={(stream) => {
+                    mediaStreamRef.current = stream;
                     setError(null);
                     setStatus('请将完整棋盘放入画面');
                   }}
                   onUserMediaError={(reason) => {
+                    releaseCamera();
+                    setCameraEnabled(false);
                     setError(errorMessage(reason));
                     setStatus('无法使用摄像头');
                   }}
                 />
+              ) : (
+                <div className="camera-placeholder">
+                  <Camera size={34} />
+                  <strong>摄像头未开启</strong>
+                  <span>也可以直接选择棋盘图片</span>
+                  <button className="primary" onClick={openCamera}>
+                    打开摄像头
+                  </button>
+                </div>
               )}
               <canvas ref={overlayRef} />
-              <div className={boardFound ? 'camera-state found' : 'camera-state'}>
-                {view === 'video' && bestMoveLabel ? bestMoveLabel : status}
-              </div>
+              {(cameraEnabled || preview) && (
+                <div className={boardFound ? 'camera-state found' : 'camera-state'}>
+                  {view === 'video' && bestMoveLabel ? bestMoveLabel : status}
+                </div>
+              )}
+              {cameraEnabled && (
+                <button className="camera-close" onClick={closeCamera}>
+                  <CameraOff size={16} />
+                  关闭摄像头
+                </button>
+              )}
               {busy && (
                 <div className="busy-layer">
                   <LoaderCircle className="animate-spin" size={22} />
@@ -447,19 +497,28 @@ const App: React.FC = () => {
               </div>
               {view === 'photo' ? (
                 <div className="capture-actions">
-                  <button className="primary" disabled={busy || !cvReady} onClick={handlePhoto}>
+                  <button
+                    className="primary"
+                    disabled={busy || !cvReady}
+                    onClick={cameraEnabled ? handlePhoto : openCamera}
+                  >
                     <Camera size={19} />
-                    拍照识别
+                    {cameraEnabled ? '拍照识别' : '打开摄像头'}
                   </button>
                   <button className="secondary" disabled={busy} onClick={() => fileRef.current?.click()}>
                     <ImageUp size={19} />
                     选择图片
                   </button>
                 </div>
-              ) : (
+              ) : cameraEnabled ? (
                 <button className="secondary full-action" disabled={!analysis} onClick={pauseAndCorrect}>
                   <Pause size={18} />
                   暂停并修正
+                </button>
+              ) : (
+                <button className="primary full-action" onClick={openCamera}>
+                  <Video size={18} />
+                  打开摄像头
                 </button>
               )}
             </>
