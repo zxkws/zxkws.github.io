@@ -15,7 +15,6 @@
     "dev:chess": "pnpm --filter chess-mirror-app dev",
     "build": "pnpm run build:all",
     "build:all": "pnpm --filter v-app build && pnpm --filter auth-app build && pnpm --filter v-react build && pnpm --filter chess-mirror-app build && pnpm --filter main-app build",
-    "postinstall": "pnpm i @google/gemini-cli @anthropic-ai/claude-code -g || true",
     "prepare": "husky"
   },
   "imports": {
