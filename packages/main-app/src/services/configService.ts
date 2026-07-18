@@ -30,8 +30,12 @@ export async function loadSystemConfig(): Promise<SystemConfig> {
  * 转换微应用配置为 ice-stark 格式
  */
 export function convertToIceStarkApps(config: SystemConfig) {
-  const resolveEntry = (app: MicroAppConfig) =>
-    isDevelopment ? app.devEntry || app.entry : app.prodEntry || app.entry;
+  const resolveEntry = (app: MicroAppConfig) => {
+    const entry = isDevelopment ? app.devEntry || app.entry : app.prodEntry || app.entry;
+    const buildVersion = process.env.BUILD_VERSION;
+    if (isDevelopment || !entry || !buildVersion) return entry;
+    return `${entry}${entry.includes('?') ? '&' : '?'}v=${encodeURIComponent(buildVersion)}`;
+  };
 
   return config.microApps
     .filter(

@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
         // Removed external: ['react', ...] to bundle dependencies, matching v-react pattern.
         // This prevents 404s on the 'react' module at runtime.
         output: {
-          entryFileNames: 'entry.js',
+          entryFileNames: 'assets/[name]-[hash].js',
           chunkFileNames: 'chunks/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash][extname]',
         },
