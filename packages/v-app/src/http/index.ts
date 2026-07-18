@@ -12,36 +12,6 @@ export interface TodoResponse {
   completed?: boolean;
 }
 
-export interface AccountDto {
-  id: string;
-  name: string;
-  platform: string;
-  account: string;
-  secret?: string; // usually not returned or hidden
-  extra?: any;
-  uts: string;
-}
-
-interface CreateAccountDto {
-  name: string;
-  platform: string;
-  account?: string;
-  secret?: string;
-  extra?: any;
-}
-
-interface UpdateAccountDto {
-  name?: string;
-  platform?: string;
-  account?: string;
-  secret?: string;
-  extra?: any;
-}
-
-interface ApiResponse<T> {
-  data: T;
-}
-
 export const queryTodos = (params: Record<string, unknown> = {}) => {
   return fetch<TodoResponse[]>('/v1/todos', params);
 };
@@ -56,29 +26,4 @@ export const deleteTodo = (params: { id: string | number }) => {
 
 export const uploadFile = (formData: FormData) => {
   return fetch<void>('/v1/upload/file', formData, { file: true });
-};
-
-// 账户管理API
-export const createAccount = (params: CreateAccountDto) => {
-  return fetch<void>('/v1/account-manage', params);
-};
-
-export const getAccounts = () => {
-  return fetch<ApiResponse<AccountDto[]>>('/v1/account-manage', {}, { method: 'GET' }).then(
-    (response) => response.data,
-  );
-};
-
-export const getAccount = (id: string) => {
-  return fetch<ApiResponse<AccountDto>>(`/v1/account-manage/${id}`, {}, { method: 'GET' }).then(
-    (response) => response.data,
-  );
-};
-
-export const updateAccount = (id: string, params: UpdateAccountDto) => {
-  return fetch<void>(`/v1/account-manage/${id}`, params, { method: 'PATCH' });
-};
-
-export const deleteAccount = (id: string) => {
-  return fetch<void>(`/v1/account-manage/${id}`, {}, { method: 'DELETE' });
 };

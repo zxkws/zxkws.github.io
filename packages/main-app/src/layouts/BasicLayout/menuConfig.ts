@@ -18,5 +18,4 @@ export const builtInAsideMenus: MenuItem[] = [
   { name: '定时轮询保活', path: '/v-react/keepalive' },
   { name: '导航列表', path: '/v-app/navList' },
   { name: '代办', path: '/v-app/todo' },
-  { name: '账号管理', path: '/v-app/account' },
 ];

@@ -22,11 +22,6 @@ export const routes = [
         component: () => import('../views/NavList/index.vue'),
       },
       {
-        name: 'accountManagement',
-        path: '/account',
-        component: () => import('../views/AccountManagement/index.vue'),
-      },
-      {
         name: 'textDifference',
         path: '/text-difference',
         component: () => import('../views/TextDifference/index.vue'),

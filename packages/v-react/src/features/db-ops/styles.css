@@ -195,52 +195,6 @@
   flex-wrap: wrap;
 }
 
-/* Tabs */
-.dbops-root .tabs {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-  flex-wrap: wrap;
-  margin: var(--space-3) 0;
-}
-
-.dbops-root .tab {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-fg-secondary);
-  cursor: pointer;
-  transition:
-    background-color var(--duration-fast) var(--ease-standard),
-    border-color var(--duration-fast) var(--ease-standard),
-    color var(--duration-fast) var(--ease-standard);
-}
-
-.dbops-root .tab:hover {
-  background: var(--color-surface-3);
-  color: var(--color-fg);
-}
-
-.dbops-root .tab.active {
-  background: var(--color-surface-3);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  font-weight: 600;
-}
-
-.dbops-root .tab-badge {
-  font-size: 12px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: var(--color-surface-2);
-  border: 1px solid var(--color-border);
-  color: var(--color-fg-tertiary);
-}
-
 /* Summary */
 .dbops-root .summary-grid {
   display: grid;
@@ -597,30 +551,6 @@
   color: var(--color-success);
 }
 
-.dbops-root .pill {
-  border: 1px solid var(--color-border);
-  padding: 2px 8px;
-  border-radius: 999px;
-  color: var(--color-fg-tertiary);
-  font-size: 12px;
-  background: var(--color-surface-2);
-}
-
-.dbops-root .pill.running {
-  border-color: var(--color-info);
-  color: var(--color-info);
-}
-
-.dbops-root .pill.success {
-  border-color: var(--color-success);
-  color: var(--color-success);
-}
-
-.dbops-root .pill.failed {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-}
-
 .dbops-root .sub,
 .dbops-root .muted {
   color: var(--color-fg-tertiary);
@@ -735,11 +665,6 @@
 }
 
 @supports (background: color-mix(in srgb, #000, #fff)) {
-  .dbops-root .tab.active {
-    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
-    border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
-  }
-
   .dbops-root .data-table tbody tr.selected {
     background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
   }
@@ -747,21 +672,6 @@
   .dbops-root .panel.danger {
     border-color: color-mix(in srgb, var(--color-danger) 40%, var(--color-border));
     background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
-  }
-
-  .dbops-root .pill.running {
-    border-color: color-mix(in srgb, var(--color-info) 40%, var(--color-border));
-    background: color-mix(in srgb, var(--color-info) 12%, var(--color-surface));
-  }
-
-  .dbops-root .pill.success {
-    border-color: color-mix(in srgb, var(--color-success) 40%, var(--color-border));
-    background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
-  }
-
-  .dbops-root .pill.failed {
-    border-color: color-mix(in srgb, var(--color-danger) 40%, var(--color-border));
-    background: color-mix(in srgb, var(--color-danger) 12%, var(--color-surface));
   }
 
   .dbops-root .badge-blue {
