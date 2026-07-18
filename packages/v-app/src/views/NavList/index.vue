@@ -2,8 +2,8 @@
   <div class="w-full h-full bg-gray-100 dark:bg-gray-900 overflow-y-auto p-4 text-left">
     <div class="mb-4 flex items-center justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">网址管理</h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">启用后，后台会按设置的分钟间隔访问网址。</p>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">定时轮询保活</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">启用后，后台会按设置的分钟间隔访问目标网址进行保活。</p>
       </div>
       <button
         type="button"

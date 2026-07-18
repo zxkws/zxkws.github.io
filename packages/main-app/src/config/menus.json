@@ -8,7 +8,7 @@
 	{ "name": "权限管理", "path": "/app/permission-admin" },
 	{ "name": "用户管理", "path": "/app/user-admin" },
 	{ "name": "Obsidian 笔记", "path": "/v-react/notes" },
-	{ "name": "网址管理", "path": "/v-app/navList" },
+	{ "name": "定时轮询保活", "path": "/v-app/navList" },
 	{ "name": "代办", "path": "/v-app/todo" },
 	{ "name": "账号管理", "path": "/v-app/account" },
 	{ "name": "LLM 排行", "path": "/v-app/llm-ranking" }
