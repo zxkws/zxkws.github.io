@@ -8,12 +8,10 @@
 packages/
 ├── main-app/             # 主应用（React）
 ├── v-app/                # Vue 微应用
-├── pdf-editor-app/       # PDF 编辑器（React + Vite）
 ├── textDifference/       # 文本对比工具微应用
 ├── config-center/        # 微应用配置中心（静态配置）
 ├── vue-learning-app/     # Vue 学习示例（部署路径 /vue/）
 ├── react-learning-app/   # React 学习示例（部署路径 /react/）
-├── knowledge-hub-app/    # 知识中台
 ├── codex-chat-app/       # Codex 对话（实验）
 └── person-resume-app/    # 个人简历（实验，部署路径 /resume/）
 ```
@@ -22,13 +20,11 @@ packages/
 
 - **主应用**: 部署到根路径 `/`
 - **v-app**: 部署到子路径 `/v-app/`
-- **pdf-editor-app**: 部署到子路径 `/pdf-editor-app/`
 - **textDifference**: 部署到子路径 `/textdiff/`
 - **config-center**: 部署到子路径 `/config-center/`
 - **vue**: 独立部署到子路径 `/vue/`
 - **react**: 独立部署到子路径 `/react/`
 - **codex-chat-app**: 部署到子路径 `/codex-chat-app/`
-- **knowledge-hub-app**: 部署到子路径 `/knowledge-hub-app/`
 - **resume**: 部署到子路径 `/resume/`
 
 所有上述应用通过 GitHub Actions 自动构建并部署到 GitHub Pages。
@@ -58,10 +54,8 @@ pnpm dev
 - v-app 微应用：`http://localhost:5173`
 - textDifference 微应用：`http://localhost:5174`
 - config-center 微应用：`http://localhost:5175`
-- pdf-editor-app 微应用：`http://localhost:5177`
 - vue 微应用：`http://localhost:5178`
 - react 微应用：`http://localhost:5179`
-- knowledge-hub-app 微应用：`http://localhost:5180`
 - resume 微应用：`http://localhost:5181`
 
 主应用会自动加载本地开发中的微应用，实现实时热更新。
@@ -76,9 +70,6 @@ pnpm dev:main
 
 # 只开发 v-app 微应用
 pnpm dev:v-app
-
-# 只开发 pdf-editor-app 微应用
-pnpm dev:pdf-editor
 
 # 只开发 textDifference 微应用
 pnpm dev:textdiff
@@ -95,13 +86,9 @@ pnpm dev:resume
 | v-app             | 5173     | http://localhost:5173 |
 | textDifference    | 5174     | http://localhost:5174 |
 | config-center     | 5175     | http://localhost:5175 |
-| pdf-editor-app    | 5177     | http://localhost:5177 |
 | vue               | 5178     | http://localhost:5178 |
 | react             | 5179     | http://localhost:5179 |
-| knowledge-hub-app | 5180     | http://localhost:5180 |
 | resume            | 5181     | http://localhost:5181 |
-
-> 生产预览（构建后的静态产物）默认跑在 `417x` 端口，例如 `pnpm preview:pdf-editor` 后访问 `http://localhost:4177/pdf-editor-app/`。
 
 ### 本地开发特性
 
@@ -121,15 +108,12 @@ pnpm build:all
 # 或者分别构建
 pnpm --filter main-app build
 pnpm --filter v-app build
-pnpm --filter pdf-editor-app build
 pnpm --filter textdifference build
 pnpm --filter config-center build
 pnpm --filter resume build
 pnpm --filter vue build
 pnpm --filter react build
 
-# 生产包本地预览（示例：PDF 编辑器）
-pnpm preview:pdf-editor  # 打开 http://localhost:4177/pdf-editor-app/
 ```
 
 ## 部署
@@ -140,7 +124,6 @@ pnpm preview:pdf-editor  # 打开 http://localhost:4177/pdf-editor-app/
 
 - **主应用**: React + ice-stark + Webpack
 - **v-app**: Vue 3 + Vite + Pinia
-- **pdf-editor-app**: React + Vite + pdf-lib + pdfjs-dist
 - **textDifference**: 纯静态 HTML/JS
 
 ## 微前端特性
