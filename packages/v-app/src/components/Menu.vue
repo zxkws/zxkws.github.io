@@ -33,11 +33,6 @@ const menus = [
     value: 'navList',
     name: 'navList',
   },
-  {
-    label: '大模型信息榜',
-    value: 'llmRanking',
-    name: 'llmRanking',
-  },
 ];
 
 function closeMenu() {

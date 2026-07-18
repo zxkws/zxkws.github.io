@@ -496,15 +496,13 @@ const App: React.FC = () => {
                 </div>
               </div>
               {view === 'photo' ? (
-                <div className="capture-actions">
-                  <button
-                    className="primary"
-                    disabled={busy || !cvReady}
-                    onClick={cameraEnabled ? handlePhoto : openCamera}
-                  >
-                    <Camera size={19} />
-                    {cameraEnabled ? '拍照识别' : '打开摄像头'}
-                  </button>
+                <div className={cameraEnabled ? 'capture-actions' : 'capture-actions single'}>
+                  {cameraEnabled && (
+                    <button className="primary" disabled={busy || !cvReady} onClick={handlePhoto}>
+                      <Camera size={19} />
+                      拍照识别
+                    </button>
+                  )}
                   <button className="secondary" disabled={busy} onClick={() => fileRef.current?.click()}>
                     <ImageUp size={19} />
                     选择图片
@@ -515,12 +513,7 @@ const App: React.FC = () => {
                   <Pause size={18} />
                   暂停并修正
                 </button>
-              ) : (
-                <button className="primary full-action" onClick={openCamera}>
-                  <Video size={18} />
-                  打开摄像头
-                </button>
-              )}
+              ) : null}
             </>
           )}
 

@@ -233,6 +233,9 @@
   grid-template-columns: 1fr 1fr;
   gap: 9px;
 }
+.capture-actions.single {
+  grid-template-columns: 1fr;
+}
 .compact-settings {
   display: flex;
   flex-direction: column;
