@@ -31,6 +31,11 @@ export const routes = [
         path: '/text-difference',
         component: () => import('../views/TextDifference/index.vue'),
       },
+      {
+        name: 'jsonViewer',
+        path: '/json-viewer',
+        component: () => import('../views/JsonViewer/index.vue'),
+      },
     ],
   },
   {

@@ -60,19 +60,112 @@ const KeepaliveApp = () => {
 
   return (
     <div className="keepalive-page">
-      <header><h1>定时轮询保活</h1><p>后台按分钟间隔访问目标网址。</p></header>
+      <header className="keepalive-header">
+        <div>
+          <h1>定时轮询保活</h1>
+          <p>后台按分钟间隔访问目标网址，并保留最近一次真实响应。</p>
+        </div>
+        <button disabled={loading} type="button" onClick={() => void load()}>
+          刷新状态
+        </button>
+      </header>
       {error && <div className="keepalive-error">{error}</div>}
       <form className="keepalive-form" onSubmit={submit}>
-        <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="名称" required />
-        <input value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://example.com" type="url" required />
-        <input value={form.intervalMinutes} onChange={(e) => setForm({ ...form, intervalMinutes: Number(e.target.value) })} type="number" min="1" max="525600" required />
-        <label><input checked={form.enabled} onChange={(e) => setForm({ ...form, enabled: e.target.checked })} type="checkbox" />启用</label>
-        <button disabled={loading} type="submit">{editingId ? '保存' : '添加'}</button>
-        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(emptyForm); }}>取消</button>}
+        <input
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          placeholder="名称"
+          required
+        />
+        <input
+          value={form.url}
+          onChange={(e) => setForm({ ...form, url: e.target.value })}
+          placeholder="https://example.com"
+          type="url"
+          required
+        />
+        <input
+          value={form.intervalMinutes}
+          onChange={(e) => setForm({ ...form, intervalMinutes: Number(e.target.value) })}
+          type="number"
+          min="1"
+          max="525600"
+          required
+        />
+        <label>
+          <input
+            checked={form.enabled}
+            onChange={(e) => setForm({ ...form, enabled: e.target.checked })}
+            type="checkbox"
+          />
+          启用
+        </label>
+        <button disabled={loading} type="submit">
+          {editingId ? '保存' : '添加'}
+        </button>
+        {editingId && (
+          <button
+            type="button"
+            onClick={() => {
+              setEditingId(null);
+              setForm(emptyForm);
+            }}
+          >
+            取消
+          </button>
+        )}
       </form>
-      {loading && items.length === 0 ? <p>加载中...</p> : (
-        <div className="keepalive-table-wrap"><table><thead><tr><th>名称</th><th>网址</th><th>间隔分钟</th><th>启用</th><th>最近状态码</th><th>最近访问时间</th><th>下次访问时间</th><th>最近错误</th><th>操作</th></tr></thead>
-        <tbody>{items.map((item) => <tr key={item.id}><td>{item.name}</td><td><a href={item.url} target="_blank" rel="noreferrer">{item.url}</a></td><td>{item.intervalMinutes}</td><td>{String(item.enabled)}</td><td>{item.lastStatusCode}</td><td>{item.lastVisitedAt}</td><td>{item.nextVisitAt}</td><td>{item.lastError}</td><td><button onClick={() => edit(item)}>编辑</button><button onClick={() => void remove(item)}>删除</button></td></tr>)}</tbody></table></div>
+      {loading && items.length === 0 ? (
+        <p>加载中...</p>
+      ) : (
+        <div className="keepalive-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>名称</th>
+                <th>网址</th>
+                <th>间隔分钟</th>
+                <th>启用</th>
+                <th>最近状态码</th>
+                <th>最近访问时间</th>
+                <th>下次访问时间</th>
+                <th>最近响应</th>
+                <th>最近错误</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.name}</td>
+                  <td>
+                    <a href={item.url} target="_blank" rel="noreferrer">
+                      {item.url}
+                    </a>
+                  </td>
+                  <td>{item.intervalMinutes}</td>
+                  <td>{String(item.enabled)}</td>
+                  <td>{item.lastStatusCode}</td>
+                  <td>{item.lastVisitedAt}</td>
+                  <td>{item.nextVisitAt}</td>
+                  <td className="keepalive-response-cell">
+                    {item.lastResponse !== null && (
+                      <details>
+                        <summary>查看响应</summary>
+                        <pre>{item.lastResponse}</pre>
+                      </details>
+                    )}
+                  </td>
+                  <td>{item.lastError}</td>
+                  <td>
+                    <button onClick={() => edit(item)}>编辑</button>
+                    <button onClick={() => void remove(item)}>删除</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

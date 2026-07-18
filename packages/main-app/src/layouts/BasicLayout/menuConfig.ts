@@ -7,6 +7,7 @@ export const builtInAsideMenus: MenuItem[] = [
   { name: '首页', path: '/' },
   { name: '象棋·镜', path: '/chess-mirror' },
   { name: '文本对比', path: '/v-app/text-difference' },
+  { name: 'JSON 工具', path: '/v-app/json-viewer' },
   { name: 'Curl Converter', path: '/tools/curlconverter' },
   // 业务菜单仅为兜底；实际显示以后端返回为准
   { name: '一起看', path: '/app/watch-together' },

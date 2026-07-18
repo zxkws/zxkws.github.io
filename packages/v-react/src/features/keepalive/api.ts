@@ -10,6 +10,7 @@ export type Website = {
   nextVisitAt: string | null;
   lastStatusCode: number | null;
   lastError: string | null;
+  lastResponse: string | null;
 };
 
 export type WebsiteInput = Pick<Website, 'name' | 'url' | 'intervalMinutes' | 'enabled'>;
@@ -25,9 +26,7 @@ const client = createFetchClient({
       onFulfilled: (response: FetchResponse<unknown>) => {
         const payload = response.data;
         const data =
-          payload && typeof payload === 'object' && 'data' in payload
-            ? (payload as { data: unknown }).data
-            : payload;
+          payload && typeof payload === 'object' && 'data' in payload ? (payload as { data: unknown }).data : payload;
         return { ...response, data };
       },
     },

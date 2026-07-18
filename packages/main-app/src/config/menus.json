@@ -2,6 +2,7 @@
 	{ "name": "首页", "path": "/" },
 	{ "name": "象棋·镜", "path": "/chess-mirror" },
 	{ "name": "文本对比", "path": "/v-app/text-difference" },
+	{ "name": "JSON 工具", "path": "/v-app/json-viewer" },
 	{ "name": "Curl Converter", "path": "/tools/curlconverter" },
 	{ "name": "数据库管控", "path": "/v-react/db-ops" },
 	{ "name": "权限管理", "path": "/app/permission-admin" },

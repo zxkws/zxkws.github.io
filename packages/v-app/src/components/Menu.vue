@@ -19,6 +19,11 @@ const menus = [
     name: 'textDifference',
   },
   {
+    label: 'JSON 工具',
+    value: 'jsonViewer',
+    name: 'jsonViewer',
+  },
+  {
     label: 'TODO',
     value: 'TODO',
     name: 'todo',
