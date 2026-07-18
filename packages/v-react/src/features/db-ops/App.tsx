@@ -28,16 +28,6 @@ type DbAsset = {
   uts?: string;
 };
 
-type CheckResult = {
-  id: string;
-  name: string;
-  type: DbType;
-  status: 'online' | 'offline';
-  latencyMs?: number;
-  message?: string;
-  checkedAt: string | Date;
-};
-
 type UserProfile = {
   userId: string;
   username: string;
@@ -139,8 +129,6 @@ export default function App({ basename: _basename }: { basename?: string }) {
   const [editing, setEditing] = useState<DbAsset | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [checkingId, setCheckingId] = useState<string | null>(null);
-  const [checkingAll, setCheckingAll] = useState(false);
   const [secretVisible, setSecretVisible] = useState<Record<string, boolean>>({});
 
   const showToast = useCallback((message: string) => {
@@ -317,47 +305,6 @@ export default function App({ basename: _basename }: { basename?: string }) {
     }
   };
 
-  const mergeCheck = (results: CheckResult[]) => {
-    setAssets((prev) => {
-      const map = new Map(prev.map((item) => [item.id, item] as const));
-      results.forEach((res) => {
-        const existing = map.get(res.id);
-        if (existing) {
-          map.set(res.id, {
-            ...existing,
-            lastStatus: res.status,
-            lastLatencyMs: res.latencyMs,
-            lastMessage: res.message,
-            lastCheckedAt: res.checkedAt,
-          });
-        }
-      });
-      return Array.from(map.values());
-    });
-  };
-
-  const checkAsset = async (id?: string) => {
-    if (id) {
-      setCheckingId(id);
-    } else {
-      setCheckingAll(true);
-    }
-    try {
-      const payload = id ? { id } : {};
-      const results = unwrap<CheckResult[]>(await client('/v1/db-assets/check', payload));
-      mergeCheck(results);
-      showToast('检查完成');
-    } catch (err) {
-      if (getErrorStatus(err) === 401) {
-        setAuthState('need-login');
-      }
-      showToast(err instanceof Error ? err.message : '检查失败');
-    } finally {
-      setCheckingId(null);
-      setCheckingAll(false);
-    }
-  };
-
   const toggleSecret = (id?: string) => {
     if (!id) return;
     setSecretVisible((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -457,13 +404,6 @@ export default function App({ basename: _basename }: { basename?: string }) {
             </button>
           </div>
           <div className="toolbar-right">
-            <button
-              className="btn"
-              onClick={() => checkAsset()}
-              disabled={checkingAll || loading || assets.length === 0}
-            >
-              {checkingAll ? '巡检中...' : '全部巡检'}
-            </button>
             <button className="btn primary" onClick={startCreate}>
               新增数据源
             </button>
@@ -532,16 +472,6 @@ export default function App({ basename: _basename }: { basename?: string }) {
                     <td className="mono">{formatTime(item.lastCheckedAt)}</td>
                     <td>
                       <div className="cell-actions">
-                        <button
-                          className="link"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            checkAsset(item.id);
-                          }}
-                          disabled={checkingId === item.id}
-                        >
-                          {checkingId === item.id ? '检查中' : '检查'}
-                        </button>
                         <button
                           className="link"
                           onClick={(e) => {
@@ -618,13 +548,6 @@ export default function App({ basename: _basename }: { basename?: string }) {
           </div>
           <div className="sidepanel-body">
             <div className="cell-actions" style={{ justifyContent: 'flex-start', marginBottom: 10 }}>
-              <button
-                className="btn"
-                onClick={() => checkAsset(selectedAsset.id)}
-                disabled={checkingId === selectedAsset.id || checkingAll}
-              >
-                {checkingId === selectedAsset.id ? '检查中...' : '测试连接'}
-              </button>
               <button className="btn" onClick={() => copyToClipboard(addr, '已复制连接信息')}>
                 复制连接
               </button>
@@ -731,7 +654,9 @@ export default function App({ basename: _basename }: { basename?: string }) {
       <header className="page-header">
         <div>
           <h1>数据库管控台</h1>
-          <p className="sub">集中管理 MySQL / Redis / MongoDB 的配置与健康状态。仅限管理员访问。</p>
+          <p className="sub">
+            集中管理 MySQL / Redis / MongoDB 的配置与健康状态。系统每天自动检查一次，检查后立即断开连接。
+          </p>
         </div>
         <div className="header-actions">
           <button className="btn" onClick={refreshAll} disabled={loading}>
