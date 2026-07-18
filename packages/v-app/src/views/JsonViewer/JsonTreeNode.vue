@@ -11,7 +11,7 @@ const props = defineProps<{
   expandVersion: number;
 }>();
 
-const expanded = ref(props.depth < 2);
+const expanded = ref(props.expandMode ? props.expandMode === 'expand' : props.depth < 2);
 const isArray = computed(() => Array.isArray(props.value));
 const isContainer = computed(() => props.value !== null && typeof props.value === 'object');
 const entries = computed(() =>

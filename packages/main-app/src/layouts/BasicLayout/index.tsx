@@ -28,7 +28,12 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
       pathname === '/chess-mirror' ||
       pathname.startsWith('/chess-mirror/') ||
       pathname.startsWith('/tools/') ||
-      pathname === '/app/watch-together'
+      pathname === '/app/watch-together' ||
+      pathname === '/textdiff' ||
+      pathname === '/v-app/text-difference' ||
+      pathname.startsWith('/v-app/text-difference/') ||
+      pathname === '/v-app/json-viewer' ||
+      pathname.startsWith('/v-app/json-viewer/')
     );
   })();
 
