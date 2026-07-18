@@ -8,7 +8,6 @@
 packages/
 ├── main-app/             # 主应用（React）
 ├── v-app/                # Vue 微应用
-├── textDifference/       # 文本对比工具微应用
 ├── config-center/        # 微应用配置中心（静态配置）
 ├── vue-learning-app/     # Vue 学习示例（部署路径 /vue/）
 ├── react-learning-app/   # React 学习示例（部署路径 /react/）
@@ -19,7 +18,6 @@ packages/
 
 - **主应用**: 部署到根路径 `/`
 - **v-app**: 部署到子路径 `/v-app/`
-- **textDifference**: 部署到子路径 `/textdiff/`
 - **config-center**: 部署到子路径 `/config-center/`
 - **vue**: 独立部署到子路径 `/vue/`
 - **react**: 独立部署到子路径 `/react/`
@@ -28,7 +26,6 @@ packages/
 所有上述应用通过 GitHub Actions 自动构建并部署到 GitHub Pages。
 
 > 说明：Vue/React 学习示例已改为独立站点，不再出现在主应用菜单或微应用配置中，直接通过 `/vue/`、`/react/` 访问。
-
 
 ## 本地开发
 
@@ -50,7 +47,6 @@ pnpm dev
 
 - 主应用：`http://localhost:3000`
 - v-app 微应用：`http://localhost:5173`
-- textDifference 微应用：`http://localhost:5174`
 - config-center 微应用：`http://localhost:5175`
 - vue 微应用：`http://localhost:5178`
 - react 微应用：`http://localhost:5179`
@@ -69,24 +65,20 @@ pnpm dev:main
 # 只开发 v-app 微应用
 pnpm dev:v-app
 
-# 只开发 textDifference 微应用
-pnpm dev:textdiff
-
 # 只开发 resume 微应用
 pnpm dev:resume
 ```
 
 ### 端口说明
 
-| 应用              | 开发端口 | 访问地址              |
-| ----------------- | -------- | --------------------- |
-| main-app          | 3000     | http://localhost:3000 |
-| v-app             | 5173     | http://localhost:5173 |
-| textDifference    | 5174     | http://localhost:5174 |
-| config-center     | 5175     | http://localhost:5175 |
-| vue               | 5178     | http://localhost:5178 |
-| react             | 5179     | http://localhost:5179 |
-| resume            | 5181     | http://localhost:5181 |
+| 应用          | 开发端口 | 访问地址              |
+| ------------- | -------- | --------------------- |
+| main-app      | 3000     | http://localhost:3000 |
+| v-app         | 5173     | http://localhost:5173 |
+| config-center | 5175     | http://localhost:5175 |
+| vue           | 5178     | http://localhost:5178 |
+| react         | 5179     | http://localhost:5179 |
+| resume        | 5181     | http://localhost:5181 |
 
 ### 本地开发特性
 
@@ -106,7 +98,6 @@ pnpm build:all
 # 或者分别构建
 pnpm --filter main-app build
 pnpm --filter v-app build
-pnpm --filter textdifference build
 pnpm --filter config-center build
 pnpm --filter resume build
 pnpm --filter vue build
@@ -122,7 +113,6 @@ pnpm --filter react build
 
 - **主应用**: React + ice-stark + Webpack
 - **v-app**: Vue 3 + Vite + Pinia
-- **textDifference**: 纯静态 HTML/JS
 
 ## 微前端特性
 

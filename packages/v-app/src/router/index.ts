@@ -26,6 +26,11 @@ export const routes = [
         path: '/account',
         component: () => import('../views/AccountManagement/index.vue'),
       },
+      {
+        name: 'textDifference',
+        path: '/text-difference',
+        component: () => import('../views/TextDifference/index.vue'),
+      },
     ],
   },
   {

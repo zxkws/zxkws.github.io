@@ -14,6 +14,11 @@ const isMenuCollapsed = computed(() => store.isMenuCollapsed);
 
 const menus = [
   {
+    label: '文本对比',
+    value: 'textDifference',
+    name: 'textDifference',
+  },
+  {
     label: 'TODO',
     value: 'TODO',
     name: 'todo',

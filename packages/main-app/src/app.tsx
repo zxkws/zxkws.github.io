@@ -65,13 +65,6 @@ type IframeMicroApp = {
 
 const IFRAME_MICRO_APPS: IframeMicroApp[] = [
   {
-    name: 'textdiff',
-    // /textdiff/ 是子应用静态目录（独立站）。主应用内嵌用 /tools/textdiff，避免刷新时被静态目录劫持。
-    path: '/tools/textdiff',
-    devSrc: 'http://localhost:5174',
-    prodSrc: '/textdiff/',
-  },
-  {
     name: 'curlconverter',
     path: '/tools/curlconverter',
     prodSrc: 'https://curlconverter.com/',
@@ -247,10 +240,10 @@ function App() {
     };
   }, []);
 
-  // 兼容旧路径：/textdiff -> /tools/textdiff（否则刷新会被 /textdiff/ 目录劫持成独立站）
+  // 文本对比已迁移至 v-app，保留旧入口兼容已有书签。
   useEffect(() => {
-    if (pathname === '/textdiff') {
-      replaceUrl('/tools/textdiff');
+    if (pathname === '/textdiff' || pathname === '/tools/textdiff') {
+      replaceUrl('/v-app/text-difference');
       return;
     }
     if (pathname === '/curlconverter') {

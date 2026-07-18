@@ -11,7 +11,6 @@ export default [
       'node_modules',
       '**/dist',
       '**/build',
-      'packages/textDifference/**',
       'packages/v-app/public/sw.js',
     ],
   },
