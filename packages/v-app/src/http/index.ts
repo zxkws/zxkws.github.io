@@ -38,27 +38,6 @@ interface UpdateAccountDto {
   extra?: any;
 }
 
-export interface WebsiteDto {
-  id: string;
-  name: string;
-  url: string;
-  intervalMinutes: number;
-  enabled: boolean;
-  lastVisitedAt: string | null;
-  nextVisitAt: string | null;
-  lastStatusCode: number | null;
-  lastError: string | null;
-  cts: string;
-  uts: string;
-}
-
-export interface SaveWebsiteDto {
-  name: string;
-  url: string;
-  intervalMinutes: number;
-  enabled?: boolean;
-}
-
 interface ApiResponse<T> {
   data: T;
 }
@@ -103,17 +82,3 @@ export const updateAccount = (id: string, params: UpdateAccountDto) => {
 export const deleteAccount = (id: string) => {
   return fetch<void>(`/v1/account-manage/${id}`, {}, { method: 'DELETE' });
 };
-
-export const getWebsites = () =>
-  fetch<ApiResponse<WebsiteDto[]>>('/v1/websites', {}, { method: 'GET' }).then((response) => response.data);
-
-export const createWebsite = (params: SaveWebsiteDto) =>
-  fetch<ApiResponse<WebsiteDto>>('/v1/websites', params).then((response) => response.data);
-
-export const updateWebsite = (id: string, params: Partial<SaveWebsiteDto>) =>
-  fetch<ApiResponse<WebsiteDto>>(`/v1/websites/${id}`, params, { method: 'PATCH' }).then(
-    (response) => response.data,
-  );
-
-export const deleteWebsite = (id: string) =>
-  fetch<void>(`/v1/websites/${id}`, {}, { method: 'DELETE' });

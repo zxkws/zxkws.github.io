@@ -26,11 +26,6 @@ export const routes = [
         path: '/account',
         component: () => import('../views/AccountManagement/index.vue'),
       },
-      {
-        name: 'llmRanking',
-        path: '/llm-ranking',
-        component: () => import('../views/LlmRanking/index.vue'),
-      },
     ],
   },
   {

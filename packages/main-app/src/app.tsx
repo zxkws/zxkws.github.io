@@ -35,7 +35,6 @@ const normalizePathname = (value: string) => (value.length > 1 && value.endsWith
 
 const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
 const UserAdmin = lazy(() => import('./pages/UserAdmin'));
-const AgentTaskPage = lazy(() => import('./pages/AgentTask'));
 const Profile = lazy(() => import('./pages/Profile'));
 const WatchTogetherPage = lazy(() => import('./pages/WatchTogether'));
 
@@ -92,7 +91,6 @@ const LocalRoutes = ({ pathname }: { pathname: string }) => {
     if (pathname === '/profile') return <Profile />;
     if (pathname === '/app/permission-admin') return <PermissionAdmin />;
     if (pathname === '/app/user-admin') return <UserAdmin />;
-    if (pathname === '/app/agent-tasks') return <AgentTaskPage />;
     if (pathname === '/app/watch-together') return <WatchTogetherPage />;
 
     const iframe = IFRAME_MICRO_APPS.find((app) => pathname === app.path);

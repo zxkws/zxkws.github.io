@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import getBasename from '@ice/stark-app/lib/getBasename';
 import DbOpsApp from '../features/db-ops/App';
+import KeepaliveApp from '../features/keepalive/App';
 import { NotesApp } from './notes/NotesApp';
 
 export const App = ({ basename }: { basename?: string }) => {
@@ -12,6 +13,7 @@ export const App = ({ basename }: { basename?: string }) => {
       <Routes>
         {/* 功能路由：主应用通过 /v-react/xxx 映射为子应用内部的 /xxx */}
         <Route path="db-ops" element={<DbOpsApp basename={basename} />} />
+        <Route path="keepalive" element={<KeepaliveApp />} />
 
         {/* Obsidian 笔记菜单（/v-react/notes） */}
         <Route path="notes" element={<NotesApp basename={basename} />} />

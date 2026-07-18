@@ -10,14 +10,13 @@ export const builtInAsideMenus: MenuItem[] = [
   { name: '文本对比', path: '/tools/textdiff' },
   { name: 'Curl Converter', path: '/tools/curlconverter' },
   // 业务菜单仅为兜底；实际显示以后端返回为准
-  { name: '智能代理', path: '/app/agent-tasks' },
   { name: '一起看', path: '/app/watch-together' },
   { name: '数据库管控', path: '/v-react/db-ops' },
   { name: '权限管理', path: '/app/permission-admin' },
   { name: '用户管理', path: '/app/user-admin' },
   { name: 'Obsidian 笔记', path: '/v-react/notes' },
-  { name: '定时轮询保活', path: '/v-app/navList' },
+  { name: '定时轮询保活', path: '/v-react/keepalive' },
+  { name: '导航列表', path: '/v-app/navList' },
   { name: '代办', path: '/v-app/todo' },
   { name: '账号管理', path: '/v-app/account' },
-  { name: 'LLM 排行', path: '/v-app/llm-ranking' },
 ];
