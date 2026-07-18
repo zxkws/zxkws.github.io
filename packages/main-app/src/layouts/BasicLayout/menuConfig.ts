@@ -10,7 +10,6 @@ export const builtInAsideMenus: MenuItem[] = [
   { name: '文本对比', path: '/tools/textdiff' },
   { name: 'Curl Converter', path: '/tools/curlconverter' },
   // 业务菜单仅为兜底；实际显示以后端返回为准
-  { name: '模型对话', path: '/v-react/codex-chat' },
   { name: '智能代理', path: '/app/agent-tasks' },
   { name: '一起看', path: '/app/watch-together' },
   { name: '数据库管控', path: '/v-react/db-ops' },

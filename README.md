@@ -12,7 +12,6 @@ packages/
 ├── config-center/        # 微应用配置中心（静态配置）
 ├── vue-learning-app/     # Vue 学习示例（部署路径 /vue/）
 ├── react-learning-app/   # React 学习示例（部署路径 /react/）
-├── codex-chat-app/       # Codex 对话（实验）
 └── person-resume-app/    # 个人简历（实验，部署路径 /resume/）
 ```
 
@@ -24,7 +23,6 @@ packages/
 - **config-center**: 部署到子路径 `/config-center/`
 - **vue**: 独立部署到子路径 `/vue/`
 - **react**: 独立部署到子路径 `/react/`
-- **codex-chat-app**: 部署到子路径 `/codex-chat-app/`
 - **resume**: 部署到子路径 `/resume/`
 
 所有上述应用通过 GitHub Actions 自动构建并部署到 GitHub Pages。
