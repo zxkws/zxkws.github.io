@@ -4,6 +4,7 @@ import DbOpsApp from '../features/db-ops/App';
 import KeepaliveApp from '../features/keepalive/App';
 import { NotesApp } from './notes/NotesApp';
 import AiAdminApp from '../features/ai-admin/App';
+import AssistantsApp from '../features/assistants/App';
 
 export const App = ({ basename }: { basename?: string }) => {
   // icestark 会为子应用下发 basename；当前项目统一以 /v-react 作为基准路径
@@ -16,6 +17,7 @@ export const App = ({ basename }: { basename?: string }) => {
         <Route path="db-ops" element={<DbOpsApp basename={basename} />} />
         <Route path="keepalive" element={<KeepaliveApp />} />
         <Route path="ai-admin" element={<AiAdminApp />} />
+        <Route path="assistants" element={<AssistantsApp />} />
 
         {/* Obsidian 笔记菜单（/v-react/notes） */}
         <Route path="notes" element={<NotesApp basename={basename} />} />

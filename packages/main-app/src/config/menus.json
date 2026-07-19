@@ -5,6 +5,7 @@
 	{ "name": "JSON 工具", "path": "/v-app/json-viewer" },
 	{ "name": "Curl Converter", "path": "/tools/curlconverter" },
 	{ "name": "数据库管控", "path": "/v-react/db-ops" },
+	{ "name": "语音助手", "path": "/v-react/assistants" },
 	{ "name": "AI 模型配置", "path": "/v-react/ai-admin", "adminOnly": true },
 	{ "name": "权限管理", "path": "/app/permission-admin" },
 	{ "name": "用户管理", "path": "/app/user-admin" },

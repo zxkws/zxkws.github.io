@@ -2,6 +2,9 @@
 
 这是一个基于微前端架构的 monorepo 项目，包含主应用和多个微应用。
 
+语音助手位于 `/v-react/assistants`，包含智能体管理、角色与音色配置、模型、记忆、
+扩展配置和语音对话。管理员在 `/v-react/ai-admin` 配置底层 OpenAI-compatible 服务。
+
 ## 项目结构
 
 ```

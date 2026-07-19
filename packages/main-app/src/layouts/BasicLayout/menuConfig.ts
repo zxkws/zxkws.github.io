@@ -12,6 +12,7 @@ export const builtInAsideMenus: MenuItem[] = [
   // 业务菜单仅为兜底；实际显示以后端返回为准
   { name: '一起看', path: '/app/watch-together' },
   { name: '数据库管控', path: '/v-react/db-ops' },
+  { name: '语音助手', path: '/v-react/assistants' },
   { name: 'AI 模型配置', path: '/v-react/ai-admin', adminOnly: true },
   { name: '权限管理', path: '/app/permission-admin' },
   { name: '用户管理', path: '/app/user-admin' },
