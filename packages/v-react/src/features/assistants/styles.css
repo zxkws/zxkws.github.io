@@ -260,6 +260,46 @@ label.check input {
   flex: 1;
   resize: none;
 }
+.assistants-root button.recording {
+  border-color: #c62828;
+  color: #c62828;
+}
+.knowledge-options {
+  display: grid;
+  gap: 10px;
+}
+.knowledge-description {
+  min-height: 48px;
+  color: var(--color-text-secondary, #65717e);
+  white-space: pre-wrap;
+}
+.knowledge-modal {
+  height: min(820px, calc(100vh - 40px));
+}
+.knowledge-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 20px;
+}
+.knowledge-document-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.knowledge-document-list button {
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.knowledge-editor textarea {
+  resize: vertical;
+}
+.knowledge-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
 
 @media (max-width: 720px) {
   .assistants-root {
@@ -286,5 +326,12 @@ label.check input {
   .chat-input textarea {
     flex-basis: 100%;
     order: -1;
+  }
+  .knowledge-layout {
+    grid-template-columns: 1fr;
+  }
+  .knowledge-document-list {
+    max-height: 180px;
+    overflow: auto;
   }
 }

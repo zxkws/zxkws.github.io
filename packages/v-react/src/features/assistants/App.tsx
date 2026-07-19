@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   assistantApi,
+  knowledgeApi,
   type Assistant,
   type Conversation,
   type Memory,
   type Message,
   type Model,
   type Voice,
+  type KnowledgeBase,
 } from './api';
 import './styles.css';
 
@@ -18,6 +20,7 @@ export default function AssistantsApp() {
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [voices, setVoices] = useState<Voice[]>([]);
   const [models, setModels] = useState<Model[]>([]);
+  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [editing, setEditing] = useState<Assistant | null>(null);
@@ -63,6 +66,11 @@ export default function AssistantsApp() {
       assistantApi
         .models()
         .then(setModels)
+        .catch((error) => setStatus(errorText(error)));
+    if (!knowledgeBases.length)
+      knowledgeApi
+        .list()
+        .then(setKnowledgeBases)
         .catch((error) => setStatus(errorText(error)));
   };
 
@@ -351,14 +359,26 @@ export default function AssistantsApp() {
               )}
               {tab === 'extensions' && (
                 <div className="assistant-form-grid">
-                  <label className="wide">
-                    <span>知识库 ID（每行一个）</span>
-                    <textarea
-                      rows={8}
-                      value={(editing.knowledgeBaseIds ?? []).join('\n')}
-                      onChange={(e) => updateEditing('knowledgeBaseIds', e.target.value.split('\n').filter(Boolean))}
-                    />
-                  </label>
+                  <div className="wide knowledge-options">
+                    <span>知识库</span>
+                    {knowledgeBases.map((item) => (
+                      <label className="check" key={item.id}>
+                        <input
+                          type="checkbox"
+                          checked={(editing.knowledgeBaseIds ?? []).includes(item.id)}
+                          onChange={(event) => {
+                            const current = editing.knowledgeBaseIds ?? [];
+                            updateEditing(
+                              'knowledgeBaseIds',
+                              event.target.checked ? [...current, item.id] : current.filter((id) => id !== item.id),
+                            );
+                          }}
+                        />
+                        <span>{item.name}</span>
+                      </label>
+                    ))}
+                    {!knowledgeBases.length && <span>暂无知识库</span>}
+                  </div>
                   <label className="wide">
                     <span>扩展 ID（每行一个）</span>
                     <textarea
@@ -392,6 +412,11 @@ function ChatDialog({ assistant, onClose }: { assistant: Assistant; onClose: () 
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
+  const [recording, setRecording] = useState(false);
+  const [autoPlay, setAutoPlay] = useState(true);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
     assistantApi
@@ -416,6 +441,7 @@ function ChatDialog({ assistant, onClose }: { assistant: Assistant; onClose: () 
         items.some((item) => item.id === result.conversation.id) ? items : [result.conversation, ...items],
       );
       setText('');
+      if (autoPlay) await speak(result.assistantMessage.content);
     } catch (error) {
       setStatus(errorText(error));
     } finally {
@@ -433,18 +459,57 @@ function ChatDialog({ assistant, onClose }: { assistant: Assistant; onClose: () 
     }
   };
 
-  const recognize = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setStatus('当前浏览器不支持语音识别');
+  const toggleRecording = async () => {
+    if (recording) {
+      recorderRef.current?.stop();
+      setRecording(false);
       return;
     }
-    const recognition = new SpeechRecognition();
-    recognition.lang = assistant.language;
-    recognition.onresult = (event: any) => setText(event.results[0][0].transcript);
-    recognition.onerror = (event: any) => setStatus(event.error);
-    recognition.start();
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+      setStatus('当前浏览器不支持录音');
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const preferred = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus'].find((type) =>
+        MediaRecorder.isTypeSupported(type),
+      );
+      const recorder = new MediaRecorder(stream, preferred ? { mimeType: preferred } : undefined);
+      streamRef.current = stream;
+      recorderRef.current = recorder;
+      chunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size) chunksRef.current.push(event.data);
+      };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+        if (!blob.size) return;
+        setStatus('正在识别录音');
+        try {
+          const result = await assistantApi.transcribe(assistant.id, blob);
+          setText(result.text);
+          setStatus('');
+        } catch (error) {
+          setStatus(errorText(error));
+        }
+      };
+      recorder.start();
+      setRecording(true);
+      setStatus('正在录音');
+    } catch (error) {
+      setStatus(errorText(error));
+    }
   };
+
+  useEffect(
+    () => () => {
+      recorderRef.current?.state === 'recording' && recorderRef.current.stop();
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+    },
+    [],
+  );
 
   return (
     <div className="assistant-modal-mask">
@@ -462,6 +527,10 @@ function ChatDialog({ assistant, onClose }: { assistant: Assistant; onClose: () 
               </option>
             ))}
           </select>
+          <label className="check">
+            <input type="checkbox" checked={autoPlay} onChange={(e) => setAutoPlay(e.target.checked)} />
+            <span>自动播报回复</span>
+          </label>
         </div>
         <div className="chat-messages">
           {messages.map((message) => (
@@ -474,7 +543,9 @@ function ChatDialog({ assistant, onClose }: { assistant: Assistant; onClose: () 
         </div>
         {status && <p className="assistants-status">{status}</p>}
         <footer className="chat-input">
-          <button onClick={recognize}>语音输入</button>
+          <button className={recording ? 'recording' : ''} onClick={toggleRecording}>
+            {recording ? '停止录音' : '语音输入'}
+          </button>
           <textarea
             rows={2}
             value={text}

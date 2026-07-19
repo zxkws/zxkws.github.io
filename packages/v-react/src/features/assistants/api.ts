@@ -27,6 +27,21 @@ export type Model = { id: string };
 export type Memory = { id: string; content: string; createdAt: string; updatedAt: string };
 export type Conversation = { id: string; title?: string | null; createdAt: string; updatedAt: string };
 export type Message = { id: string; role: 'user' | 'assistant'; content: string; createdAt: string };
+export type KnowledgeBase = {
+  id: string;
+  name: string;
+  description?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+export type KnowledgeDocument = {
+  id: string;
+  knowledgeBaseId: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 const unwrap = <T>(payload: unknown): T => {
   if (payload && typeof payload === 'object' && 'data' in payload) return (payload as { data: T }).data;
@@ -61,4 +76,24 @@ export const assistantApi = {
     }>(`/ai/assistants/${id}/chat`, { content, conversationId }),
   speech: (id: string, text: string) =>
     post<{ audioBase64: string; contentType: string }>(`/ai/assistants/${id}/speech`, { text }),
+  transcribe: (id: string, recording: Blob) => {
+    const form = new FormData();
+    form.append('file', recording, `recording.${recording.type.includes('ogg') ? 'ogg' : 'webm'}`);
+    return post<{ text: string }>(`/ai/assistants/${id}/transcribe`, form);
+  },
+};
+
+export const knowledgeApi = {
+  list: () => get<KnowledgeBase[]>('/ai/knowledge-bases'),
+  create: (body: { name: string; description?: string }) => post<KnowledgeBase>('/ai/knowledge-bases', body),
+  update: (id: string, body: { name?: string; description?: string }) =>
+    patch<KnowledgeBase>(`/ai/knowledge-bases/${id}`, body),
+  remove: (id: string) => remove<{ success: boolean }>(`/ai/knowledge-bases/${id}`),
+  documents: (id: string) => get<KnowledgeDocument[]>(`/ai/knowledge-bases/${id}/documents`),
+  createDocument: (id: string, body: { title: string; content: string }) =>
+    post<KnowledgeDocument>(`/ai/knowledge-bases/${id}/documents`, body),
+  updateDocument: (id: string, documentId: string, body: { title?: string; content?: string }) =>
+    patch<KnowledgeDocument>(`/ai/knowledge-bases/${id}/documents/${documentId}`, body),
+  removeDocument: (id: string, documentId: string) =>
+    remove<{ success: boolean }>(`/ai/knowledge-bases/${id}/documents/${documentId}`),
 };
