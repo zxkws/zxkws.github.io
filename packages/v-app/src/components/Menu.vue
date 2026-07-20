@@ -1,10 +1,5 @@
 <script lang="ts" setup>
-import {
-  Dialog,
-  DialogPanel,
-  TransitionRoot,
-  TransitionChild,
-} from '@headlessui/vue';
+import { Dialog, DialogPanel, TransitionRoot, TransitionChild } from '@headlessui/vue';
 import { mainStore } from '@/store';
 import { computed } from 'vue';
 
@@ -13,6 +8,11 @@ const isMenuOpen = computed(() => store.isMenuOpen);
 const isMenuCollapsed = computed(() => store.isMenuCollapsed);
 
 const menus = [
+  {
+    label: '支付',
+    value: 'payment',
+    name: 'payment',
+  },
   {
     label: '文本对比',
     value: 'textDifference',
@@ -67,9 +67,20 @@ function closeMenu() {
         >
           <DialogPanel class="relative flex w-full max-w-xs flex-1 flex-col bg-white dark:bg-gray-800">
             <ul class="space-y-2 mt-2 p-4">
-              <li v-for="menu in menus" class="p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600"
-                :key="menu.name">
-                <button @click="$router.push({ name: menu.name }); closeMenu()" class="w-full text-left dark:text-white">{{ menu.label }}</button>
+              <li
+                v-for="menu in menus"
+                class="p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600"
+                :key="menu.name"
+              >
+                <button
+                  @click="
+                    $router.push({ name: menu.name });
+                    closeMenu();
+                  "
+                  class="w-full text-left dark:text-white"
+                >
+                  {{ menu.label }}
+                </button>
               </li>
             </ul>
           </DialogPanel>
@@ -81,17 +92,25 @@ function closeMenu() {
   <!-- Desktop sidebar -->
   <div :class="['hidden md:flex md:flex-shrink-0 transition-all duration-300', isMenuCollapsed ? 'w-20' : 'w-64']">
     <div class="flex w-full flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <ul class="space-y-2 mt-2 p-4">
-            <li v-for="menu in menus" class="p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600"
-            :key="menu.name">
-            <button @click="$router.push({ name: menu.name })" :title="menu.label" class="w-full flex items-center h-8 dark:text-white" :class="{'justify-center': isMenuCollapsed}">
-              <transition name="fade" mode="out-in">
-                <span v-if="!isMenuCollapsed" class="whitespace-nowrap">{{ menu.label }}</span>
-                <span v-else>{{ menu.label.charAt(0) }}</span>
-              </transition>
-            </button>
-            </li>
-        </ul>
+      <ul class="space-y-2 mt-2 p-4">
+        <li
+          v-for="menu in menus"
+          class="p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600"
+          :key="menu.name"
+        >
+          <button
+            @click="$router.push({ name: menu.name })"
+            :title="menu.label"
+            class="w-full flex items-center h-8 dark:text-white"
+            :class="{ 'justify-center': isMenuCollapsed }"
+          >
+            <transition name="fade" mode="out-in">
+              <span v-if="!isMenuCollapsed" class="whitespace-nowrap">{{ menu.label }}</span>
+              <span v-else>{{ menu.label.charAt(0) }}</span>
+            </transition>
+          </button>
+        </li>
+      </ul>
     </div>
   </div>
 </template>

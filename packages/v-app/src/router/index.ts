@@ -31,6 +31,11 @@ export const routes = [
         path: '/json-viewer',
         component: () => import('../views/JsonViewer/index.vue'),
       },
+      {
+        name: 'payment',
+        path: '/payment',
+        component: () => import('../views/Payment/index.vue'),
+      },
     ],
   },
   {
