@@ -8,6 +8,11 @@
 	{ "name": "语音助手", "path": "/v-react/assistants" },
 	{ "name": "知识库", "path": "/v-react/knowledge-bases" },
 	{ "name": "AI 模型配置", "path": "/v-react/ai-admin", "adminOnly": true },
+	{
+		"name": "模型调试",
+		"path": "/v-react/model-playground",
+		"adminOnly": true
+	},
 	{ "name": "权限管理", "path": "/app/permission-admin" },
 	{ "name": "用户管理", "path": "/app/user-admin" },
 	{ "name": "Obsidian 笔记", "path": "/v-react/notes" },
