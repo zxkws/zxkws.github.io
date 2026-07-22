@@ -269,10 +269,23 @@ export default function App({ basename: _basename }: { basename?: string }) {
         port: editing.port ? Number(editing.port) : undefined,
       };
       const endpoint = editing.id ? '/v1/db-assets/update' : '/v1/db-assets/create';
-      await client(endpoint, payload);
+      const savedItem = unwrap<DbAsset>(await client(endpoint, payload));
+      const savedId = savedItem?.id || editing.id;
       closeModal();
-      showToast('保存成功');
       loadAssets();
+      if (savedId) {
+        try {
+          const result = unwrap<{ status: string; latencyMs?: number }>(
+            await client('/v1/db-assets/test-connection', { ...payload, id: savedId }),
+          );
+          showToast(`保存成功 · 连接测试: ${result.status}${result.latencyMs ? ` (${result.latencyMs}ms)` : ''}`);
+        } catch {
+          showToast('保存成功，连接测试失败');
+        }
+        loadAssets();
+      } else {
+        showToast('保存成功');
+      }
     } catch (err) {
       if (getErrorStatus(err) === 401) {
         setAuthState('need-login');
@@ -288,6 +301,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
     try {
       const result = unwrap<{ status: string; latencyMs?: number; message?: string }>(
         await client('/v1/db-assets/test-connection', {
+          id: item.id,
           name: item.name,
           type: item.type,
           host: item.host,
