@@ -283,6 +283,29 @@ export default function App({ basename: _basename }: { basename?: string }) {
     }
   };
 
+  const testConnection = async (item: DbAsset) => {
+    if (!item.id) return;
+    try {
+      const result = unwrap<{ status: string; latencyMs?: number; message?: string }>(
+        await client('/v1/db-assets/test-connection', {
+          name: item.name,
+          type: item.type,
+          host: item.host,
+          port: item.port,
+          username: item.username,
+          password: item.password,
+          databaseName: item.databaseName,
+          authSource: item.authSource,
+          connectionUri: item.connectionUri,
+        }),
+      );
+      showToast(`测试连接结果: ${result.status}${result.latencyMs ? ` (${result.latencyMs}ms)` : ''}`);
+      loadAssets();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : '测试连接失败');
+    }
+  };
+
   const removeAsset = async (item: DbAsset) => {
     if (!item.id) return;
     const confirmed = typeof window !== 'undefined' ? window.confirm(`确认删除【${item.name}】?`) : true;
@@ -485,6 +508,15 @@ export default function App({ basename: _basename }: { basename?: string }) {
                           className="link"
                           onClick={(e) => {
                             e.stopPropagation();
+                            testConnection(item);
+                          }}
+                        >
+                          测试连接
+                        </button>
+                        <button
+                          className="link"
+                          onClick={(e) => {
+                            e.stopPropagation();
                             startEdit(item);
                           }}
                         >
@@ -550,6 +582,9 @@ export default function App({ basename: _basename }: { basename?: string }) {
             <div className="cell-actions" style={{ justifyContent: 'flex-start', marginBottom: 10 }}>
               <button className="btn" onClick={() => copyToClipboard(addr, '已复制连接信息')}>
                 复制连接
+              </button>
+              <button className="btn" onClick={() => testConnection(selectedAsset)}>
+                测试连接
               </button>
             </div>
 
