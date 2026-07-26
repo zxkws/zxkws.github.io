@@ -8,7 +8,7 @@ const BASE_URL = resolveApiBase({
 
 const getRedirectLogin = () => {
   const current = typeof window === 'undefined' ? '/' : window.location.href;
-  const isDev = process.env.NODE_ENV === 'development';
+  const isDev = import.meta.env.DEV;
   const base = isDev ? 'http://localhost:5183' : `${window.location.origin}/auth-app`;
   return `${base}/#/login?redirect=${encodeURIComponent(current)}`;
 };

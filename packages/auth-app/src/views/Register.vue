@@ -60,7 +60,7 @@ const submitRegister = async (payload: { username: string; email: string; passwo
 
         <GithubLoginButton :disabled="loading" @click="onGithubLogin" />
         <div class="link-row">
-          <router-link class="link" to="/login" :query="route.query">返回登录</router-link>
+          <router-link class="link" :to="{ path: '/login', query: route.query }">返回登录</router-link>
           <span></span>
         </div>
       </AuthPanel>

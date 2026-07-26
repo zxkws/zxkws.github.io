@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { isValidEmail } from '../../utils/validators';
+import { isValidEmail, isValidUsername } from '../../utils/validators';
 import PasswordField from './PasswordField.vue';
 
 const props = defineProps<{
@@ -16,8 +16,8 @@ const submit = async () => {
   const email = form.value.email.trim();
   const password = form.value.password;
 
-  if (!username || username.length < 3) {
-    props.onError('用户名至少 3 位');
+  if (!isValidUsername(username)) {
+    props.onError('用户名需为 6-30 位，仅支持字母、数字和 # $ % _ - 字符');
     return;
   }
   if (!email || !isValidEmail(email)) {

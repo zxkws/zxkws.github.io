@@ -1,14 +1,20 @@
 import { Button, Input, message, Popconfirm, Select, Space, Table, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { deleteUser, fetchUsers, updateStatus } from '../../services/adminUserService';
 import type { UserProfile } from '../../services/userService';
 
 type UserStatus = 'active' | 'frozen' | 'banned';
 
-type AdminUser = UserProfile & {
+type AdminRole = {
+  code?: string;
+  name?: string;
+};
+
+type AdminUser = Omit<UserProfile, 'roles'> & {
   email?: string;
   status?: UserStatus;
+  roles?: AdminRole[];
 };
 
 const statusColor: Record<UserStatus, string> = {
@@ -22,7 +28,7 @@ export default function UserAdmin() {
   const [loading, setLoading] = useState(false);
   const [keyword, setKeyword] = useState('');
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetchUsers(keyword.trim() || undefined);
@@ -37,31 +43,47 @@ export default function UserAdmin() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [keyword]);
 
+  // 仅首次加载，后续由搜索/刷新/操作后手动触发
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleStatus = async (record: AdminUser, status: UserStatus) => {
-    if (record.status === status) return;
-    await updateStatus(String(record.id || record.username || ''), status);
-    message.success('状态已更新');
-    load();
-  };
+  const handleStatus = useCallback(
+    async (record: AdminUser, status: UserStatus) => {
+      if (record.status === status) return;
+      try {
+        await updateStatus(String(record.userId || ''), status);
+        message.success('状态已更新');
+        load();
+      } catch (err) {
+        message.error(err instanceof Error ? err.message : '状态更新失败');
+      }
+    },
+    [load],
+  );
 
-  const handleDelete = async (record: AdminUser) => {
-    const confirmName = window.prompt(
-      `确认删除用户 ${record.username} ?\n删除将清空其数据且不可恢复。请输入用户名以确认：`,
-    );
-    if (confirmName !== record.username) {
-      message.info('已取消删除');
-      return;
-    }
-    await deleteUser(String(record.id || record.username || ''));
-    message.success('用户已删除，相关数据将不可恢复');
-    load();
-  };
+  const handleDelete = useCallback(
+    async (record: AdminUser) => {
+      const confirmName = window.prompt(
+        `确认删除用户 ${record.username} ?\n删除将清空其数据且不可恢复。请输入用户名以确认：`,
+      );
+      if (confirmName !== record.username) {
+        message.info('已取消删除');
+        return;
+      }
+      try {
+        await deleteUser(String(record.userId || ''));
+        message.success('用户已删除，相关数据将不可恢复');
+        load();
+      } catch (err) {
+        message.error(err instanceof Error ? err.message : '删除失败');
+      }
+    },
+    [load],
+  );
 
   const columns: ColumnsType<AdminUser> = useMemo(
     () => [
@@ -69,9 +91,9 @@ export default function UserAdmin() {
       { title: '邮箱', dataIndex: 'email', key: 'email' },
       {
         title: '角色',
-        dataIndex: 'role',
-        key: 'role',
-        render: (role) => (role === 'admin' ? '管理员' : '用户'),
+        dataIndex: 'roles',
+        key: 'roles',
+        render: (roles?: AdminRole[]) => (roles ?? []).map((item) => item.code).join(', '),
       },
       {
         title: '状态',
@@ -123,7 +145,7 @@ export default function UserAdmin() {
         ),
       },
     ],
-    [],
+    [handleStatus, handleDelete],
   );
 
   return (
@@ -147,7 +169,7 @@ export default function UserAdmin() {
           </Button>
         </Space>
       </header>
-      <Table rowKey={(r) => String(r.id || r.username)} loading={loading} columns={columns} dataSource={data} />
+      <Table rowKey={(r) => String(r.userId)} loading={loading} columns={columns} dataSource={data} />
     </div>
   );
 }

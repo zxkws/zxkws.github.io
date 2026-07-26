@@ -54,15 +54,16 @@ const submitPasswordLogin = async (payload: { email: string; password: string })
 
 const sendSmsCode = async (phone: string) => {
   try {
-    const res = await client<{ sent: boolean; ttlSeconds: number; devCode?: string }>(
-      '/auth/sms/send',
-      { phone },
-      { method: 'POST' },
-    );
+    const res = await client<{
+      code: number;
+      data?: { sent: boolean; ttlSeconds: number; devCode?: string };
+      message: string;
+    }>('/auth/sms/send', { phone }, { method: 'POST' });
     showToast('验证码已发送', 'success');
-    if (res?.devCode) {
-      showToast(`devCode: ${res.devCode}`, 'success');
-      return { devCode: res.devCode };
+    const devCode = res?.data?.devCode;
+    if (devCode) {
+      showToast(`devCode: ${devCode}`, 'success');
+      return { devCode };
     }
     return undefined;
   } catch (err) {
@@ -111,7 +112,7 @@ const submitSmsLogin = async (payload: { phone: string; code: string }) => {
 
         <div class="link-row">
           <span></span>
-          <router-link class="link" to="/register" :query="route.query">去注册</router-link>
+          <router-link class="link" :to="{ path: '/register', query: route.query }">去注册</router-link>
         </div>
       </AuthPanel>
     </template>

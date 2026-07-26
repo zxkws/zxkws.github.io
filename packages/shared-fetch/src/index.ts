@@ -102,7 +102,7 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
     responseInterceptors = [],
   } = options;
 
-	  return async function request<T = unknown>(
+  return async function request<T = unknown>(
     url: string,
     params?: unknown,
     requestOptions: RequestOptions = {},
@@ -119,52 +119,51 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
       },
     };
 
-    // apply request interceptors in order
-    let intercepted = cfg;
-    for (const fn of requestInterceptors) {
-      intercepted = await fn(intercepted);
-    }
-
-    const { method, headers, file, raw } = intercepted.options;
-    params = intercepted.params;
-    url = intercepted.url;
-
-    const resolvedUrl =
-      method === 'GET' && params && typeof params === 'object' && !file
-        ? appendQuery(`${baseURL}${url}`, params as Record<string, unknown>)
-        : `${baseURL}${url}`;
-
-    let body: BodyInit | undefined;
-    if (method !== 'GET') {
-      if (file && params instanceof FormData) {
-        body = params;
-      } else if (file && params instanceof Blob) {
-        body = params;
-      } else if (params instanceof FormData) {
-        body = params;
-      } else if (typeof params === 'string') {
-        body = params;
-      } else if (params !== undefined) {
-        body = JSON.stringify(params);
+    try {
+      // apply request interceptors in order
+      let intercepted = cfg;
+      for (const fn of requestInterceptors) {
+        intercepted = await fn(intercepted);
       }
-    }
 
-    const token = getToken?.();
-    const finalHeaders: Record<string, string> = {
-      ...defaultHeaders,
-      ...headers,
-    };
+      const { method, headers, file, raw } = intercepted.options;
+      params = intercepted.params;
+      url = intercepted.url;
 
-    const shouldSetJsonContentType =
-      method !== 'GET' && body !== undefined && !file && !(body instanceof FormData);
-    if (shouldSetJsonContentType) {
-      finalHeaders['Content-Type'] = finalHeaders['Content-Type'] ?? 'application/json';
-    }
-    if (token) {
-      finalHeaders['Authorization'] = finalHeaders['Authorization'] ?? `Bearer ${token}`;
-    }
+      const resolvedUrl =
+        method === 'GET' && params && typeof params === 'object' && !file
+          ? appendQuery(`${baseURL}${url}`, params as Record<string, unknown>)
+          : `${baseURL}${url}`;
 
-	    try {
+      let body: BodyInit | undefined;
+      if (method !== 'GET') {
+        if (file && params instanceof FormData) {
+          body = params;
+        } else if (file && params instanceof Blob) {
+          body = params;
+        } else if (params instanceof FormData) {
+          body = params;
+        } else if (typeof params === 'string') {
+          body = params;
+        } else if (params !== undefined) {
+          body = JSON.stringify(params);
+        }
+      }
+
+      const token = getToken?.();
+      const finalHeaders: Record<string, string> = {
+        ...defaultHeaders,
+        ...headers,
+      };
+
+      const shouldSetJsonContentType = method !== 'GET' && body !== undefined && !file && !(body instanceof FormData);
+      if (shouldSetJsonContentType) {
+        finalHeaders['Content-Type'] = finalHeaders['Content-Type'] ?? 'application/json';
+      }
+      if (token) {
+        finalHeaders['Authorization'] = finalHeaders['Authorization'] ?? `Bearer ${token}`;
+      }
+
       const response = await fetch(resolvedUrl, {
         method,
         headers: finalHeaders,
@@ -181,25 +180,25 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
       const isJson = contentType.includes('application/json');
       const payload = (await (isJson ? response.json() : response.text())) as unknown;
 
-	      if (!response.ok) {
-	        if (response.status === 401 && onUnauthorized) {
-	          onUnauthorized();
-	        }
+      if (!response.ok) {
+        if (response.status === 401 && onUnauthorized) {
+          onUnauthorized();
+        }
         const candidate =
           isJson && payload && typeof payload === 'object'
             ? (payload as Record<string, unknown>).message ||
               (payload as Record<string, unknown>).error ||
               (payload as Record<string, unknown>).msg
             : undefined;
-	        const messageText =
-	          typeof candidate === 'string' && candidate.trim() ? candidate : `请求失败，状态码 ${response.status}`;
-	        const error: FetchHttpError = new Error(messageText);
-	        error.status = response.status;
-	        error.url = resolvedUrl;
-	        error.method = method;
-	        error.payload = payload;
-	        throw error;
-	      }
+        const messageText =
+          typeof candidate === 'string' && candidate.trim() ? candidate : `请求失败，状态码 ${response.status}`;
+        const error: FetchHttpError = new Error(messageText);
+        error.status = response.status;
+        error.url = resolvedUrl;
+        error.method = method;
+        error.payload = payload;
+        throw error;
+      }
 
       const result: FetchResponse<T> = {
         response,
@@ -207,13 +206,15 @@ export const createFetchClient = (options: CreateClientOptions = {}) => {
       };
 
       let transformed: FetchResponse<unknown> = result;
+      let didTransform = false;
       for (const { onFulfilled } of responseInterceptors) {
         if (onFulfilled) {
           transformed = await onFulfilled(transformed);
+          didTransform = true;
         }
       }
 
-      return (transformed.data as T) ?? result.data;
+      return (didTransform ? transformed.data : result.data) as T;
     } catch (err) {
       // allow response interceptors to handle errors (inverse order like axios)
       let errorToHandle: unknown = err;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getErrorStatus } from '@zxkws/shared-fetch';
 import client from './http/client';
 import GlobalLoading from './components/GlobalLoading';
@@ -111,6 +111,8 @@ const maskAddressForDisplay = (address: string) => {
   return `${address.slice(0, schemeIndex + 3)}${user}:***${rest}`;
 };
 
+const LIST_DEBOUNCE = 300;
+
 const unwrap = <T,>(payload: unknown): T => {
   if (payload && typeof payload === 'object' && 'data' in (payload as Record<string, unknown>)) {
     return (payload as { data: T }).data;
@@ -136,7 +138,11 @@ export default function App({ basename: _basename }: { basename?: string }) {
     setTimeout(() => setToast(null), 2400);
   }, []);
 
+  const listSeqRef = useRef(0);
+
   const loadAssets = useCallback(async () => {
+    const seq = listSeqRef.current + 1;
+    listSeqRef.current = seq;
     setLoading(true);
     setError(null);
     try {
@@ -144,14 +150,19 @@ export default function App({ basename: _basename }: { basename?: string }) {
       if (filters.type !== 'all') payload.type = filters.type;
       if (filters.keyword.trim()) payload.keyword = filters.keyword.trim();
       const data = unwrap<DbAsset[]>(await client('/v1/db-assets/list', payload));
+      // 丢弃过期响应，避免旧关键词覆盖最新列表
+      if (seq !== listSeqRef.current) return;
       setAssets(data);
     } catch (err) {
+      if (seq !== listSeqRef.current) return;
       if (getErrorStatus(err) === 401) {
         setAuthState('need-login');
       }
       setError(err instanceof Error ? err.message : '加载失败');
     } finally {
-      setLoading(false);
+      if (seq === listSeqRef.current) {
+        setLoading(false);
+      }
     }
   }, [client, filters]);
 
@@ -191,10 +202,13 @@ export default function App({ basename: _basename }: { basename?: string }) {
     loadProfile();
   }, [loadProfile]);
 
+  // filters 变化会重建 loadAssets，借此对关键词输入做防抖
   useEffect(() => {
-    if (authState === 'ok') {
+    if (authState !== 'ok') return;
+    const timer = setTimeout(() => {
       loadAssets();
-    }
+    }, LIST_DEBOUNCE);
+    return () => clearTimeout(timer);
   }, [authState, loadAssets]);
 
   useEffect(() => {

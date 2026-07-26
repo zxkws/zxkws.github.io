@@ -20,7 +20,6 @@ import PageLoading from './components/PageLoading';
 import '@zxkws/shared-theme/theme.css';
 import './global.css';
 import './index.css';
-import { AuthProvider } from './context/AuthContext';
 import { UserProvider } from './context/UserContext';
 import { ensureIcestarkAppsRegistered, loadConfig, resolveMicroApps } from './core/icestark';
 import BasicLayout from './layouts/BasicLayout';
@@ -364,15 +363,13 @@ function App() {
   );
 
   return (
-    <AuthProvider>
-      <UserProvider>
-        <BasicLayout>
-          <PageLoading loading={isFetchLoading}>
-            <div className="app-router-shell relative flex flex-1 min-h-0 flex-col">{routerContent}</div>
-          </PageLoading>
-        </BasicLayout>
-      </UserProvider>
-    </AuthProvider>
+    <UserProvider>
+      <BasicLayout>
+        <PageLoading loading={isFetchLoading}>
+          <div className="app-router-shell relative flex flex-1 min-h-0 flex-col">{routerContent}</div>
+        </PageLoading>
+      </BasicLayout>
+    </UserProvider>
   );
 }
 

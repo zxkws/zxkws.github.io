@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
     (serverEnv === 'prod' ? '' : 'http://localhost:3333');
 
   return {
+    envPrefix: ['VITE_', 'API_BASE_URL'],
     plugins: [
       vue(),
       AutoImport({

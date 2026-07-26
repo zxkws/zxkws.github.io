@@ -1,3 +1,4 @@
+import { getErrorStatus } from '@zxkws/shared-fetch';
 import { backgroundClient, client } from './httpClient';
 
 export type UserProfile = {
@@ -116,9 +117,13 @@ export const fetchCurrentUser = async (forceRefresh = false): Promise<UserProfil
       setCachedUser(safe);
       return cachedProfile;
     })
-    .catch(() => {
-      clearCachedUser();
-      return null;
+    .catch((err: unknown) => {
+      // 只有确认未登录才清缓存，网络抖动时保留已有身份
+      if (getErrorStatus(err) === 401) {
+        clearCachedUser();
+        return null;
+      }
+      return cachedProfile;
     })
     .finally(() => {
       inFlight = null;

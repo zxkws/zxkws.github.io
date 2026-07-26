@@ -70,9 +70,14 @@ const HeaderBar = ({ isMobile, onMenuToggle }: HeaderBarProps) => {
   };
 
   const handleLogout = async () => {
-    await httpClient('/auth/logout', {}, { method: 'POST' });
-    clearAuthArtifacts();
-    clearUser();
+    try {
+      await httpClient('/auth/logout', {}, { method: 'POST' });
+    } catch (e) {
+      console.error('Failed to logout', e);
+    } finally {
+      clearAuthArtifacts();
+      clearUser();
+    }
   };
 
   const handleClearCaches = () => {

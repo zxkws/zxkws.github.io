@@ -30,6 +30,8 @@ const sendCode = async () => {
     if (res && typeof res === 'object' && typeof (res as any).devCode === 'string') {
       code.value = (res as any).devCode;
     }
+  } catch {
+    // onSendCode 已经通过 onError 提示过，这里只保证按钮状态恢复
   } finally {
     sending.value = false;
   }

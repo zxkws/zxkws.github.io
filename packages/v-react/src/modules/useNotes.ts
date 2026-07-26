@@ -11,7 +11,7 @@ export const useNotes = () => {
   const qc = useQueryClient();
   const notes = useNoteStore((s) => s.notes);
   const ui = useNoteStore((s) => s.ui);
-  const hydrate = useNoteStore((s) => s.hydrate);
+  const syncFromServer = useNoteStore((s) => s.syncFromServer);
   const upsert = useNoteStore((s) => s.upsert);
   const setActive = useNoteStore((s) => s.setActive);
   const [saving, setSaving] = useState<'idle' | 'local' | 'syncing' | 'error'>('idle');
@@ -37,13 +37,19 @@ export const useNotes = () => {
     },
   });
 
+  // useMutation 每次 render 都返回新对象，用 ref 转发以保证防抖实例稳定
+  const mutateNoteRef = useRef(mutateNote);
+  useEffect(() => {
+    mutateNoteRef.current = mutateNote;
+  });
+
   const debouncedSave = useMemo(
     () =>
       debounce((id: string, contentMd: string, version?: number) => {
         setSaving('local');
-        mutateNote.mutate({ id, contentMd, version });
+        mutateNoteRef.current.mutate({ id, contentMd, version });
       }, SAVE_DEBOUNCE),
-    [mutateNote],
+    [],
   );
 
   const createDailyMutation = useMutation({
@@ -66,17 +72,18 @@ export const useNotes = () => {
 
   const activeNote = ui.activeId ? notes[ui.activeId] : undefined;
 
-  const hydratedRef = useRef(false);
-
   useEffect(() => {
-    if (!hydratedRef.current && listQuery.data) {
-      hydrate(listQuery.data);
-      hydratedRef.current = true;
+    if (listQuery.data) {
+      syncFromServer(listQuery.data);
     }
-    return () => {
+  }, [listQuery.data, syncFromServer]);
+
+  useEffect(
+    () => () => {
       debouncedSave.cancel();
-    };
-  }, [debouncedSave, hydrate, listQuery.data]);
+    },
+    [debouncedSave],
+  );
 
   return {
     listQuery,

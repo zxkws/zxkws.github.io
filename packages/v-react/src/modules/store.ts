@@ -26,7 +26,7 @@ type NoteState = {
   closeTab(id: string): void;
   ensureTab(id: string): void;
   removeLocal(id: string): void;
-  hydrate(notes: Note[]): void;
+  syncFromServer(notes: Note[]): void;
 };
 
 export const useNoteStore = create<NoteState>()(
@@ -40,10 +40,16 @@ export const useNoteStore = create<NoteState>()(
         }));
         get().ensureTab(note.id);
       },
-      hydrate(list) {
-        const notes: Record<string, Note> = {};
-        list.forEach((n) => (notes[n.id] = n));
-        set({ notes });
+      // 服务端列表为准，但本地版本更新时（刚保存成功、列表还没刷新到）保留本地副本
+      syncFromServer(list) {
+        set((state) => {
+          const notes: Record<string, Note> = {};
+          list.forEach((n) => {
+            const local = state.notes[n.id];
+            notes[n.id] = local && local.version > n.version ? local : n;
+          });
+          return { notes };
+        });
       },
       setActive(id) {
         set((state) => ({ ui: { ...state.ui, activeId: id } }));

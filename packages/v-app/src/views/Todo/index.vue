@@ -9,6 +9,8 @@ const todoParams = ref('');
 
 const todos = ref<TodoResponse[]>([]);
 
+const errorMessage = ref('');
+
 const displayTodos = computed(() =>
   todos.value.map((item) => ({
     ...item,
@@ -20,11 +22,17 @@ onMounted(() => {
   queryTodo();
 });
 
+const toMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
 const queryTodo = () => {
   store.setLoading(true, '查询todo....');
+  errorMessage.value = '';
   queryTodos({})
     .then((res) => {
       todos.value = res.data || [];
+    })
+    .catch((error) => {
+      errorMessage.value = `加载待办失败：${toMessage(error)}`;
     })
     .finally(() => {
       store.setLoading(false);
@@ -32,19 +40,28 @@ const queryTodo = () => {
 };
 
 const add = () => {
+  errorMessage.value = '';
   modifyTodo({
-    id: Date.now(),
     description: todoParams.value,
-  }).then(() => {
-    todoParams.value = '';
-    queryTodo();
-  });
+  })
+    .then(() => {
+      todoParams.value = '';
+      queryTodo();
+    })
+    .catch((error) => {
+      errorMessage.value = `添加待办失败：${toMessage(error)}`;
+    });
 };
 
 const deleteItem = (id: string) => {
-  deleteTodo({ id }).then(() => {
-    queryTodo();
-  });
+  errorMessage.value = '';
+  deleteTodo({ id })
+    .then(() => {
+      queryTodo();
+    })
+    .catch((error) => {
+      errorMessage.value = `删除待办失败：${toMessage(error)}`;
+    });
 };
 </script>
 
@@ -54,6 +71,8 @@ const deleteItem = (id: string) => {
       <h2>Todo List</h2>
       <p class="hint">已按用户隔离存储，当前仅展示你的任务</p>
     </header>
+
+    <p v-if="errorMessage" class="todo-error">{{ errorMessage }}</p>
 
     <section class="todo-list" v-if="displayTodos.length">
       <article v-for="todo in displayTodos" :key="todo._id" class="todo-item">
@@ -99,6 +118,17 @@ const deleteItem = (id: string) => {
   margin: 0;
   font-size: 12px;
   color: var(--color-muted, #94a3b8);
+}
+
+.todo-error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(220, 38, 38, 0.45);
+  background: rgba(220, 38, 38, 0.12);
+  color: #f87171;
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }
 
 .todo-list {

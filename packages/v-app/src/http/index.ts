@@ -1,27 +1,33 @@
 import fetch from './fetch';
 
+// 这个 client 没有装剥信封拦截器，拿到的是后端的 { code, data, message }
+interface Envelope<T> {
+  code: number;
+  data: T;
+  message: string;
+}
+
 interface TodoParams {
-  id?: string | number;
+  // 传 id 表示更新已有待办；新增时不要传
+  id?: string;
   description: string;
-  completed?: boolean;
 }
 
 export interface TodoResponse {
   _id: string;
   description: string;
-  completed?: boolean;
 }
 
 export const queryTodos = (params: Record<string, unknown> = {}) => {
-  return fetch<TodoResponse[]>('/v1/todos', params);
+  return fetch<Envelope<TodoResponse[]>>('/v1/todos', params);
 };
 
 export const modifyTodo = (params: TodoParams) => {
-  return fetch<void>('/v1/modifyTodo', params);
+  return fetch<Envelope<TodoResponse>>('/v1/modifyTodo', params);
 };
 
-export const deleteTodo = (params: { id: string | number }) => {
-  return fetch<void>('/v1/deleteTodo', params);
+export const deleteTodo = (params: { id: string }) => {
+  return fetch<Envelope<TodoResponse>>('/v1/deleteTodo', params);
 };
 
 export const uploadFile = (formData: FormData) => {
