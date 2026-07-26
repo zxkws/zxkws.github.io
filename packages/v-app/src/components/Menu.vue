@@ -28,11 +28,6 @@ const menus = [
     value: 'TODO',
     name: 'todo',
   },
-  {
-    label: 'navList',
-    value: 'navList',
-    name: 'navList',
-  },
 ];
 
 function closeMenu() {

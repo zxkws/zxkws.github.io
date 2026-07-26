@@ -20,7 +20,6 @@ export const builtInAsideMenus: MenuItem[] = [
   { name: '用户管理', path: '/app/user-admin' },
   { name: 'Obsidian 笔记', path: '/v-react/notes' },
   { name: '定时轮询保活', path: '/v-react/keepalive' },
-  { name: '导航列表', path: '/v-app/navList' },
   { name: '支付', path: '/v-app/payment' },
   { name: '代办', path: '/v-app/todo' },
 ];

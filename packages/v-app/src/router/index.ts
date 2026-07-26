@@ -9,17 +9,12 @@ export const routes = [
     children: [
       {
         path: '/',
-        redirect: '/navList',
+        redirect: '/text-difference',
       },
       {
         name: 'todo',
         path: '/todo',
         component: () => import('../views/Todo/index.vue'),
-      },
-      {
-        name: 'navList',
-        path: '/navList',
-        component: () => import('../views/NavList/index.vue'),
       },
       {
         name: 'textDifference',
