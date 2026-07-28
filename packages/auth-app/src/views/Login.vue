@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import client from '../http/client';
 import { buildRedirectHref } from '../utils/redirect';
-import { initiateGithubLogin } from '../utils/auth';
+import { initiateOAuthLogin, type OAuthProvider } from '../utils/auth';
 import { useToast } from '../composables/useToast';
 
 import ToastMessage from '../components/common/ToastMessage.vue';
@@ -21,10 +21,16 @@ const { toast, showToast } = useToast();
 const activeTab = ref<'password' | 'sms'>('password');
 const loading = ref(false);
 const error = ref('');
+const smsEnabled = ref(false);
+const oauthProviders = ref<Record<OAuthProvider, boolean>>({
+  github: false,
+  google: false,
+  wechat: false,
+  alipay: false,
+});
 
 const redirectTo = () => {
-  const token = typeof window === 'undefined' ? null : window.localStorage.getItem('auth_token');
-  const href = buildRedirectHref(route.query.redirect, token);
+  const href = buildRedirectHref(route.query.redirect);
   window.location.href = href;
 };
 
@@ -33,15 +39,15 @@ const onError = (message: string) => {
   showToast(message, 'error');
 };
 
-const onGithubLogin = () => {
-  initiateGithubLogin(route.query.redirect);
+const onOAuthLogin = (provider: OAuthProvider) => {
+  initiateOAuthLogin(provider);
 };
 
 const submitPasswordLogin = async (payload: { email: string; password: string }) => {
   error.value = '';
   loading.value = true;
   try {
-    await client<string>('/v1/user/login', payload);
+    await client('/auth/password/login', payload, { method: 'POST' });
     showToast('登录成功，正在跳转...', 'success');
     redirectTo();
   } catch (err) {
@@ -51,6 +57,34 @@ const submitPasswordLogin = async (payload: { email: string; password: string })
     loading.value = false;
   }
 };
+
+onMounted(async () => {
+  try {
+    const response = await client<{
+      data?: Partial<Record<OAuthProvider | 'sms', boolean>>;
+    }>('/auth/providers', {}, { method: 'GET' });
+    const status = response.data ?? response;
+    smsEnabled.value = status.sms === true;
+    oauthProviders.value = {
+      ...oauthProviders.value,
+      ...status,
+    };
+  } catch {
+    // 密码和短信登录不依赖第三方提供商状态。
+  }
+  const code = typeof route.query.auth_code === 'string' ? route.query.auth_code : '';
+  if (!code) return;
+  loading.value = true;
+  try {
+    await client('/auth/exchange', { code }, { method: 'POST' });
+    showToast('第三方登录成功，正在跳转...', 'success');
+    redirectTo();
+  } catch (err) {
+    onError(err instanceof Error ? err.message : '第三方登录交换失败');
+  } finally {
+    loading.value = false;
+  }
+});
 
 const sendSmsCode = async (phone: string) => {
   try {
@@ -98,7 +132,7 @@ const submitSmsLogin = async (payload: { phone: string; code: string }) => {
 
     <template #form>
       <AuthPanel title="登录" subtitle="进入光域工作台" :error="error">
-        <LoginMethodTabs v-model="activeTab" />
+        <LoginMethodTabs v-model="activeTab" :sms-enabled="smsEnabled" />
 
         <PasswordLoginForm
           v-if="activeTab === 'password'"
@@ -114,7 +148,40 @@ const submitSmsLogin = async (payload: { phone: string; code: string }) => {
           :on-error="onError"
         />
 
-        <GithubLoginButton :disabled="loading" @click="onGithubLogin" />
+        <div class="oauth-grid">
+          <GithubLoginButton
+            v-if="oauthProviders.github"
+            :disabled="loading"
+            @click="onOAuthLogin('github')"
+          />
+          <button
+            v-if="oauthProviders.google"
+            class="social-btn"
+            type="button"
+            :disabled="loading"
+            @click="onOAuthLogin('google')"
+          >
+            Google
+          </button>
+          <button
+            v-if="oauthProviders.wechat"
+            class="social-btn"
+            type="button"
+            :disabled="loading"
+            @click="onOAuthLogin('wechat')"
+          >
+            微信
+          </button>
+          <button
+            v-if="oauthProviders.alipay"
+            class="social-btn"
+            type="button"
+            :disabled="loading"
+            @click="onOAuthLogin('alipay')"
+          >
+            支付宝
+          </button>
+        </div>
 
         <div class="link-row">
           <span></span>

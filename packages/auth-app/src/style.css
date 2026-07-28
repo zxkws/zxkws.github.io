@@ -418,6 +418,16 @@ input.has-right-action {
   border-color: #1c1c1c;
 }
 
+.oauth-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.oauth-grid .social-btn {
+	width: 100%;
+}
+
 .social-btn svg {
   width: 18px;
   height: 18px;

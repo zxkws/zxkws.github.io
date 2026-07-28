@@ -45,19 +45,7 @@ const resolveContainer = (target?: Element | string): Element | null => {
   return target;
 };
 
-const registerTokenFromQuery = () => {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get('token');
-  if (token) {
-    localStorage.setItem('auth_token', token);
-    const newUrl = window.location.origin + window.location.pathname + window.location.hash;
-    window.history.replaceState({}, '', newUrl);
-  }
-};
-
 const renderApp = ({ container, basename }: RenderOptions) => {
-  registerTokenFromQuery();
-
   appInstance = createApp(App);
   setLicenseKey(
     '0b50c5c2999298c91d183c696087eb90T1JERVI6MDAwMDEsRVhQSVJZPTQxMDIzNTg0MDAwMDAsRE9NQUlOPV8sS0VZVkVSU0lPTj0xLFVMVElNQVRFPTE=',

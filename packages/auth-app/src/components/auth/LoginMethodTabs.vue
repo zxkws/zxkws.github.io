@@ -3,6 +3,7 @@ type TabValue = 'password' | 'sms';
 
 defineProps<{
   modelValue: TabValue;
+  smsEnabled: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -20,9 +21,14 @@ const emit = defineEmits<{
     >
       账号密码
     </button>
-    <button class="tab" :data-active="modelValue === 'sms'" type="button" @click="emit('update:modelValue', 'sms')">
+    <button
+      v-if="smsEnabled"
+      class="tab"
+      :data-active="modelValue === 'sms'"
+      type="button"
+      @click="emit('update:modelValue', 'sms')"
+    >
       手机验证码
     </button>
   </div>
 </template>
-

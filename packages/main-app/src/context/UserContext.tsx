@@ -7,7 +7,6 @@ import {
   setCachedUser,
   type UserProfile,
 } from '../services/userService';
-import { replaceUrl } from '../utils/safeHistory';
 
 type UserContextValue = {
   user: UserProfile | null;
@@ -31,22 +30,6 @@ const UserContext = createContext<UserContextValue>({
 export const UserProvider = ({ children }: PropsWithChildren) => {
   const [user, setUser] = useState<UserProfile | null>(() => loadCachedUser());
   const [loading, setLoading] = useState(() => !loadCachedUser());
-
-  // 处理从 OAuth 回跳带 ?token= 的场景：落地存储并清理地址栏
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const url = new URL(window.location.href);
-    const token = url.searchParams.get('token');
-    if (token) {
-      try {
-        window.localStorage.setItem('auth_token', token);
-      } catch {
-        // ignore
-      }
-      url.searchParams.delete('token');
-      replaceUrl(url.pathname + url.search + url.hash);
-    }
-  }, []);
 
   const clearUser = useCallback(() => {
     clearCachedUser();

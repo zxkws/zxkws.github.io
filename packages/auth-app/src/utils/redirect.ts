@@ -29,11 +29,5 @@ export const resolveRedirectUrl = (raw: unknown, fallback?: string): URL => {
   return new URL(safeFallback);
 };
 
-export const buildRedirectHref = (rawRedirect: unknown, token?: string | null, fallback?: string) => {
-  const url = resolveRedirectUrl(rawRedirect, fallback);
-  if (token) {
-    url.searchParams.set('token', token);
-  }
-  return url.toString();
-};
-
+export const buildRedirectHref = (rawRedirect: unknown, fallback?: string) =>
+  resolveRedirectUrl(rawRedirect, fallback).toString();

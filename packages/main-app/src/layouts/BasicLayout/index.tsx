@@ -135,14 +135,17 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
           return;
         }
         const next = [...remote];
-        if (user.roles?.includes('admin')) {
-          const existingPaths = new Set(next.map((item) => item.path).filter(Boolean));
-          builtInAsideMenus
-            .filter((item) => item.adminOnly && item.path && !existingPaths.has(item.path))
-            .forEach((item) => {
-              next.push(item);
-            });
-        }
+        const existingPaths = new Set(next.map((item) => item.path).filter(Boolean));
+        builtInAsideMenus
+          .filter(
+            (item) =>
+              item.path &&
+              !existingPaths.has(item.path) &&
+              (item.path === '/app/security-center' || (item.adminOnly && user.roles?.includes('admin'))),
+          )
+          .forEach((item) => {
+            next.push(item);
+          });
         setMenus(next);
       })
       .catch(() => {

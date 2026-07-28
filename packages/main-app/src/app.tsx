@@ -50,6 +50,10 @@ const ProductLab = lazy(() => import('./pages/ProductLab'));
 const UserAdmin = lazy(() => import('./pages/UserAdmin'));
 const Profile = lazy(() => import('./pages/Profile'));
 const WatchTogetherPage = lazy(() => import('./pages/WatchTogether'));
+const ConfigCenter = lazy(() => import('./pages/ConfigCenter'));
+const BlogStudio = lazy(() => import('./pages/BlogStudio'));
+const SecurityCenter = lazy(() => import('./pages/SecurityCenter'));
+const AgentPlatform = lazy(() => import('./pages/AgentPlatform'));
 
 const MicroAppLoading = () => <PageLoading loading contained />;
 
@@ -87,6 +91,10 @@ const LocalRoutes = ({ pathname }: { pathname: string }) => {
     if (pathname === '/app/permission-admin') return <PermissionAdmin />;
     if (pathname === '/app/user-admin') return <UserAdmin />;
     if (pathname === '/app/watch-together') return <WatchTogetherPage />;
+    if (pathname === '/app/config-center') return <ConfigCenter />;
+    if (pathname === '/app/blog-studio') return <BlogStudio />;
+    if (pathname === '/app/security-center') return <SecurityCenter />;
+    if (pathname === '/app/agent-platform') return <AgentPlatform />;
 
     const iframe = IFRAME_MICRO_APPS.find((app) => pathname === app.path);
     if (iframe) {

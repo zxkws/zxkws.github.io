@@ -1,9 +1,10 @@
 import { API_BASE } from '../config';
-import { resolveRedirectUrl } from './redirect';
-import type { LocationQueryValue } from 'vue-router';
+export type OAuthProvider = 'github' | 'google' | 'wechat' | 'alipay';
 
-export const initiateGithubLogin = (redirectQuery: LocationQueryValue | LocationQueryValue[]) => {
-  const redirect = resolveRedirectUrl(redirectQuery).toString();
-  const target = `${API_BASE}/auth/github?redirect=${encodeURIComponent(redirect)}`;
+export const initiateOAuthLogin = (provider: OAuthProvider) => {
+  const callback = new URL(window.location.href);
+  callback.searchParams.delete('auth_code');
+  callback.searchParams.delete('bound');
+  const target = `${API_BASE}/auth/${provider}?redirect=${encodeURIComponent(callback.toString())}`;
   window.location.href = target;
 };
