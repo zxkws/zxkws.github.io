@@ -5,7 +5,11 @@
 }
 
 .model-playground-state {
-  min-height: 420px;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
   padding: 32px;
 }
 
@@ -125,6 +129,29 @@
   resize: vertical;
 }
 
+.model-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.model-picker > button {
+  min-width: 88px;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
+.model-picker > small {
+  grid-column: 1 / -1;
+}
+
+.model-picker > small {
+  color: var(--color-fg-tertiary);
+  font-size: 12px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
 .range-setting {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 86px;
@@ -157,6 +184,72 @@
   width: 18px;
   min-height: 18px;
   accent-color: var(--color-primary-deep);
+}
+
+.agent-capabilities {
+  display: grid;
+  gap: 14px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-border);
+}
+
+.agent-capabilities > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.agent-capabilities small {
+  color: var(--color-fg-tertiary);
+  font-weight: 400;
+}
+
+.agent-capabilities fieldset {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.agent-capabilities legend {
+  padding: 0 4px;
+  font-weight: 600;
+}
+
+.agent-capabilities fieldset label {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-weight: 400;
+}
+
+.agent-capabilities fieldset input {
+  width: 16px;
+  min-height: 16px;
+  margin: 0;
+}
+
+.agent-capabilities code {
+  overflow: hidden;
+  color: var(--color-fg-tertiary);
+  font-size: 11px;
+  text-overflow: ellipsis;
+}
+
+.agent-capability-row {
+  display: grid;
+  gap: 6px;
+}
+
+.agent-capabilities fieldset .tool-approval {
+  grid-template-columns: 18px minmax(0, 1fr);
+  padding-left: 24px;
+  color: var(--color-danger);
+  font-size: 12px;
 }
 
 .playground-stage {
@@ -285,6 +378,25 @@
 
 .debug-pending {
   color: var(--color-fg-tertiary);
+  white-space: pre-wrap;
+}
+
+.agent-events {
+  min-width: 0;
+}
+
+.agent-events summary {
+  cursor: pointer;
+  color: var(--color-fg-secondary);
+  font-size: 12px;
+}
+
+.debug-message .agent-events pre {
+  max-height: 240px;
+  margin-top: 8px;
+  overflow: auto;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
 }
 
 .debug-composer {
@@ -331,9 +443,9 @@
 @media (max-width: 760px) {
   .model-playground {
     display: block;
-    height: auto;
+    height: 100%;
     min-height: 0;
-    overflow: visible;
+    overflow: auto;
   }
 
   .model-catalog,

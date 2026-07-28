@@ -59,14 +59,42 @@ const menuTranslationKeys: Record<string, string> = {
 
 export const resolveMenuPath = (path?: string) => {
   if (!path) return path;
-  if (retiredMenuPaths.has(path)) return null;
-  return menuPathAliases[path] ?? path;
+  const trimmed = path.trim();
+  const normalized = trimmed.length > 1 && trimmed.endsWith('/') ? trimmed.replace(/\/+$/, '') : trimmed;
+  if (retiredMenuPaths.has(normalized)) return null;
+  return menuPathAliases[normalized] ?? normalized;
 };
+
+const menuIdentity = (item: MenuItem) => {
+  if (item.path) return `path:${resolveMenuPath(item.path) ?? item.path}`;
+  return `group:${item.name.trim().toLocaleLowerCase()}`;
+};
+
+export const dedupeMenuTree = (items: MenuItem[]): MenuItem[] => {
+  const seen = new Set<string>();
+  const visit = (list: MenuItem[]): MenuItem[] =>
+    list.flatMap((item) => {
+      const identity = menuIdentity(item);
+      if (seen.has(identity)) return [];
+      seen.add(identity);
+      const children = item.children?.length ? visit(item.children) : undefined;
+      return [
+        {
+          ...item,
+          path: resolveMenuPath(item.path) ?? undefined,
+          children,
+        },
+      ];
+    });
+  return visit(items);
+};
+
+export const mergeMenuTrees = (primary: MenuItem[], fallback: MenuItem[]) => dedupeMenuTree([...primary, ...fallback]);
 
 const normalizeMenus = (list: unknown): MenuItem[] => {
   if (!Array.isArray(list)) return [];
 
-  return list.flatMap((item): MenuItem[] => {
+  const normalized = list.flatMap((item): MenuItem[] => {
     const m = item && typeof item === 'object' ? (item as Record<string, unknown>) : {};
 
     const rawChildren = (m as { children?: unknown }).children;
@@ -93,6 +121,7 @@ const normalizeMenus = (list: unknown): MenuItem[] => {
       },
     ];
   });
+  return dedupeMenuTree(normalized);
 };
 
 /**

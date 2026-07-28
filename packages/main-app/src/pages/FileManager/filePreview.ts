@@ -1,7 +1,9 @@
 import type { UploadRecord } from '../../services/fileManagerService';
 
 export const MAX_TEXT_PREVIEW_BYTES = 2 * 1024 * 1024;
-export const MAX_STRUCTURED_PREVIEW_BYTES = 20 * 1024 * 1024;
+// Proxied previews must remain below Vercel's response-body boundary.
+// Images, video, audio and PDF use the direct trusted TG URL instead.
+export const MAX_STRUCTURED_PREVIEW_BYTES = 3 * 1024 * 1024;
 
 const MAX_ARCHIVE_ENTRIES = 2_000;
 const MAX_ARCHIVE_EXPANDED_BYTES = 80 * 1024 * 1024;

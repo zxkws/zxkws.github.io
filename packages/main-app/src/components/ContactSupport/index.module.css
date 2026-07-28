@@ -46,7 +46,9 @@
 .closeButton:focus-visible,
 .primaryButton:focus-visible,
 .form input:focus-visible,
-.form textarea:focus-visible {
+.form textarea:focus-visible,
+.editorArea:focus-visible,
+.editorToolbar button:focus-visible {
 	outline: 2px solid var(--color-primary-deep);
 	outline-offset: 3px;
 }
@@ -96,8 +98,10 @@
 .dialog {
 	position: relative;
 	z-index: 1;
+	display: flex;
 	width: min(100%, 430px);
 	max-height: calc(100dvh - 40px);
+	flex-direction: column;
 	overflow: hidden;
 	color: var(--color-fg);
 	background: var(--color-surface);
@@ -108,6 +112,7 @@
 
 .header {
 	display: flex;
+	flex: 0 0 auto;
 	align-items: flex-start;
 	justify-content: space-between;
 	padding: 22px 22px 18px;
@@ -151,8 +156,11 @@
 
 .form {
 	display: flex;
+	min-height: 0;
+	flex: 1 1 auto;
 	flex-direction: column;
 	overflow-y: auto;
+	overscroll-behavior: contain;
 	padding: 20px 22px 22px;
 }
 
@@ -164,7 +172,8 @@
 	line-height: 1.65;
 }
 
-.form label {
+.form label,
+.fieldLabel {
 	margin: 0 0 7px;
 	color: var(--color-fg-secondary);
 	font-size: 12px;
@@ -223,65 +232,153 @@
 	line-height: 1.45;
 }
 
-.attachments {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 8px;
-	margin-top: 12px;
-	padding: 0;
-	list-style: none;
+.editorShell {
+	overflow: hidden;
+	background: var(--color-canvas);
+	border: 1px solid var(--color-border-strong);
+	border-radius: 7px;
+	transition:
+		border-color var(--duration-fast) var(--ease-standard),
+		box-shadow var(--duration-fast) var(--ease-standard);
 }
 
-.attachment {
+.editorShell:focus-within {
+	border-color: var(--color-primary-deep);
+	box-shadow: 0 0 0 3px var(--color-primary-muted);
+}
+
+.editorToolbar {
+	display: flex;
+	min-height: 38px;
+	align-items: center;
+	gap: 4px;
+	padding: 5px 7px;
+	background: var(--color-surface-2);
+	border-bottom: 1px solid var(--color-divider);
+}
+
+.editorToolbar button {
+	display: grid;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	color: var(--color-fg-secondary);
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 5px;
+	font: inherit;
+	font-size: 12px;
+	place-items: center;
+	cursor: pointer;
+}
+
+.editorToolbar button:hover:not(:disabled) {
+	color: var(--color-fg);
+	background: var(--color-surface);
+	border-color: var(--color-divider);
+}
+
+.editorToolbar button:disabled {
+	cursor: wait;
+	opacity: 0.55;
+}
+
+.uploadingStatus {
+	margin-left: auto;
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 9px;
+}
+
+.fileInput {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+.editorArea {
+	min-height: 180px;
+	max-height: 340px;
+	overflow-y: auto;
+	padding: 12px;
+	color: var(--color-fg);
+	font-size: 13px;
+	line-height: 1.6;
+	outline: none;
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
+}
+
+.editorArea:empty::before {
+	color: var(--color-fg-tertiary);
+	content: attr(data-placeholder);
+	pointer-events: none;
+}
+
+.editorArea p,
+.editorArea ul,
+.editorArea ol {
+	margin: 0 0 8px;
+}
+
+.editorArea ul,
+.editorArea ol {
+	padding-left: 22px;
+}
+
+.uploadPlaceholder {
+	display: block;
+	margin: 10px 0;
+	padding: 18px 12px;
+	color: var(--color-fg-tertiary);
+	background: var(--color-surface-2);
+	border: 1px dashed var(--color-border-strong);
+	border-radius: 6px;
+	font-family: var(--font-mono);
+	font-size: 10px;
+	text-align: center;
+}
+
+.inlineImage {
 	position: relative;
-	min-width: 0;
-	margin: 0;
+	width: fit-content;
+	max-width: 100%;
+	margin: 10px 0;
 	padding: 5px;
-	background: var(--color-canvas);
+	background: var(--color-surface);
 	border: 1px solid var(--color-divider);
 	border-radius: 7px;
 }
 
-.attachment img {
+.inlineImage img {
 	display: block;
-	width: 100%;
-	aspect-ratio: 1;
-	object-fit: cover;
+	width: auto;
+	max-width: 100%;
+	max-height: 260px;
+	object-fit: contain;
 	border-radius: 4px;
 }
 
-.attachment > span {
-	overflow: hidden;
-	margin-top: 5px;
-	color: var(--color-fg-tertiary);
-	font-size: 9px;
-	line-height: 1.3;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.attachment button {
+.inlineImageRemove {
 	position: absolute;
-	top: 8px;
-	right: 8px;
+	top: 9px;
+	right: 9px;
 	display: grid;
-	width: 22px;
-	height: 22px;
+	width: 24px;
+	height: 24px;
 	padding: 0;
 	color: #fff;
 	background: rgb(0 0 0 / 72%);
 	border: 0;
 	border-radius: 50%;
 	font: inherit;
-	font-size: 16px;
+	font-size: 17px;
 	line-height: 1;
 	place-items: center;
 	cursor: pointer;
-}
-
-.attachment button:disabled {
-	cursor: wait;
-	opacity: 0.55;
 }
 
 .honeypot {
@@ -332,8 +429,11 @@
 
 .success {
 	display: flex;
+	min-height: 0;
+	flex: 1 1 auto;
 	flex-direction: column;
 	align-items: center;
+	overflow-y: auto;
 	padding: 34px 28px 28px;
 	text-align: center;
 }
@@ -385,7 +485,6 @@
 
 	.dialog {
 		max-height: calc(100dvh - 24px);
-		overflow: auto;
 		border-radius: 12px;
 	}
 }

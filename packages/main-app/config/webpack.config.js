@@ -1,5 +1,5 @@
-const { resolve } = require('path');
-const { execSync } = require('child_process');
+const { execSync } = require('node:child_process');
+const { resolve } = require('node:path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const WorkboxPlugin = require('workbox-webpack-plugin');
@@ -29,8 +29,8 @@ const BUILD_VERSION = safeExec('git log -1 --format=%cI');
 const BUILD_TIME = new Date().toISOString();
 
 module.exports = {
-  // 开启生产环境 source map，便于线上错误定位；如需隐藏源码可改为 'hidden-source-map'
-  devtool: isProd ? 'source-map' : 'inline-source-map',
+  // 当前没有生产错误上报消费 source map，避免发布额外体积和源码暴露。
+  devtool: isProd ? false : 'inline-source-map',
   entry: './src/app',
   module: {
     rules: [
@@ -71,6 +71,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './public/index.html',
       inject: true,
+      scriptLoading: 'defer',
       minify: isProd,
     }),
     // 使用我们自己写的 SimpleCopyPlugin 来复制 public 目录下的静态文件
@@ -108,6 +109,7 @@ module.exports = {
         clientsClaim: true,
         skipWaiting: true,
         cleanupOutdatedCaches: true,
+        navigationPreload: true,
 
         // 预缓存过滤
         // index.html 不预缓存：保证刷新时优先走网络拿到最新构建（避免“刷新还看到旧版本”）
@@ -139,7 +141,7 @@ module.exports = {
               cacheName: 'app-static-hashed-assets',
               expiration: {
                 maxEntries: 200,
-                maxAgeSeconds: 7 * 24 * 60 * 60, // 7 Days
+                maxAgeSeconds: 365 * 24 * 60 * 60, // Content hash makes year-long caching safe.
               },
             },
           },
@@ -196,8 +198,20 @@ module.exports = {
   },
   optimization: isProd
     ? {
+        moduleIds: 'deterministic',
+        chunkIds: 'deterministic',
         splitChunks: {
           chunks: 'all',
+          cacheGroups: {
+            framework: {
+              test: /[\\/]node_modules[\\/](?:react|react-dom|scheduler|@ice)[\\/]/,
+              name: 'framework',
+              chunks: 'initial',
+              priority: 40,
+              enforce: true,
+              reuseExistingChunk: true,
+            },
+          },
         },
         runtimeChunk: 'single',
       }

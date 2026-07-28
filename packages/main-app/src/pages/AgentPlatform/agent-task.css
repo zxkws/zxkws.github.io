@@ -1,0 +1,98 @@
+.agent-task-columns {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
+}
+
+.agent-task-panel {
+	display: grid;
+	gap: 18px;
+}
+
+.agent-task-summary {
+	margin: 0;
+	font-size: 16px;
+	line-height: 1.7;
+}
+
+.agent-task-warning,
+.agent-task-checkpoint {
+	padding: 16px;
+	border: 1px solid var(--workspace-border, #dedede);
+	border-radius: 12px;
+}
+
+.agent-task-warning {
+	border-color: #e5b858;
+	background: rgb(229 184 88 / 8%);
+}
+
+.agent-task-warning p,
+.agent-task-checkpoint h3 {
+	margin: 0;
+}
+
+.agent-task-steps {
+	display: grid;
+	gap: 10px;
+	margin: 0;
+	padding-left: 24px;
+}
+
+.agent-task-steps li {
+	padding: 12px 14px;
+	border: 1px solid var(--workspace-border, #dedede);
+	border-radius: 10px;
+}
+
+.agent-task-steps strong,
+.agent-task-steps span {
+	display: block;
+}
+
+.agent-task-steps span {
+	margin-top: 4px;
+	color: var(--workspace-muted, #777);
+	font-family: var(--font-mono, monospace);
+	font-size: 12px;
+}
+
+.agent-task-steps p {
+	margin: 8px 0 0;
+	line-height: 1.6;
+}
+
+.agent-task-checkpoint {
+	display: grid;
+	gap: 14px;
+}
+
+.agent-task-approval-list {
+	display: grid;
+	gap: 12px;
+}
+
+.agent-task-approval-list article {
+	display: grid;
+	gap: 8px;
+	padding: 14px;
+	border: 1px solid var(--workspace-border, #dedede);
+	border-radius: 10px;
+}
+
+.agent-task-approval-list span {
+	overflow-wrap: anywhere;
+	color: var(--workspace-muted, #777);
+	font-family: var(--font-mono, monospace);
+	font-size: 12px;
+}
+
+.agent-task-approval-list p {
+	margin: 0;
+}
+
+@media (max-width: 720px) {
+	.agent-task-columns {
+		grid-template-columns: 1fr;
+	}
+}

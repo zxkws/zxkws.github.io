@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLanguage } from '../../i18n';
 import {
   deleteUploadRecords,
+  getUploadCapabilities,
   listUploadRecords,
   type UploadRecord,
   uploadManagedFile,
@@ -21,9 +22,14 @@ import {
 } from './filePreview';
 import * as styles from './index.module.css';
 
-const MAX_FILE_BYTES = 50 * 1024 * 1024;
+const DEFAULT_MAX_FILE_BYTES = 4 * 1024 * 1024;
 
-const previewAddress = (record: UploadRecord) => record.previewUrl || record.signedUrl || record.url;
+const bufferedPreviewAddress = (record: UploadRecord) => record.previewUrl || record.signedUrl || record.url;
+const DIRECT_PREVIEW_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4']);
+const mediaPreviewAddress = (record: UploadRecord) => {
+  const extension = record.filename.toLowerCase().split('.').pop() || '';
+  return DIRECT_PREVIEW_EXTENSIONS.has(extension) ? record.url : bufferedPreviewAddress(record);
+};
 
 type StructuredPreviewKind = Extract<PreviewKind, 'word' | 'spreadsheet' | 'presentation' | 'archive'>;
 
@@ -51,12 +57,15 @@ export default function FileManager() {
   const [activeSheet, setActiveSheet] = useState(0);
   const [previewError, setPreviewError] = useState('');
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [maxUploadBytes, setMaxUploadBytes] = useState(DEFAULT_MAX_FILE_BYTES);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      setRecords(await listUploadRecords());
+      const [rows, capabilities] = await Promise.all([listUploadRecords(), getUploadCapabilities()]);
+      setRecords(rows);
+      setMaxUploadBytes(capabilities.maxUploadBytes);
     } catch (error) {
       message.error(error instanceof Error ? error.message : t('fileManager.loadFailed'));
     } finally {
@@ -84,7 +93,7 @@ export default function FileManager() {
       setPreviewLoading(true);
       try {
         const buffer = await fetchPreviewBuffer(
-          previewAddress(previewRecord),
+          bufferedPreviewAddress(previewRecord),
           kind === 'text' ? MAX_TEXT_PREVIEW_BYTES : MAX_STRUCTURED_PREVIEW_BYTES,
           controller.signal,
         );
@@ -128,8 +137,8 @@ export default function FileManager() {
     if (!files.length || uploading) return;
     const valid: QueueItem[] = [];
     files.forEach((file, index) => {
-      if (file.size > MAX_FILE_BYTES) {
-        message.error(t('fileManager.fileTooLarge', { name: file.name }));
+      if (file.size > maxUploadBytes) {
+        message.error(t('fileManager.fileTooLarge', { name: file.name, maxUploadBytes }));
         return;
       }
       valid.push({
@@ -208,7 +217,7 @@ export default function FileManager() {
         render: (filename: string, record) => (
           <div className={styles.fileCell}>
             {record.mimeType?.startsWith('image/') ? (
-              <img src={previewAddress(record)} alt="" loading="lazy" />
+              <img src={mediaPreviewAddress(record)} alt="" loading="lazy" />
             ) : (
               <span className={styles.fileIcon}>FILE</span>
             )}
@@ -244,7 +253,7 @@ export default function FileManager() {
   );
 
   const currentPreviewKind = previewRecord ? getPreviewKind(previewRecord) : 'unsupported';
-  const currentPreviewUrl = previewRecord ? previewAddress(previewRecord) : '';
+  const currentPreviewUrl = previewRecord ? mediaPreviewAddress(previewRecord) : '';
   const activeSpreadsheetSheet =
     structuredPreview?.kind === 'spreadsheet' ? structuredPreview.sheets[activeSheet] : undefined;
 
@@ -297,7 +306,7 @@ export default function FileManager() {
           disabled={uploading}
         >
           <strong>{uploading ? t('fileManager.uploading') : t('fileManager.dropzone')}</strong>
-          <span>{t('fileManager.dropzoneHint')}</span>
+          <span>{t('fileManager.dropzoneHint', { maxUploadBytes })}</span>
         </button>
         <input
           ref={inputRef}

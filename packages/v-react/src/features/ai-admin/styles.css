@@ -1,8 +1,14 @@
 .ai-admin-root,
 .ai-admin-state {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
   max-width: 1480px;
   margin: 0 auto;
+  overflow: auto;
   padding: 32px;
+  scrollbar-gutter: stable;
   color: var(--color-fg);
 }
 
@@ -106,7 +112,9 @@
 
 .ai-channel-form {
   display: grid;
-  grid-template-columns: minmax(140px, 0.6fr) minmax(260px, 1.4fr) minmax(220px, 1fr) auto;
+  grid-template-columns:
+    minmax(140px, 0.6fr) minmax(170px, 0.7fr) minmax(260px, 1.4fr)
+    minmax(220px, 1fr) auto;
   align-items: end;
   gap: 14px;
   margin-top: 18px;
@@ -145,6 +153,7 @@
 
 .ai-model-table {
   width: 100%;
+  min-width: 920px;
   border-collapse: collapse;
   font-size: 14px;
 }

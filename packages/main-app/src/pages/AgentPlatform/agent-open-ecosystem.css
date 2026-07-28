@@ -1,0 +1,38 @@
+.agent-open-import {
+	margin-top: 18px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-md);
+	background: var(--color-surface);
+}
+
+.agent-open-import > summary {
+	padding: 14px 16px;
+	cursor: pointer;
+	font-weight: 650;
+}
+
+.agent-open-import[open] > summary {
+	border-bottom: 1px solid var(--color-border);
+}
+
+.agent-open-import__form {
+	padding: 16px;
+}
+
+.agent-open-import__source,
+.agent-open-import__json {
+	min-height: 220px;
+	resize: vertical;
+}
+
+.agent-open-import__columns {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+	gap: 12px;
+}
+
+@media (max-width: 720px) {
+	.agent-open-import__columns {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}

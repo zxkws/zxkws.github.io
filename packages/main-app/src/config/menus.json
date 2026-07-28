@@ -26,7 +26,7 @@
 		"path": "/app/security-center",
 		"requiresAuth": true
 	},
-	{ "name": "账号保险库", "path": "/app/account-vault", "requiresAuth": true },
+	{ "name": "账号管理", "path": "/app/account-vault", "requiresAuth": true },
 	{ "name": "文件管理", "path": "/app/file-manager", "adminOnly": true },
 	{ "name": "Agent 平台", "path": "/app/agent-platform", "adminOnly": true },
 	{ "name": "Obsidian 笔记", "path": "/v-react/notes" },

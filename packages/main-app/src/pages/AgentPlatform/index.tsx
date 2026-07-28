@@ -6,11 +6,14 @@ import {
   type AgentRun,
   type AgentRunEvent,
   type AgentSkill,
+  type AgentTask,
   agentPlatformService,
   type McpTestResult,
 } from '../../services/agentPlatformService';
 import '../rbac-admin.css';
 import '../studio.css';
+import './agent-open-ecosystem.css';
+import './agent-task.css';
 
 const emptySkill = {
   name: '',
@@ -35,6 +38,14 @@ const emptyMcp = {
   enabled: true,
 };
 
+const emptySkillImport = {
+  sourceType: 'content' as 'content' | 'url' | 'github',
+  content: '',
+  url: '',
+  ref: '',
+  path: '',
+};
+
 const csv = (value: string) =>
   value
     .split(',')
@@ -46,18 +57,40 @@ const toggle = (list: string[], id: string) => (list.includes(id) ? list.filter(
 export default function AgentPlatform() {
   const [skills, setSkills] = useState<AgentSkill[]>([]);
   const [servers, setServers] = useState<AgentMcpServer[]>([]);
+  const [workspaceGuides, setWorkspaceGuides] = useState<Record<string, unknown> | null>(null);
+  const [workspaces, setWorkspaces] = useState<
+    Array<{
+      provider: 'elderberry-ssh';
+      name: string;
+      target: string;
+      defaultDirectory: string;
+      allowedRoots: string[];
+      capability: Record<string, unknown>;
+    }>
+  >([]);
+  const [workspaceProvider, setWorkspaceProvider] = useState<'' | 'elderberry-ssh'>('');
+  const [workspaceDirectory, setWorkspaceDirectory] = useState('/root/agent-workspaces');
+  const [workspaceProbe, setWorkspaceProbe] = useState<Record<string, unknown> | null>(null);
   const [runs, setRuns] = useState<AgentRun[]>([]);
   const [skillDraft, setSkillDraft] = useState(emptySkill);
+  const [skillImportDraft, setSkillImportDraft] = useState(emptySkillImport);
   const [mcpDraft, setMcpDraft] = useState(emptyMcp);
+  const [mcpImportSource, setMcpImportSource] = useState('generic');
+  const [mcpImportJson, setMcpImportJson] = useState('');
   const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
   const [editingMcpId, setEditingMcpId] = useState<string | null>(null);
   const [mcpTest, setMcpTest] = useState<McpTestResult | null>(null);
   const [prompt, setPrompt] = useState('');
+  const [taskContext, setTaskContext] = useState('');
+  const [taskMaterial, setTaskMaterial] = useState('');
+  const [selectedChannelId, setSelectedChannelId] = useState('');
+  const [selectedModel, setSelectedModel] = useState('');
   const [knowledgeBaseIds, setKnowledgeBaseIds] = useState('');
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [selectedMcpIds, setSelectedMcpIds] = useState<string[]>([]);
-  const [approvedToolKeys, setApprovedToolKeys] = useState<string[]>([]);
   const [activeRun, setActiveRun] = useState<AgentRun | null>(null);
+  const [activeTask, setActiveTask] = useState<AgentTask | null>(null);
+  const [taskInputDrafts, setTaskInputDrafts] = useState<Record<string, string>>({});
   const [runEvents, setRunEvents] = useState<AgentRunEvent[]>([]);
   const [evaluations, setEvaluations] = useState<AgentEvaluation[]>([]);
   const [evaluationDraft, setEvaluationDraft] = useState({
@@ -72,18 +105,23 @@ export default function AgentPlatform() {
   const [runningRunId, setRunningRunId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [running, setRunning] = useState(false);
+  const [importingSkill, setImportingSkill] = useState(false);
+  const [refreshingSkillId, setRefreshingSkillId] = useState<string | null>(null);
+  const [importingMcp, setImportingMcp] = useState(false);
   const streamController = useRef<AbortController | null>(null);
 
   const selectRun = async (run: AgentRun) => {
     setActiveRun(run);
     setLiveOutput('');
     try {
-      const [details, events, evaluationRows] = await Promise.all([
+      const [details, events, evaluationRows, task] = await Promise.all([
         agentPlatformService.getRun(run.id),
         agentPlatformService.listRunEvents(run.id),
         agentPlatformService.listEvaluations(run.id),
+        agentPlatformService.getTask(run.id).catch(() => null),
       ]);
       setActiveRun(details);
+      setActiveTask(task);
       setRunEvents(events);
       setEvaluations(evaluationRows);
       setThreadId(details.threadId);
@@ -95,26 +133,33 @@ export default function AgentPlatform() {
   const load = async (preferredRunId?: string) => {
     setLoading(true);
     try {
-      const [skillRows, serverRows, runRows] = await Promise.all([
+      const [skillRows, serverRows, runRows, guide, workspaceRows] = await Promise.all([
         agentPlatformService.listSkills(),
         agentPlatformService.listMcpServers(),
         agentPlatformService.listRuns(),
+        agentPlatformService.workspaceGuides(),
+        agentPlatformService.listWorkspaces(),
       ]);
       setSkills(skillRows);
       setServers(serverRows);
       setRuns(runRows);
+      setWorkspaceGuides(guide);
+      setWorkspaces(workspaceRows);
       const selected = runRows.find((row) => row.id === (preferredRunId || activeRun?.id)) || runRows[0] || null;
       setActiveRun(selected);
       if (selected) {
-        const [details, events, evaluationRows] = await Promise.all([
+        const [details, events, evaluationRows, task] = await Promise.all([
           agentPlatformService.getRun(selected.id),
           agentPlatformService.listRunEvents(selected.id),
           agentPlatformService.listEvaluations(selected.id),
+          agentPlatformService.getTask(selected.id).catch(() => null),
         ]);
         setActiveRun(details);
+        setActiveTask(task);
         setRunEvents(events);
         setEvaluations(evaluationRows);
       } else {
+        setActiveTask(null);
         setRunEvents([]);
         setEvaluations([]);
       }
@@ -164,6 +209,41 @@ export default function AgentPlatform() {
       message.success('Skill 已删除');
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'Skill 删除失败');
+    }
+  };
+
+  const importSkill = async (event: FormEvent) => {
+    event.preventDefault();
+    setImportingSkill(true);
+    try {
+      await agentPlatformService.importSkill({
+        sourceType: skillImportDraft.sourceType,
+        content: skillImportDraft.sourceType === 'content' ? skillImportDraft.content : undefined,
+        url: skillImportDraft.sourceType === 'content' ? undefined : skillImportDraft.url,
+        ref: skillImportDraft.sourceType === 'github' ? skillImportDraft.ref || undefined : undefined,
+        path: skillImportDraft.sourceType === 'github' ? skillImportDraft.path || undefined : undefined,
+      });
+      setSkillImportDraft(emptySkillImport);
+      await load();
+      message.success('Skill 已导入并保持禁用，请审查后再启用');
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'Skill 导入失败');
+    } finally {
+      setImportingSkill(false);
+    }
+  };
+
+  const refreshSkill = async (skill: AgentSkill) => {
+    setRefreshingSkillId(skill.id);
+    try {
+      await agentPlatformService.refreshSkill(skill.id);
+      await load();
+      message.success('Skill 已同步并重新设为待审查');
+    } catch (error) {
+      await load();
+      message.error(error instanceof Error ? error.message : 'Skill 同步失败');
+    } finally {
+      setRefreshingSkillId(null);
     }
   };
 
@@ -255,52 +335,163 @@ export default function AgentPlatform() {
     }
   };
 
-  const runAgent = async (event: FormEvent) => {
+  const importMcpServers = async (event: FormEvent) => {
+    event.preventDefault();
+    setImportingMcp(true);
+    try {
+      const parsed = JSON.parse(mcpImportJson) as unknown;
+      if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
+        throw new Error('MCP 配置必须是 JSON 对象');
+      }
+      const result = await agentPlatformService.importMcpServers({
+        sourceName: mcpImportSource,
+        config: parsed as Record<string, unknown>,
+      });
+      setMcpImportJson('');
+      await load();
+      message.success(`已导入 ${result.created.length} 个，跳过 ${result.skipped.length} 个；默认保持禁用`);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'MCP JSON 导入失败');
+    } finally {
+      setImportingMcp(false);
+    }
+  };
+
+  const appendRuntimeEvent = (runtimeEvent: AgentRunEvent) => {
+    if (runtimeEvent.runId) setRunningRunId(runtimeEvent.runId);
+    const token = runtimeEvent.data?.token;
+    if (runtimeEvent.type === 'model.token' && typeof token === 'string') {
+      setLiveOutput((current) => current + token);
+    }
+    if (!runtimeEvent.type.startsWith('stream.')) {
+      setRunEvents((current) => [...current, runtimeEvent].slice(-500));
+    }
+  };
+
+  const probeSelectedWorkspace = async () => {
+    if (!workspaceProvider) return;
+    try {
+      const result = await agentPlatformService.probeWorkspace(workspaceProvider, workspaceDirectory);
+      setWorkspaceProbe(result);
+      message.success('SSH 工作区只读探测成功');
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'SSH 工作区探测失败');
+    }
+  };
+
+  const planAgent = async (event: FormEvent) => {
     event.preventDefault();
     setRunning(true);
     setRunningRunId(null);
     setRunEvents([]);
     setLiveOutput('');
+    try {
+      if (Boolean(selectedChannelId.trim()) !== Boolean(selectedModel.trim())) {
+        throw new Error('channelId 与 model 必须同时填写');
+      }
+      const task = await agentPlatformService.planTask({
+        goal: prompt,
+        context: taskContext.trim() || undefined,
+        threadId: threadId.trim() || undefined,
+        idempotencyKey:
+          typeof crypto.randomUUID === 'function'
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        channelId: selectedChannelId ? Number(selectedChannelId) : undefined,
+        model: selectedModel.trim() || undefined,
+        workspaceProvider: workspaceProvider || undefined,
+        workspaceDirectory: workspaceProvider ? workspaceDirectory : undefined,
+        materials: taskMaterial.trim()
+          ? [
+              {
+                key: 'user_material',
+                label: '用户资料',
+                value: taskMaterial,
+              },
+            ]
+          : [],
+        skillIds: selectedSkillIds,
+        knowledgeBaseIds: csv(knowledgeBaseIds),
+        mcpServerIds: selectedMcpIds,
+      });
+      setActiveTask(task);
+      setActiveRun(task.run);
+      setThreadId(task.run.threadId);
+      setRunEvents(await agentPlatformService.listRunEvents(task.run.id));
+      await load(task.run.id);
+      message.success(
+        task.state === 'ready'
+          ? '任务计划已生成，可以开始执行'
+          : task.state === 'waiting_for_input'
+            ? '任务计划已生成，请补充资料'
+            : '任务计划已生成，请处理审批',
+      );
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '任务规划失败');
+    } finally {
+      setRunningRunId(null);
+      setRunning(false);
+    }
+  };
+
+  const submitTaskInputs = async () => {
+    if (!activeTask) return;
+    const materials = activeTask.missingMaterials
+      .map((item) => ({ key: item.key, value: taskInputDrafts[item.key]?.trim() || '' }))
+      .filter((item) => item.value);
+    if (!materials.length) {
+      message.warning('请先填写需要补充的资料');
+      return;
+    }
+    try {
+      const task = await agentPlatformService.submitTaskInput(activeTask.run.id, materials);
+      setActiveTask(task);
+      setActiveRun(task.run);
+      setRunEvents(await agentPlatformService.listRunEvents(task.run.id));
+      message.success('资料已补充');
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '资料提交失败');
+    }
+  };
+
+  const decideTaskApproval = async (approvalId: string, approved: boolean) => {
+    if (!activeTask) return;
+    try {
+      const task = await agentPlatformService.submitTaskApprovals(activeTask.run.id, [{ approvalId, approved }]);
+      setActiveTask(task);
+      setActiveRun(task.run);
+      setRunEvents(await agentPlatformService.listRunEvents(task.run.id));
+      message.success(approved ? '已批准本次操作' : '已拒绝本次操作');
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '审批提交失败');
+    }
+  };
+
+  const continueTask = async () => {
+    if (!activeTask || activeTask.state !== 'ready') return;
+    setRunning(true);
+    setRunningRunId(activeTask.run.id);
+    setLiveOutput('');
     const controller = new AbortController();
     streamController.current = controller;
     try {
-      const result = await agentPlatformService.streamRun(
-        {
-          input: prompt,
-          threadId: threadId.trim() || undefined,
-          idempotencyKey:
-            typeof crypto.randomUUID === 'function'
-              ? crypto.randomUUID()
-              : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          skillIds: selectedSkillIds,
-          knowledgeBaseIds: csv(knowledgeBaseIds),
-          mcpServerIds: selectedMcpIds,
-          approvedToolKeys,
-        },
-        (runtimeEvent) => {
-          if (runtimeEvent.runId) setRunningRunId(runtimeEvent.runId);
-          const token = runtimeEvent.data?.token;
-          if (runtimeEvent.type === 'model.token' && typeof token === 'string') {
-            setLiveOutput((current) => current + token);
-          }
-          if (!runtimeEvent.type.startsWith('stream.')) {
-            setRunEvents((current) => [...current, runtimeEvent].slice(-500));
-          }
-        },
+      const result = await agentPlatformService.streamTaskResume(
+        activeTask.run.id,
+        appendRuntimeEvent,
         controller.signal,
       );
       setActiveRun(result);
-      setThreadId(result.threadId);
-      setPrompt('');
       await load(result.id);
-      if (result.status === 'completed') message.success('Agent 运行完成');
-      else if (result.status === 'cancelled') message.info('Agent 运行已取消');
-      else message.error(result.error || 'Agent 运行失败');
+      const task = await agentPlatformService.getTask(result.id);
+      setActiveTask(task);
+      if (result.status === 'completed') message.success('Agent 任务执行完成');
+      else if (result.status === 'cancelled') message.info('Agent 任务已取消');
+      else message.error(result.error || 'Agent 任务执行失败');
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
-        message.error(error instanceof Error ? error.message : 'Agent 运行失败');
+        message.error(error instanceof Error ? error.message : 'Agent 任务执行失败');
       }
-      await load();
+      await load(activeTask.run.id);
     } finally {
       streamController.current = null;
       setRunningRunId(null);
@@ -314,6 +505,9 @@ export default function AgentPlatform() {
     try {
       const result = await agentPlatformService.cancelRun(id);
       setActiveRun(result);
+      if (activeTask?.run.id === id) {
+        setActiveTask(await agentPlatformService.getTask(id));
+      }
       message.info(result.status === 'cancelled' ? 'Agent 运行已取消' : '已请求取消 Agent 运行');
     } catch (error) {
       message.error(error instanceof Error ? error.message : '取消 Agent 运行失败');
@@ -377,18 +571,36 @@ export default function AgentPlatform() {
       <section className="workspace-panel">
         <div className="workspace-panel__header">
           <div>
-            <h2>运行 Agent</h2>
-            <p className="workspace-panel__meta">只有 MCP Server 允许列表中的工具会暴露给模型。</p>
+            <h2>规划并执行任务</h2>
+            <p className="workspace-panel__meta">
+              先生成计划和资料清单，再处理风险审批；只有已批准且在允许列表中的 MCP 工具会参与执行。
+            </p>
           </div>
         </div>
-        <form className="workspace-form studio-wide-form" onSubmit={runAgent}>
+        <form className="workspace-form studio-wide-form" onSubmit={planAgent}>
           <label className="workspace-field">
-            任务
+            任务目标
             <textarea
               className="workspace-textarea studio-agent-prompt"
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
               required
+            />
+          </label>
+          <label className="workspace-field">
+            背景与完成标准（可选）
+            <textarea
+              className="workspace-textarea"
+              value={taskContext}
+              onChange={(event) => setTaskContext(event.target.value)}
+            />
+          </label>
+          <label className="workspace-field">
+            已有资料、链接或说明（可选）
+            <textarea
+              className="workspace-textarea"
+              value={taskMaterial}
+              onChange={(event) => setTaskMaterial(event.target.value)}
             />
           </label>
           <label className="workspace-field">
@@ -417,33 +629,6 @@ export default function AgentPlatform() {
                 ))}
             </div>
           </fieldset>
-          {selectedMcpIds.length ? (
-            <fieldset className="rbac-fieldset">
-              <legend>本次批准的 MCP 工具</legend>
-              <p className="workspace-panel__meta">
-                未声明只读的工具默认需要本次明确批准；未批准的工具不会暴露给模型。
-              </p>
-              <div className="rbac-checkbox-grid">
-                {servers
-                  .filter((server) => selectedMcpIds.includes(server.id))
-                  .flatMap((server) =>
-                    (server.allowedTools || []).map((toolName) => {
-                      const toolKey = `${server.id}:${toolName}`;
-                      return (
-                        <label className="rbac-check" key={toolKey}>
-                          <input
-                            type="checkbox"
-                            checked={approvedToolKeys.includes(toolKey)}
-                            onChange={() => setApprovedToolKeys(toggle(approvedToolKeys, toolKey))}
-                          />
-                          {server.code}:{toolName}
-                        </label>
-                      );
-                    }),
-                  )}
-              </div>
-            </fieldset>
-          ) : null}
           <fieldset className="rbac-fieldset">
             <legend>MCP Servers</legend>
             <div className="rbac-checkbox-grid">
@@ -461,6 +646,63 @@ export default function AgentPlatform() {
                 ))}
             </div>
           </fieldset>
+          <fieldset className="rbac-fieldset">
+            <legend>执行工作区</legend>
+            <label className="workspace-field">
+              工作区提供者
+              <select
+                className="workspace-input"
+                value={workspaceProvider}
+                onChange={(event) => {
+                  const provider = event.target.value as '' | 'elderberry-ssh';
+                  setWorkspaceProvider(provider);
+                  const selected = workspaces.find((item) => item.provider === provider);
+                  if (selected) setWorkspaceDirectory(selected.defaultDirectory);
+                  setWorkspaceProbe(null);
+                }}
+              >
+                <option value="">不连接执行工作区</option>
+                {workspaces.map((workspace) => (
+                  <option value={workspace.provider} key={workspace.provider}>
+                    {workspace.name} · {workspace.target}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {workspaceProvider ? (
+              <>
+                <label className="workspace-field">
+                  受限工作目录
+                  <input
+                    className="workspace-input workspace-input--mono"
+                    value={workspaceDirectory}
+                    onChange={(event) => setWorkspaceDirectory(event.target.value)}
+                  />
+                </label>
+                <div className="workspace-inline-actions">
+                  <button type="button" className="workspace-button" onClick={() => void probeSelectedWorkspace()}>
+                    只读探测连接
+                  </button>
+                </div>
+                <pre className="workspace-code studio-prewrap">
+                  {JSON.stringify(workspaces.find((item) => item.provider === workspaceProvider)?.capability, null, 2)}
+                </pre>
+                {workspaceProbe ? (
+                  <pre className="workspace-code studio-prewrap">{JSON.stringify(workspaceProbe, null, 2)}</pre>
+                ) : null}
+              </>
+            ) : null}
+          </fieldset>
+          <details>
+            <summary>我应该提供哪种虚拟环境？</summary>
+            <p className="workspace-panel__meta">
+              推荐提供 HTTPS Streamable HTTP MCP URL 和请求头。可直接接 AIO Sandbox / agent-sandbox、GitHub MCP 或自建
+              MCP Runner；Vercel 只连接远程 Runner，不会在函数实例内启动 Docker。
+            </p>
+            {workspaceGuides ? (
+              <pre className="workspace-code studio-prewrap">{JSON.stringify(workspaceGuides, null, 2)}</pre>
+            ) : null}
+          </details>
           <label className="workspace-field">
             知识库 ID（逗号分隔）
             <input
@@ -469,9 +711,29 @@ export default function AgentPlatform() {
               onChange={(event) => setKnowledgeBaseIds(event.target.value)}
             />
           </label>
+          <div className="agent-task-columns">
+            <label className="workspace-field">
+              channelId（可选）
+              <input
+                className="workspace-input workspace-input--mono"
+                inputMode="numeric"
+                value={selectedChannelId}
+                onChange={(event) => setSelectedChannelId(event.target.value)}
+              />
+            </label>
+            <label className="workspace-field">
+              model（与 channelId 同时填写）
+              <input
+                className="workspace-input workspace-input--mono"
+                value={selectedModel}
+                onChange={(event) => setSelectedModel(event.target.value)}
+                maxLength={200}
+              />
+            </label>
+          </div>
           <div className="workspace-inline-actions studio-run-actions">
             <button type="submit" className="workspace-button workspace-button--primary" disabled={running}>
-              {running ? 'Agent 正在执行…' : '运行'}
+              {running ? '正在规划…' : '生成任务计划'}
             </button>
             {running ? (
               <button type="button" className="workspace-button workspace-button--danger" onClick={cancelRun}>
@@ -485,6 +747,7 @@ export default function AgentPlatform() {
               onClick={() => {
                 setThreadId('');
                 setActiveRun(null);
+                setActiveTask(null);
                 setRunEvents([]);
                 setEvaluations([]);
                 setLiveOutput('');
@@ -495,6 +758,130 @@ export default function AgentPlatform() {
           </div>
         </form>
       </section>
+
+      {activeTask ? (
+        <section className="workspace-panel agent-task-panel">
+          <div className="workspace-panel__header">
+            <div>
+              <h2>任务计划</h2>
+              <p className="workspace-panel__meta">
+                state: {activeTask.state} · planner: {activeTask.plan.planner.source}
+                {activeTask.plan.planner.model ? ` · model: ${activeTask.plan.planner.model}` : ''}
+              </p>
+            </div>
+            <div className="workspace-inline-actions">
+              {activeTask.state === 'ready' ? (
+                <button
+                  type="button"
+                  className="workspace-button workspace-button--primary"
+                  onClick={() => void continueTask()}
+                  disabled={running}
+                >
+                  {running ? '正在执行…' : '按计划开始执行'}
+                </button>
+              ) : null}
+              {['waiting_for_input', 'waiting_for_approval', 'ready', 'running'].includes(activeTask.state) ? (
+                <button
+                  type="button"
+                  className="workspace-button workspace-button--danger"
+                  onClick={() => void cancelRun()}
+                >
+                  取消任务
+                </button>
+              ) : null}
+            </div>
+          </div>
+          <p className="agent-task-summary">{activeTask.plan.summary}</p>
+          {activeTask.plan.capabilityWarnings.length ? (
+            <div className="agent-task-warning">
+              {activeTask.plan.capabilityWarnings.map((warning) => (
+                <p key={warning}>{warning}</p>
+              ))}
+            </div>
+          ) : null}
+          <ol className="agent-task-steps">
+            {activeTask.plan.steps.map((step) => (
+              <li key={step.id}>
+                <strong>{step.title}</strong>
+                <span>
+                  {step.kind} · {step.id}
+                </span>
+                <p>{step.description}</p>
+              </li>
+            ))}
+          </ol>
+          {activeTask.missingMaterials.length ? (
+            <div className="agent-task-checkpoint">
+              <h3>需要补充的资料</h3>
+              {activeTask.missingMaterials.map((item) => (
+                <label className="workspace-field" key={item.key}>
+                  {item.label}（{item.key}）<span className="workspace-panel__meta">{item.description}</span>
+                  <textarea
+                    className="workspace-textarea"
+                    value={taskInputDrafts[item.key] || ''}
+                    onChange={(event) => setTaskInputDrafts({ ...taskInputDrafts, [item.key]: event.target.value })}
+                  />
+                </label>
+              ))}
+              <button
+                type="button"
+                className="workspace-button workspace-button--primary"
+                onClick={() => void submitTaskInputs()}
+              >
+                提交资料
+              </button>
+            </div>
+          ) : null}
+          {activeTask.pendingApprovals.length ? (
+            <div className="agent-task-checkpoint">
+              <h3>等待审批</h3>
+              <div className="agent-task-approval-list">
+                {activeTask.pendingApprovals.map((approval) => (
+                  <article key={approval.approvalId}>
+                    <strong>{approval.title}</strong>
+                    <span>
+                      risk: {approval.risk} · toolKey: {approval.toolKey}
+                    </span>
+                    <p>{approval.description}</p>
+                    <div className="workspace-inline-actions">
+                      <button
+                        type="button"
+                        className="workspace-button workspace-button--primary"
+                        onClick={() => void decideTaskApproval(approval.approvalId, true)}
+                      >
+                        仅本次批准
+                      </button>
+                      <button
+                        type="button"
+                        className="workspace-button workspace-button--danger"
+                        onClick={() => void decideTaskApproval(approval.approvalId, false)}
+                      >
+                        拒绝
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          <details>
+            <summary>风险与原始计划数据</summary>
+            <pre className="workspace-code studio-prewrap">
+              {JSON.stringify(
+                {
+                  risks: activeTask.plan.risks,
+                  selected: activeTask.plan.selected,
+                  workspaceProbe: activeTask.plan.workspaceProbe,
+                  approvalDecisions: activeTask.approvalDecisions,
+                  providedMaterialKeys: activeTask.providedMaterialKeys,
+                },
+                null,
+                2,
+              )}
+            </pre>
+          </details>
+        </section>
+      ) : null}
 
       <div className="studio-shell">
         <aside className="workspace-panel studio-sidebar">
@@ -692,8 +1079,32 @@ export default function AgentPlatform() {
                   <span>
                     {skill.code} · enabled: {String(skill.enabled)}
                   </span>
+                  <span>
+                    sourceType: {skill.source?.type || 'manual'} · syncStatus: {skill.source?.status || 'manual'}
+                  </span>
+                  {skill.source ? (
+                    <>
+                      <span>sourceUrl: {skill.source.url}</span>
+                      <span>ref: {skill.source.ref}</span>
+                      <span>path: {skill.source.path}</span>
+                      <span>contentHash: {skill.source.contentHash}</span>
+                      <span>syncedAt: {skill.source.syncedAt}</span>
+                      <span>reviewStatus: {skill.reviewStatus || 'pending'}</span>
+                      {skill.source.error ? <span>syncError: {skill.source.error}</span> : null}
+                    </>
+                  ) : null}
                 </div>
                 <div className="workspace-inline-actions">
+                  {skill.source && skill.source.type !== 'content' ? (
+                    <button
+                      type="button"
+                      className="workspace-button"
+                      disabled={refreshingSkillId === skill.id}
+                      onClick={() => void refreshSkill(skill)}
+                    >
+                      {refreshingSkillId === skill.id ? '同步中…' : '刷新来源'}
+                    </button>
+                  ) : null}
                   <button type="button" className="workspace-button" onClick={() => editSkill(skill)}>
                     编辑
                   </button>
@@ -708,6 +1119,87 @@ export default function AgentPlatform() {
               </article>
             ))}
           </div>
+          <details className="agent-open-import">
+            <summary>从开源 SKILL.md 导入</summary>
+            <form className="workspace-form agent-open-import__form" onSubmit={importSkill}>
+              <p className="workspace-panel__meta">
+                支持粘贴原文、HTTPS 原始文件 URL、GitHub 仓库或文件 URL。只读取 SKILL.md，不下载或执行 scripts。
+                导入和刷新后默认禁用，需检查指令后手动启用。
+              </p>
+              <label className="workspace-field">
+                导入方式
+                <select
+                  className="workspace-input"
+                  value={skillImportDraft.sourceType}
+                  onChange={(event) =>
+                    setSkillImportDraft({
+                      ...skillImportDraft,
+                      sourceType: event.target.value as typeof skillImportDraft.sourceType,
+                    })
+                  }
+                >
+                  <option value="content">SKILL.md 原文</option>
+                  <option value="url">HTTPS URL</option>
+                  <option value="github">GitHub 仓库 / 文件</option>
+                </select>
+              </label>
+              {skillImportDraft.sourceType === 'content' ? (
+                <label className="workspace-field">
+                  SKILL.md 原文
+                  <textarea
+                    className="workspace-textarea workspace-input--mono agent-open-import__source"
+                    value={skillImportDraft.content}
+                    onChange={(event) => setSkillImportDraft({ ...skillImportDraft, content: event.target.value })}
+                    placeholder={
+                      '---\nname: example-skill\ndescription: What this skill does and when to use it.\n---\n\n# Instructions'
+                    }
+                    required
+                  />
+                </label>
+              ) : (
+                <label className="workspace-field">
+                  {skillImportDraft.sourceType === 'github' ? 'GitHub URL' : 'SKILL.md HTTPS URL'}
+                  <input
+                    className="workspace-input workspace-input--mono"
+                    type="url"
+                    value={skillImportDraft.url}
+                    onChange={(event) => setSkillImportDraft({ ...skillImportDraft, url: event.target.value })}
+                    placeholder={
+                      skillImportDraft.sourceType === 'github'
+                        ? 'https://github.com/owner/repository'
+                        : 'https://example.com/SKILL.md'
+                    }
+                    required
+                  />
+                </label>
+              )}
+              {skillImportDraft.sourceType === 'github' ? (
+                <div className="agent-open-import__columns">
+                  <label className="workspace-field">
+                    ref（可选）
+                    <input
+                      className="workspace-input workspace-input--mono"
+                      value={skillImportDraft.ref}
+                      onChange={(event) => setSkillImportDraft({ ...skillImportDraft, ref: event.target.value })}
+                      placeholder="main"
+                    />
+                  </label>
+                  <label className="workspace-field">
+                    path（可选）
+                    <input
+                      className="workspace-input workspace-input--mono"
+                      value={skillImportDraft.path}
+                      onChange={(event) => setSkillImportDraft({ ...skillImportDraft, path: event.target.value })}
+                      placeholder="skills/example/SKILL.md"
+                    />
+                  </label>
+                </div>
+              ) : null}
+              <button type="submit" className="workspace-button workspace-button--primary" disabled={importingSkill}>
+                {importingSkill ? '导入中…' : '导入并等待审查'}
+              </button>
+            </form>
+          </details>
           <form className="workspace-form studio-create-form" onSubmit={saveSkill}>
             <h2>{editingSkillId ? '编辑 Skill' : '新建 Skill'}</h2>
             <label className="workspace-field">
@@ -788,6 +1280,9 @@ export default function AgentPlatform() {
                   <span>
                     {server.transport} · hasSecrets: {String(server.hasSecrets)}
                   </span>
+                  <span>
+                    sourceType: {server.sourceType} · sourceName: {server.sourceName} · importedAt: {server.importedAt}
+                  </span>
                   <span>allowedTools: {JSON.stringify(server.allowedTools)}</span>
                   <span>approvalRequiredTools: {JSON.stringify(server.approvalRequiredTools)}</span>
                 </div>
@@ -810,6 +1305,47 @@ export default function AgentPlatform() {
             ))}
           </div>
           {mcpTest && <pre className="watch-code studio-mcp-test">{JSON.stringify(mcpTest, null, 2)}</pre>}
+          <details className="agent-open-import">
+            <summary>导入主流客户端 MCP JSON</summary>
+            <form className="workspace-form agent-open-import__form" onSubmit={importMcpServers}>
+              <p className="workspace-panel__meta">
+                支持 Claude、Cursor、Cline、VS Code、Open WebUI、Cherry Studio 使用的顶层 mcpServers、servers、单个
+                Server 或直接 Server 映射。可导入 stdio、Streamable HTTP 和 legacy SSE。Dify 对外暴露的标准 MCP Server
+                URL 可以连接，但 Dify 插件本身不能直接在这里运行。 所有导入项默认禁用，密钥只会加密保存且不会回显。
+              </p>
+              <label className="workspace-field">
+                配置来源
+                <select
+                  className="workspace-input"
+                  value={mcpImportSource}
+                  onChange={(event) => setMcpImportSource(event.target.value)}
+                >
+                  <option value="generic">通用 / VS Code / GitHub</option>
+                  <option value="claude">Claude</option>
+                  <option value="cursor">Cursor</option>
+                  <option value="cline">Cline</option>
+                  <option value="dify">Dify MCP Server</option>
+                  <option value="open-webui">Open WebUI</option>
+                  <option value="cherry-studio">Cherry Studio</option>
+                </select>
+              </label>
+              <label className="workspace-field">
+                MCP JSON
+                <textarea
+                  className="workspace-textarea workspace-input--mono agent-open-import__json"
+                  value={mcpImportJson}
+                  onChange={(event) => setMcpImportJson(event.target.value)}
+                  placeholder={
+                    '{\n  "mcpServers": {\n    "example": {\n      "url": "https://example.com/mcp"\n    }\n  }\n}'
+                  }
+                  required
+                />
+              </label>
+              <button type="submit" className="workspace-button workspace-button--primary" disabled={importingMcp}>
+                {importingMcp ? '导入中…' : '导入为禁用配置'}
+              </button>
+            </form>
+          </details>
           <form className="workspace-form studio-create-form" onSubmit={saveMcp}>
             <h2>{editingMcpId ? '编辑 MCP Server' : '新建 MCP Server'}</h2>
             <label className="workspace-field">

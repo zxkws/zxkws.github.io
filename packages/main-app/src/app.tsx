@@ -1,7 +1,4 @@
 import { AppRoute, AppRouter } from '@ice/stark';
-import { ConfigProvider } from 'antd';
-import enUS from 'antd/locale/en_US';
-import zhCN from 'antd/locale/zh_CN';
 import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import ReactDom from 'react-dom/client';
 
@@ -65,6 +62,21 @@ const SecurityCenter = lazy(() => import('./pages/SecurityCenter'));
 const AgentPlatform = lazy(() => import('./pages/AgentPlatform'));
 const AccountVault = lazy(() => import('./pages/AccountVault'));
 const FileManager = lazy(() => import('./pages/FileManager'));
+const AntdLocaleBoundary = lazy(() => import('./components/AntdLocaleBoundary'));
+
+const ANTD_LOCAL_ROUTES = new Set([
+  '/app/navigation',
+  '/app/menu-admin',
+  '/app/role-admin',
+  '/app/permission-admin',
+  '/app/user-admin',
+  '/app/config-center',
+  '/app/blog-studio',
+  '/app/security-center',
+  '/app/agent-platform',
+  '/app/account-vault',
+  '/app/file-manager',
+]);
 
 const MicroAppLoading = () => <PageLoading loading contained />;
 
@@ -125,7 +137,11 @@ const LocalRoutes = ({ pathname }: { pathname: string }) => {
     return <RouteNotFound />;
   })();
 
-  return <ErrorBoundary resetKey={pathname}>{content}</ErrorBoundary>;
+  return (
+    <ErrorBoundary resetKey={pathname}>
+      {ANTD_LOCAL_ROUTES.has(pathname) ? <AntdLocaleBoundary>{content}</AntdLocaleBoundary> : content}
+    </ErrorBoundary>
+  );
 };
 
 // --- Service Worker Registration ---
@@ -372,12 +388,9 @@ if (root) {
 }
 
 function LocalizedApp() {
-  const { language } = useLanguage();
   return (
-    <ConfigProvider locale={language === 'zh-CN' ? zhCN : enUS}>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-    </ConfigProvider>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   );
 }

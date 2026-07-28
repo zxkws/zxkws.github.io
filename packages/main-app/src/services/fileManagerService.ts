@@ -15,11 +15,19 @@ export type UploadRecord = {
   updatedAt: string;
 };
 
+export type UploadCapabilities = {
+  maxUploadBytes: number;
+  acceptsAnyFileType: boolean;
+};
+
 const unwrap = <T>(payload: unknown): T =>
   (payload && typeof payload === 'object' && 'data' in payload ? (payload as { data: T }).data : payload) as T;
 
 export const listUploadRecords = async (): Promise<UploadRecord[]> =>
   unwrap<UploadRecord[]>(await client('/v1/upload/records', {}, { method: 'GET' }));
+
+export const getUploadCapabilities = async (): Promise<UploadCapabilities> =>
+  unwrap<UploadCapabilities>(await client('/v1/upload/capabilities', {}, { method: 'GET' }));
 
 export const uploadManagedFile = async (file: File): Promise<UploadRecord> => {
   const formData = new FormData();

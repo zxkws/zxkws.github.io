@@ -7,6 +7,7 @@ import {
   setCachedUser,
   type UserProfile,
 } from '../services/userService';
+import { isPublicPath } from '../utils/publicRoutes';
 
 type UserContextValue = {
   user: UserProfile | null;
@@ -30,8 +31,16 @@ const UserContext = createContext<UserContextValue>({
 });
 
 export const UserProvider = ({ children }: PropsWithChildren) => {
-  const [user, setUser] = useState<UserProfile | null>(() => loadCachedUser());
-  const [loading, setLoading] = useState(() => !loadCachedUser());
+  const [initialState] = useState(() => {
+    const cachedUser = loadCachedUser();
+    const pathname = typeof window === 'undefined' ? '/' : window.location.pathname;
+    return {
+      cachedUser,
+      publicEntry: isPublicPath(pathname),
+    };
+  });
+  const [user, setUser] = useState<UserProfile | null>(initialState.cachedUser);
+  const [loading, setLoading] = useState(() => !initialState.cachedUser && !initialState.publicEntry);
 
   const clearUser = useCallback(() => {
     clearCachedUser();
@@ -74,16 +83,44 @@ export const UserProvider = ({ children }: PropsWithChildren) => {
     [],
   );
 
-  // 初始化时尝试拉取一次用户信息
+  // 私有入口立即确认身份；公开入口先渲染首屏，再在浏览器空闲时静默同步登录状态。
   useEffect(() => {
-    const cached = loadCachedUser();
-    if (cached) {
-      setCachedUser(cached);
-      refreshUser({ force: true, silent: true }).catch(() => undefined);
-      return;
+    if (!initialState.publicEntry) {
+      if (initialState.cachedUser) {
+        setCachedUser(initialState.cachedUser);
+        void refreshUser({ force: true, silent: true });
+      } else {
+        void refreshUser();
+      }
+      return undefined;
     }
-    refreshUser().catch(() => undefined);
-  }, [refreshUser]);
+
+    let idleId: number | undefined;
+    let timerId: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false;
+
+    const revalidate = () => {
+      if (!cancelled) {
+        void refreshUser({ force: true, silent: true });
+      }
+    };
+
+    if ('requestIdleCallback' in window) {
+      idleId = window.requestIdleCallback(revalidate, { timeout: 4000 });
+    } else {
+      timerId = globalThis.setTimeout(revalidate, 1500);
+    }
+
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timerId !== undefined) {
+        globalThis.clearTimeout(timerId);
+      }
+    };
+  }, [initialState, refreshUser]);
 
   const value = useMemo(
     () => ({ user, loading, refreshUser, saveUser, clearUser }),

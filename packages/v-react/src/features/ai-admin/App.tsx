@@ -5,6 +5,7 @@ import './styles.css';
 
 type AuthState = 'pending' | 'ok' | 'need-login' | 'forbidden' | 'error';
 type Capability = 'text' | 'vision' | 'speech-to-text' | 'text-to-speech' | 'embedding' | 'image' | 'video';
+type ChannelType = 'openai-compatible' | 'openai' | 'anthropic' | 'google';
 
 type AiModel = {
   id: string;
@@ -27,7 +28,7 @@ type ModelTest = {
 type AiChannel = {
   id: number;
   name: string;
-  type: string;
+  type: ChannelType;
   baseUrl: string;
   enabled: boolean;
   hasApiKey: boolean;
@@ -56,6 +57,13 @@ const capabilities: Array<[Capability, string]> = [
   ['video', '视频生成'],
 ];
 
+const channelTypes: Array<[ChannelType, string]> = [
+  ['openai-compatible', 'OpenAI-compatible'],
+  ['openai', 'OpenAI'],
+  ['anthropic', 'Anthropic'],
+  ['google', 'Google Gemini'],
+];
+
 const unwrap = <T,>(payload: unknown): T => {
   if (payload && typeof payload === 'object' && 'data' in payload) {
     return (payload as { data: T }).data;
@@ -81,7 +89,12 @@ export default function AiAdminApp() {
   const [busy, setBusy] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState<Record<number, string>>({});
   const [testCapabilities, setTestCapabilities] = useState<Record<string, Capability>>({});
-  const [newChannel, setNewChannel] = useState({ name: '', baseUrl: '', apiKey: '' });
+  const [newChannel, setNewChannel] = useState<{
+    name: string;
+    type: ChannelType;
+    baseUrl: string;
+    apiKey: string;
+  }>({ name: '', type: 'openai-compatible', baseUrl: '', apiKey: '' });
 
   const loadData = useCallback(async () => {
     const [channelPayload, bindingPayload] = await Promise.all([
@@ -139,7 +152,7 @@ export default function AiAdminApp() {
     setStatus('');
     try {
       await client('/ai/admin/channels', newChannel, { method: 'POST' });
-      setNewChannel({ name: '', baseUrl: '', apiKey: '' });
+      setNewChannel({ name: '', type: 'openai-compatible', baseUrl: '', apiKey: '' });
       await loadData();
     } catch (error) {
       setStatus(error instanceof Error ? error.message : String(error));
@@ -153,8 +166,9 @@ export default function AiAdminApp() {
     setActionBusy(key, true);
     setStatus('');
     try {
-      const payload: { name: string; baseUrl: string; enabled: boolean; apiKey?: string } = {
+      const payload: { name: string; type: ChannelType; baseUrl: string; enabled: boolean; apiKey?: string } = {
         name: channel.name,
+        type: channel.type,
         baseUrl: channel.baseUrl,
         enabled: channel.enabled,
       };
@@ -265,7 +279,7 @@ export default function AiAdminApp() {
       <header className="ai-admin-header">
         <div>
           <h1>AI 渠道与模型</h1>
-          <p>管理多个 OpenAI-compatible 渠道，为每种能力指定渠道和模型，并逐个验证模型。</p>
+          <p>管理 OpenAI、Anthropic、Google 和 OpenAI-compatible 渠道，并按厂商原生协议同步模型。</p>
         </div>
         <button disabled={Object.values(busy).some(Boolean)} onClick={loadData}>
           重新加载
@@ -350,6 +364,21 @@ export default function AiAdminApp() {
             />
           </label>
           <label>
+            <span>渠道类型</span>
+            <select
+              value={newChannel.type}
+              onChange={(event) =>
+                setNewChannel((current) => ({ ...current, type: event.target.value as ChannelType }))
+              }
+            >
+              {channelTypes.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
             <span>Base URL</span>
             <input
               value={newChannel.baseUrl}
@@ -399,6 +428,19 @@ export default function AiAdminApp() {
                     value={channel.name}
                     onChange={(event) => updateChannelDraft(channel.id, { name: event.target.value })}
                   />
+                </label>
+                <label>
+                  <span>渠道类型</span>
+                  <select
+                    value={channel.type}
+                    onChange={(event) => updateChannelDraft(channel.id, { type: event.target.value as ChannelType })}
+                  >
+                    {channelTypes.map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
                 </label>
                 <label>
                   <span>Base URL</span>

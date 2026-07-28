@@ -449,108 +449,110 @@ export default function App({ basename: _basename }: { basename?: string }) {
             <div className="panel muted">暂无数据源，点击「新增数据源」开始配置。</div>
           </div>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th style={{ width: 76 }}>状态</th>
-                <th>名称</th>
-                <th style={{ width: 86 }}>类型</th>
-                <th style={{ width: 86 }}>环境</th>
-                <th>地址 / DB</th>
-                <th style={{ width: 96 }}>延迟</th>
-                <th style={{ width: 160 }}>上次检查</th>
-                <th style={{ width: 160, textAlign: 'right' }}>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {assets.map((item) => {
-                const selected = item.id && item.id === selectedAssetId;
-                const addr = buildAssetAddress(item);
-                return (
-                  <tr
-                    key={item.id ?? item.name}
-                    className={selected ? 'selected' : ''}
-                    onClick={() => selectAssetRow(item)}
-                  >
-                    <td>
-                      <span className={statusClass(item.lastStatus)}></span>
-                      <span style={{ marginLeft: 8 }}>{item.lastStatus}</span>
-                    </td>
-                    <td>
-                      <div className="ellipsis" title={item.name}>
-                        {item.name}
-                      </div>
-                      {item.tags && (
-                        <div className="sub ellipsis" title={item.tags}>
-                          {item.tags}
+          <div className="data-table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 76 }}>状态</th>
+                  <th>名称</th>
+                  <th style={{ width: 86 }}>类型</th>
+                  <th style={{ width: 86 }}>环境</th>
+                  <th>地址 / DB</th>
+                  <th style={{ width: 96 }}>延迟</th>
+                  <th style={{ width: 160 }}>上次检查</th>
+                  <th style={{ width: 160, textAlign: 'right' }}>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {assets.map((item) => {
+                  const selected = item.id && item.id === selectedAssetId;
+                  const addr = buildAssetAddress(item);
+                  return (
+                    <tr
+                      key={item.id ?? item.name}
+                      className={selected ? 'selected' : ''}
+                      onClick={() => selectAssetRow(item)}
+                    >
+                      <td>
+                        <span className={statusClass(item.lastStatus)}></span>
+                        <span style={{ marginLeft: 8 }}>{item.lastStatus}</span>
+                      </td>
+                      <td>
+                        <div className="ellipsis" title={item.name}>
+                          {item.name}
                         </div>
-                      )}
-                    </td>
-                    <td>
-                      <span className={badgeClass(item.type)}>{item.type}</span>
-                    </td>
-                    <td>{item.environment}</td>
-                    <td>
-                      {item.connectionUri && (
-                        <div className="mono ellipsis" title={item.connectionUri}>
-                          {item.connectionUri}
+                        {item.tags && (
+                          <div className="sub ellipsis" title={item.tags}>
+                            {item.tags}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <span className={badgeClass(item.type)}>{item.type}</span>
+                      </td>
+                      <td>{item.environment}</td>
+                      <td>
+                        {item.connectionUri && (
+                          <div className="mono ellipsis" title={item.connectionUri}>
+                            {item.connectionUri}
+                          </div>
+                        )}
+                        {item.host && (
+                          <div className="mono ellipsis" title={item.host}>
+                            {item.host}
+                          </div>
+                        )}
+                        <div className="sub">{item.port}</div>
+                        <div className="sub">{item.databaseName}</div>
+                      </td>
+                      <td className="mono">{item.lastLatencyMs}</td>
+                      <td className="mono">{item.lastCheckedAt}</td>
+                      <td>
+                        <div className="cell-actions">
+                          <button
+                            className="link"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              copyToClipboard(addr, '已复制连接信息');
+                            }}
+                          >
+                            复制
+                          </button>
+                          <button
+                            className="link"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              testConnection(item);
+                            }}
+                          >
+                            测试连接
+                          </button>
+                          <button
+                            className="link"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEdit(item);
+                            }}
+                          >
+                            编辑
+                          </button>
+                          <button
+                            className="link"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeAsset(item);
+                            }}
+                          >
+                            删除
+                          </button>
                         </div>
-                      )}
-                      {item.host && (
-                        <div className="mono ellipsis" title={item.host}>
-                          {item.host}
-                        </div>
-                      )}
-                      <div className="sub">{item.port}</div>
-                      <div className="sub">{item.databaseName}</div>
-                    </td>
-                    <td className="mono">{item.lastLatencyMs}</td>
-                    <td className="mono">{item.lastCheckedAt}</td>
-                    <td>
-                      <div className="cell-actions">
-                        <button
-                          className="link"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            copyToClipboard(addr, '已复制连接信息');
-                          }}
-                        >
-                          复制
-                        </button>
-                        <button
-                          className="link"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            testConnection(item);
-                          }}
-                        >
-                          测试连接
-                        </button>
-                        <button
-                          className="link"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            startEdit(item);
-                          }}
-                        >
-                          编辑
-                        </button>
-                        <button
-                          className="link"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeAsset(item);
-                          }}
-                        >
-                          删除
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     );

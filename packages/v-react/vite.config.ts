@@ -52,8 +52,13 @@ export default defineConfig(({ mode }) => {
           chunkFileNames: 'chunks/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash][extname]',
           manualChunks(id) {
-            if (id.includes('node_modules')) {
-              return 'vendor';
+            if (
+              id.includes('/node_modules/react/') ||
+              id.includes('/node_modules/react-dom/') ||
+              id.includes('/node_modules/react-router') ||
+              id.includes('/node_modules/@ice/stark')
+            ) {
+              return 'react-core';
             }
           },
         },

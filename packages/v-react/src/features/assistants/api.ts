@@ -1,4 +1,6 @@
 import client from '../db-ops/http/client';
+export { knowledgeApi } from '../knowledge-bases/api';
+export type { KnowledgeBase, KnowledgeDocument, KnowledgeSearchResult } from '../knowledge-bases/api';
 
 export type Assistant = {
   id: string;
@@ -27,42 +29,6 @@ export type Model = { id: string };
 export type Memory = { id: string; content: string; createdAt: string; updatedAt: string };
 export type Conversation = { id: string; title?: string | null; createdAt: string; updatedAt: string };
 export type Message = { id: string; role: 'user' | 'assistant'; content: string; createdAt: string };
-export type KnowledgeBase = {
-  id: string;
-  name: string;
-  description?: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
-export type KnowledgeDocument = {
-  id: string;
-  knowledgeBaseId: string;
-  title: string;
-  content: string;
-  status: 'pending' | 'processing' | 'ready' | 'failed';
-  chunkCount: number;
-  contentHash?: string | null;
-  ingestVersion: number;
-  embeddingStatus: 'not_configured' | 'ready' | 'failed';
-  embeddingModel?: string | null;
-  ingestionError?: string | null;
-  indexedAt?: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
-export type KnowledgeSearchResult = {
-  citation: string;
-  knowledgeBaseId: string;
-  documentId: string;
-  chunkId: string;
-  title: string;
-  chunkIndex: number;
-  charStart: number;
-  charEnd: number;
-  score: number;
-  content: string;
-};
-
 const unwrap = <T>(payload: unknown): T => {
   if (payload && typeof payload === 'object' && 'data' in payload) return (payload as { data: T }).data;
   return payload as T;
@@ -101,23 +67,4 @@ export const assistantApi = {
     form.append('file', recording, `recording.${recording.type.includes('ogg') ? 'ogg' : 'webm'}`);
     return post<{ text: string }>(`/ai/assistants/${id}/transcribe`, form);
   },
-};
-
-export const knowledgeApi = {
-  list: () => get<KnowledgeBase[]>('/ai/knowledge-bases'),
-  create: (body: { name: string; description?: string }) => post<KnowledgeBase>('/ai/knowledge-bases', body),
-  update: (id: string, body: { name?: string; description?: string }) =>
-    patch<KnowledgeBase>(`/ai/knowledge-bases/${id}`, body),
-  remove: (id: string) => remove<{ success: boolean }>(`/ai/knowledge-bases/${id}`),
-  documents: (id: string) => get<KnowledgeDocument[]>(`/ai/knowledge-bases/${id}/documents`),
-  createDocument: (id: string, body: { title: string; content: string }) =>
-    post<KnowledgeDocument>(`/ai/knowledge-bases/${id}/documents`, body),
-  updateDocument: (id: string, documentId: string, body: { title?: string; content?: string }) =>
-    patch<KnowledgeDocument>(`/ai/knowledge-bases/${id}/documents/${documentId}`, body),
-  removeDocument: (id: string, documentId: string) =>
-    remove<{ success: boolean }>(`/ai/knowledge-bases/${id}/documents/${documentId}`),
-  reindexDocument: (id: string, documentId: string) =>
-    post<KnowledgeDocument>(`/ai/knowledge-bases/${id}/documents/${documentId}/reindex`),
-  search: (id: string, query: string, topK = 8) =>
-    post<KnowledgeSearchResult[]>(`/ai/knowledge-bases/${id}/search`, { query, topK }),
 };

@@ -8,6 +8,26 @@ export type AgentSkill = {
   description?: string | null;
   instructions: string;
   enabled: boolean;
+  reviewStatus?: 'approved' | 'pending';
+  source?: {
+    type: 'content' | 'url' | 'github';
+    url?: string;
+    finalUrl?: string;
+    ref?: string;
+    path?: string;
+    contentHash: string;
+    syncedAt: string;
+    status: 'synced' | 'failed';
+    error?: string;
+    frontmatter: {
+      name: string;
+      description: string;
+      license?: string;
+      compatibility?: string;
+      metadata?: Record<string, string>;
+      allowedTools?: string;
+    };
+  } | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -25,6 +45,9 @@ export type AgentMcpServer = {
   approvalRequiredTools?: string[] | null;
   enabled: boolean;
   hasSecrets: boolean;
+  sourceType: 'manual' | 'json';
+  sourceName?: string;
+  importedAt?: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -90,10 +113,97 @@ export type CreateAgentRunInput = {
   input: string;
   threadId?: string;
   idempotencyKey?: string;
+  channelId?: number;
+  model?: string;
   skillIds: string[];
   knowledgeBaseIds: string[];
   mcpServerIds: string[];
   approvedToolKeys: string[];
+};
+
+export type AgentTaskStep = {
+  id: string;
+  title: string;
+  description: string;
+  kind: 'requirements' | 'inspect' | 'execute' | 'verify' | 'deliver';
+};
+
+export type AgentTaskMaterialRequirement = {
+  key: string;
+  label: string;
+  description: string;
+};
+
+export type AgentTaskApprovalRequest = {
+  approvalId: string;
+  kind: 'mcp_tool' | 'ssh_operation';
+  title: string;
+  description: string;
+  toolKey: string;
+  serverId: string;
+  serverCode: string;
+  toolName: string;
+  risk: 'write' | 'execute' | 'external';
+};
+
+export type AgentTaskPlan = {
+  version: 1;
+  goal: string;
+  summary: string;
+  steps: AgentTaskStep[];
+  missingMaterials: AgentTaskMaterialRequirement[];
+  approvalRequests: AgentTaskApprovalRequest[];
+  risks: string[];
+  capabilityWarnings: string[];
+  selected: {
+    skillIds: string[];
+    knowledgeBaseIds: string[];
+    mcpServerIds: string[];
+    channelId?: number;
+    model?: string;
+    workspace?: {
+      provider: 'elderberry-ssh';
+      directory: string;
+    };
+  };
+  workspaceProbe?: Record<string, unknown>;
+  planner: {
+    source: 'model' | 'fallback';
+    model?: string;
+    channelName?: string;
+  };
+};
+
+export type AgentTask = {
+  run: AgentRun;
+  plan: AgentTaskPlan;
+  state: 'waiting_for_input' | 'waiting_for_approval' | 'ready' | 'running' | 'completed' | 'failed' | 'cancelled';
+  missingMaterials: AgentTaskMaterialRequirement[];
+  pendingApprovals: AgentTaskApprovalRequest[];
+  approvalDecisions: Record<string, { approved: boolean; note?: string }>;
+  providedMaterialKeys: string[];
+  inputs: Record<string, string>;
+};
+
+export type CreateAgentTaskPlanInput = {
+  goal: string;
+  context?: string;
+  idempotencyKey?: string;
+  threadId?: string;
+  channelId?: number;
+  model?: string;
+  workspaceProvider?: 'elderberry-ssh';
+  workspaceDirectory?: string;
+  materials?: Array<{
+    key: string;
+    label: string;
+    value?: string;
+    required?: boolean;
+    description?: string;
+  }>;
+  skillIds: string[];
+  knowledgeBaseIds: string[];
+  mcpServerIds: string[];
 };
 
 export type AgentEvaluation = {
@@ -126,6 +236,11 @@ export type McpTestResult = {
   }>;
 };
 
+export type ImportMcpServersResult = {
+  created: AgentMcpServer[];
+  skipped: Array<{ name: string; reason: string }>;
+};
+
 const unwrap = <T>(payload: unknown): T =>
   (payload && typeof payload === 'object' && 'data' in payload ? (payload as { data: T }).data : payload) as T;
 
@@ -144,21 +259,7 @@ const responseError = async (response: Response) => {
   return new Error(typeof candidate === 'string' && candidate ? candidate : `请求失败，状态码 ${response.status}`);
 };
 
-const streamRun = async (
-  data: CreateAgentRunInput,
-  onEvent: (event: AgentRunEvent) => void,
-  signal?: AbortSignal,
-): Promise<AgentRun> => {
-  const response = await fetch(`${apiBaseUrl}/v1/agent/runs/stream`, {
-    method: 'POST',
-    credentials: 'include',
-    signal,
-    headers: {
-      'Content-Type': 'application/json',
-      ...apiRequestHeaders(),
-    },
-    body: JSON.stringify(data),
-  });
+const consumeRunStream = async (response: Response, onEvent: (event: AgentRunEvent) => void): Promise<AgentRun> => {
   if (!response.ok) throw await responseError(response);
   if (!response.body) throw new Error('浏览器未提供 Agent 事件流');
 
@@ -199,15 +300,53 @@ const streamRun = async (
   return result;
 };
 
+const streamRun = async (
+  data: CreateAgentRunInput,
+  onEvent: (event: AgentRunEvent) => void,
+  signal?: AbortSignal,
+): Promise<AgentRun> => {
+  const response = await fetch(`${apiBaseUrl}/v1/agent/runs/stream`, {
+    method: 'POST',
+    credentials: 'include',
+    signal,
+    headers: {
+      'Content-Type': 'application/json',
+      ...apiRequestHeaders(),
+    },
+    body: JSON.stringify(data),
+  });
+  return consumeRunStream(response, onEvent);
+};
+
+const streamTaskResume = async (id: string, onEvent: (event: AgentRunEvent) => void, signal?: AbortSignal) => {
+  const response = await fetch(`${apiBaseUrl}/v1/agent/tasks/${id}/resume/stream`, {
+    method: 'POST',
+    credentials: 'include',
+    signal,
+    headers: apiRequestHeaders(),
+  });
+  return consumeRunStream(response, onEvent);
+};
+
 export const agentPlatformService = {
   capabilities: () => request<unknown>('/v1/agent/capabilities'),
   listSkills: () => request<AgentSkill[]>('/v1/agent/skills'),
   createSkill: (data: Omit<AgentSkill, 'id' | 'createdAt' | 'updatedAt'>) =>
     request<AgentSkill>('/v1/agent/skills', 'POST', data),
+  importSkill: (data: {
+    sourceType: 'content' | 'url' | 'github';
+    content?: string;
+    url?: string;
+    ref?: string;
+    path?: string;
+  }) => request<AgentSkill>('/v1/agent/skills/import', 'POST', data),
+  refreshSkill: (id: string) => request<AgentSkill>(`/v1/agent/skills/${id}/refresh`, 'POST'),
   updateSkill: (id: string, data: Partial<AgentSkill>) => request<AgentSkill>(`/v1/agent/skills/${id}`, 'PATCH', data),
   deleteSkill: (id: string) => request<{ success: boolean }>(`/v1/agent/skills/${id}`, 'DELETE'),
   listMcpServers: () => request<AgentMcpServer[]>('/v1/agent/mcp-servers'),
   createMcpServer: (data: Record<string, unknown>) => request<AgentMcpServer>('/v1/agent/mcp-servers', 'POST', data),
+  importMcpServers: (data: { sourceName: string; config: Record<string, unknown> }) =>
+    request<ImportMcpServersResult>('/v1/agent/mcp-servers/import', 'POST', data),
   updateMcpServer: (id: string, data: Record<string, unknown>) =>
     request<AgentMcpServer>(`/v1/agent/mcp-servers/${id}`, 'PATCH', data),
   deleteMcpServer: (id: string) => request<{ success: boolean }>(`/v1/agent/mcp-servers/${id}`, 'DELETE'),
@@ -221,6 +360,28 @@ export const agentPlatformService = {
   listEvaluations: (id: string) => request<AgentEvaluation[]>(`/v1/agent/runs/${id}/evaluations`),
   evaluateRun: (id: string, data: Record<string, unknown>) =>
     request<AgentEvaluation>(`/v1/agent/runs/${id}/evaluations`, 'POST', data),
+  workspaceGuides: () => request<Record<string, unknown>>('/v1/agent/tasks/workspace-guides'),
+  listWorkspaces: () =>
+    request<
+      Array<{
+        provider: 'elderberry-ssh';
+        name: string;
+        target: string;
+        defaultDirectory: string;
+        allowedRoots: string[];
+        capability: Record<string, unknown>;
+      }>
+    >('/v1/agent/tasks/workspaces'),
+  probeWorkspace: (provider: 'elderberry-ssh', directory?: string) =>
+    request<Record<string, unknown>>(`/v1/agent/tasks/workspaces/${provider}/probe`, 'POST', { directory }),
+  planTask: (data: CreateAgentTaskPlanInput) => request<AgentTask>('/v1/agent/tasks/plan', 'POST', data),
+  getTask: (id: string) => request<AgentTask>(`/v1/agent/tasks/${id}`),
+  submitTaskInput: (id: string, materials: Array<{ key: string; value: string }>) =>
+    request<AgentTask>(`/v1/agent/tasks/${id}/input`, 'POST', { materials }),
+  submitTaskApprovals: (id: string, decisions: Array<{ approvalId: string; approved: boolean; note?: string }>) =>
+    request<AgentTask>(`/v1/agent/tasks/${id}/approvals`, 'POST', { decisions }),
+  resumeTask: (id: string) => request<AgentRun>(`/v1/agent/tasks/${id}/resume`, 'POST'),
   run: (data: CreateAgentRunInput) => request<AgentRun>('/v1/agent/runs', 'POST', data),
   streamRun,
+  streamTaskResume,
 };

@@ -14,7 +14,7 @@ export const builtInAsideMenus: MenuItem[] = [
   // 业务菜单仅为兜底；实际显示以后端返回为准
   { name: '一起看', path: '/app/watch-together', i18nKey: 'menu.watchTogether' },
   {
-    name: '账号保险库',
+    name: '账号管理',
     path: '/app/account-vault',
     requiresAuth: true,
     i18nKey: 'menu.accountVault',

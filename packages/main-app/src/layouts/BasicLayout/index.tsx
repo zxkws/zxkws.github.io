@@ -3,8 +3,9 @@ import CommandPalette, { type CommandItem } from '../../components/CommandPalett
 import PageLoading from '../../components/PageLoading';
 import { useUser } from '../../context/UserContext';
 import { useLanguage } from '../../i18n';
-import { fetchRemoteMenus } from '../../services/menuService';
+import { fetchRemoteMenus, mergeMenuTrees } from '../../services/menuService';
 import type { MenuItem } from '../../types/menu';
+import { isPublicPath } from '../../utils/publicRoutes';
 import { clearPwaCachesAndReload } from '../../utils/pwa';
 import HeaderBar from './components/HeaderBar';
 import PageNav from './components/PageNav';
@@ -25,7 +26,8 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
     const isAdmin = user?.role === 'admin' || user?.roles?.includes('admin');
     const filterMenus = (items: MenuItem[]): MenuItem[] =>
       items.flatMap((item) => {
-        if (item.visible === false || (item.requiresAuth && !user) || (item.adminOnly && !isAdmin)) return [];
+        if (item.path === '/' || item.visible === false || (item.requiresAuth && !user) || (item.adminOnly && !isAdmin))
+          return [];
         const nestedItems = item.children ? filterMenus(item.children) : undefined;
         return [{ ...item, children: nestedItems }];
       });
@@ -33,17 +35,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
   }, [menus, user]);
 
   const isPortalRoute = pathname === '/';
-  const isPublicRoute =
-    isPortalRoute ||
-    pathname === '/chess-mirror' ||
-    pathname.startsWith('/chess-mirror/') ||
-    pathname.startsWith('/tools/') ||
-    pathname === '/app/watch-together' ||
-    pathname === '/textdiff' ||
-    pathname === '/v-app/text-difference' ||
-    pathname.startsWith('/v-app/text-difference/') ||
-    pathname === '/v-app/json-viewer' ||
-    pathname.startsWith('/v-app/json-viewer/');
+  const isPublicRoute = isPublicPath(pathname);
 
   const commandItems = useMemo<CommandItem[]>(() => {
     const flatten = (items: MenuItem[], prefix: string[] = []) => {
@@ -136,22 +128,15 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
           setMenus(builtInAsideMenus);
           return;
         }
-        const next = [...remote];
-        const existingPaths = new Set(next.map((item) => item.path).filter(Boolean));
-        builtInAsideMenus
-          .filter(
-            (item) =>
-              item.path &&
-              !existingPaths.has(item.path) &&
-              (item.external ||
-                item.path === '/app/security-center' ||
-                item.path === '/app/account-vault' ||
-                (item.adminOnly && (user.role === 'admin' || user.roles?.includes('admin')))),
-          )
-          .forEach((item) => {
-            next.push(item);
-          });
-        setMenus(next);
+        const isAdmin = user.role === 'admin' || user.roles?.includes('admin');
+        const fallback = builtInAsideMenus.filter(
+          (item) =>
+            item.external ||
+            item.path === '/app/security-center' ||
+            item.path === '/app/account-vault' ||
+            (item.adminOnly && isAdmin),
+        );
+        setMenus(mergeMenuTrees(remote, fallback));
       })
       .catch(() => {
         if (mounted) setMenus(builtInAsideMenus);

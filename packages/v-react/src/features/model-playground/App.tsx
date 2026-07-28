@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getErrorStatus } from '@zxkws/shared-fetch';
 import client from '../db-ops/http/client';
+import { type AgentRunEvent, type AgentRunResult, streamAgentRun } from './agent-runtime';
 import './styles.css';
 
 type AuthState = 'pending' | 'ok' | 'need-login' | 'forbidden' | 'error';
@@ -17,6 +18,26 @@ type AiChannel = {
   baseUrl: string;
   enabled: boolean;
   models: AiModel[];
+};
+
+type AgentSkill = {
+  id: string;
+  name: string;
+  code: string;
+  enabled: boolean;
+};
+
+type AgentMcpServer = {
+  id: string;
+  name: string;
+  code: string;
+  enabled: boolean;
+  allowedTools?: string[] | null;
+};
+
+type KnowledgeBase = {
+  id: string;
+  name: string;
 };
 
 type DebugResult = {
@@ -39,6 +60,8 @@ type HistoryItem = {
   role: 'user' | 'assistant';
   content: string;
   result?: DebugResult;
+  agentRun?: AgentRunResult;
+  agentEvents?: AgentRunEvent[];
 };
 
 const capabilityOptions: Array<[Capability, string]> = [
@@ -77,6 +100,9 @@ const assistantContent = (raw: string) => {
   }
 };
 
+const toggleId = (values: string[], id: string) =>
+  values.includes(id) ? values.filter((item) => item !== id) : [...values, id];
+
 export default function ModelPlaygroundApp() {
   const [authState, setAuthState] = useState<AuthState>('pending');
   const [channels, setChannels] = useState<AiChannel[]>([]);
@@ -95,6 +121,17 @@ export default function ModelPlaygroundApp() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
+  const [modelsLoading, setModelsLoading] = useState(false);
+  const [modelsStatus, setModelsStatus] = useState('');
+  const [skills, setSkills] = useState<AgentSkill[]>([]);
+  const [mcpServers, setMcpServers] = useState<AgentMcpServer[]>([]);
+  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
+  const [skillIds, setSkillIds] = useState<string[]>([]);
+  const [mcpServerIds, setMcpServerIds] = useState<string[]>([]);
+  const [knowledgeBaseIds, setKnowledgeBaseIds] = useState<string[]>([]);
+  const [approvedToolKeys, setApprovedToolKeys] = useState<string[]>([]);
+  const [liveAgentEvents, setLiveAgentEvents] = useState<AgentRunEvent[]>([]);
+  const streamController = useRef<AbortController | null>(null);
 
   const loadChannels = useCallback(async () => {
     const payload = await client('/ai/admin/channels', undefined, { method: 'GET' });
@@ -120,31 +157,73 @@ export default function ModelPlaygroundApp() {
           return;
         }
         setAuthState('ok');
-        await loadChannels();
+        const [skillPayload, mcpPayload, knowledgePayload] = await Promise.all([
+          client('/v1/agent/skills', undefined, { method: 'GET' }),
+          client('/v1/agent/mcp-servers', undefined, { method: 'GET' }),
+          client('/ai/knowledge-bases', undefined, { method: 'GET' }),
+          loadChannels(),
+        ]);
+        const skillRows = unwrap<AgentSkill[]>(skillPayload);
+        const mcpRows = unwrap<AgentMcpServer[]>(mcpPayload);
+        const knowledgeRows = unwrap<KnowledgeBase[]>(knowledgePayload);
+        setSkills(Array.isArray(skillRows) ? skillRows.filter((item) => item.enabled) : []);
+        setMcpServers(Array.isArray(mcpRows) ? mcpRows.filter((item) => item.enabled) : []);
+        setKnowledgeBases(Array.isArray(knowledgeRows) ? knowledgeRows : []);
       } catch (error) {
         const code = getErrorStatus(error);
         setAuthState(code === 401 ? 'need-login' : code === 403 ? 'forbidden' : 'error');
         setStatus(error instanceof Error ? error.message : String(error));
       }
     };
-    load();
+    void load();
+    return () => streamController.current?.abort();
   }, [loadChannels]);
 
   const channel = useMemo(() => channels.find((item) => item.id === channelId), [channelId, channels]);
   const models = useMemo(() => channel?.models || [], [channel]);
 
-  useEffect(() => {
-    if (!model && models.length) {
-      setCapability(inferCapability(models[0].id));
-      setModel(models[0].id);
+  const refreshModels = useCallback(async (selectedChannelId: number) => {
+    setModelsLoading(true);
+    setModelsStatus('');
+    try {
+      const payload = await client(`/ai/admin/channels/${selectedChannelId}/models/refresh`, undefined, {
+        method: 'POST',
+      });
+      const refreshed = unwrap<AiModel[]>(payload);
+      const nextModels = Array.isArray(refreshed)
+        ? refreshed.filter((item): item is AiModel => Boolean(item) && typeof item.id === 'string')
+        : [];
+      setChannels((current) =>
+        current.map((item) => (item.id === selectedChannelId ? { ...item, models: nextModels } : item)),
+      );
+      setModel((current) => {
+        if (current || !nextModels.length) return current;
+        setCapability(inferCapability(nextModels[0].id));
+        return nextModels[0].id;
+      });
+      setModelsStatus(`查询到 ${nextModels.length} 个模型`);
+    } catch (error) {
+      setModelsStatus(error instanceof Error ? error.message : String(error));
+    } finally {
+      setModelsLoading(false);
     }
-  }, [channelId, models]);
+  }, []);
+
+  useEffect(() => {
+    if (!channelId) {
+      setModelsStatus('');
+      return;
+    }
+    void refreshModels(channelId);
+  }, [channelId, refreshModels]);
 
   const chooseModel = (next: string) => {
     setModel(next);
     setCapability(inferCapability(next));
     setHistory([]);
   };
+
+  const usesAgentRuntime = skillIds.length > 0 || mcpServerIds.length > 0 || knowledgeBaseIds.length > 0;
 
   const send = async () => {
     if (!channelId || !model || !input || busy) return;
@@ -154,7 +233,43 @@ export default function ModelPlaygroundApp() {
     setInput('');
     const userItem: HistoryItem = { id: Date.now(), role: 'user', content: currentInput };
     setHistory((current) => [...current, userItem]);
+    setLiveAgentEvents([]);
     try {
+      if (usesAgentRuntime) {
+        if (capability !== 'text') throw new Error('Skills、MCP 和知识库目前用于文本 Agent，请切换到文本对话');
+        const controller = new AbortController();
+        streamController.current = controller;
+        const events: AgentRunEvent[] = [];
+        const agentRun = await streamAgentRun(
+          {
+            input: [systemPrompt ? `角色设定：${systemPrompt}` : '', currentInput].filter(Boolean).join('\n\n'),
+            channelId,
+            model,
+            skillIds,
+            mcpServerIds,
+            knowledgeBaseIds,
+            approvedToolKeys,
+          },
+          (event) => {
+            if (event.type === 'stream.end' || event.type === 'stream.result') return;
+            events.push(event);
+            setLiveAgentEvents([...events]);
+          },
+          controller.signal,
+        );
+        setHistory((current) => [
+          ...current,
+          {
+            id: Date.now() + 1,
+            role: 'assistant',
+            content: agentRun.output || agentRun.error || '',
+            agentRun,
+            agentEvents: events,
+          },
+        ]);
+        setLiveAgentEvents([]);
+        return;
+      }
       const result = unwrap<DebugResult>(
         await client(
           `/ai/admin/channels/${channelId}/models/debug`,
@@ -193,6 +308,7 @@ export default function ModelPlaygroundApp() {
       setStatus(error instanceof Error ? error.message : String(error));
       setInput(currentInput);
     } finally {
+      streamController.current = null;
       setBusy(false);
     }
   };
@@ -220,6 +336,7 @@ export default function ModelPlaygroundApp() {
               onClick={() => {
                 setChannelId(item.id);
                 setModel('');
+                setModelsStatus('');
                 setHistory([]);
               }}
             >
@@ -253,6 +370,7 @@ export default function ModelPlaygroundApp() {
             onChange={(event) => {
               setChannelId(event.target.value ? Number(event.target.value) : '');
               setModel('');
+              setModelsStatus('');
               setHistory([]);
             }}
           >
@@ -267,12 +385,29 @@ export default function ModelPlaygroundApp() {
 
         <label>
           <span>模型选择</span>
-          <input list="playground-models" value={model} onChange={(event) => chooseModel(event.target.value)} />
-          <datalist id="playground-models">
-            {models.map((item) => (
-              <option key={item.id} value={item.id} />
-            ))}
-          </datalist>
+          <div className="model-picker">
+            <input
+              list="model-query-results"
+              value={model}
+              placeholder={models.length ? '输入关键字查询或选择模型，也可手动填写' : '可手动输入模型 ID'}
+              onChange={(event) => chooseModel(event.target.value)}
+            />
+            <datalist id="model-query-results">
+              {models.map((item) => (
+                <option key={item.id} value={item.id} />
+              ))}
+            </datalist>
+            <button
+              type="button"
+              disabled={!channelId || modelsLoading}
+              onClick={() => {
+                if (channelId) void refreshModels(channelId);
+              }}
+            >
+              {modelsLoading ? '查询中…' : '查询模型'}
+            </button>
+            {modelsStatus ? <small>{modelsStatus}</small> : null}
+          </div>
         </label>
 
         <label>
@@ -285,6 +420,76 @@ export default function ModelPlaygroundApp() {
             ))}
           </select>
         </label>
+
+        <section className="agent-capabilities">
+          <div>
+            <strong>Agent 能力</strong>
+            <small>选中任意能力后，本次文本调试将通过 LangGraph Agent 真实执行。</small>
+          </div>
+
+          <fieldset>
+            <legend>Skills</legend>
+            {skills.map((item) => (
+              <label key={item.id}>
+                <input
+                  type="checkbox"
+                  checked={skillIds.includes(item.id)}
+                  onChange={() => setSkillIds((current) => toggleId(current, item.id))}
+                />
+                <span>{item.name}</span>
+                <code>{item.code}</code>
+              </label>
+            ))}
+            {!skills.length && <small>暂无已启用 Skill，可到 Agent 平台创建或导入。</small>}
+          </fieldset>
+
+          <fieldset>
+            <legend>MCP Servers</legend>
+            {mcpServers.map((item) => (
+              <div className="agent-capability-row" key={item.id}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={mcpServerIds.includes(item.id)}
+                    onChange={() => setMcpServerIds((current) => toggleId(current, item.id))}
+                  />
+                  <span>{item.name}</span>
+                  <code>{item.code}</code>
+                </label>
+                {mcpServerIds.includes(item.id) &&
+                  (item.allowedTools || []).map((tool) => {
+                    const toolKey = `${item.id}:${tool}`;
+                    return (
+                      <label className="tool-approval" key={toolKey}>
+                        <input
+                          type="checkbox"
+                          checked={approvedToolKeys.includes(toolKey)}
+                          onChange={() => setApprovedToolKeys((current) => toggleId(current, toolKey))}
+                        />
+                        <span>本次批准 {tool}</span>
+                      </label>
+                    );
+                  })}
+              </div>
+            ))}
+            {!mcpServers.length && <small>暂无已启用 MCP Server，可到 Agent 平台创建或导入。</small>}
+          </fieldset>
+
+          <fieldset>
+            <legend>知识库</legend>
+            {knowledgeBases.map((item) => (
+              <label key={item.id}>
+                <input
+                  type="checkbox"
+                  checked={knowledgeBaseIds.includes(item.id)}
+                  onChange={() => setKnowledgeBaseIds((current) => toggleId(current, item.id))}
+                />
+                <span>{item.name}</span>
+              </label>
+            ))}
+            {!knowledgeBases.length && <small>暂无知识库。</small>}
+          </fieldset>
+        </section>
 
         {(capability === 'text' || capability === 'vision') && (
           <>
@@ -427,9 +632,30 @@ export default function ModelPlaygroundApp() {
                   <span>byteLength: {item.result.byteLength}</span>
                 </div>
               )}
+              {item.agentRun && (
+                <div className="response-meta">
+                  <span>status: {item.agentRun.status}</span>
+                  <span>channelName: {item.agentRun.channelName}</span>
+                  <span>model: {item.agentRun.model}</span>
+                </div>
+              )}
+              {item.agentEvents?.length ? (
+                <details className="agent-events">
+                  <summary>运行事件 {item.agentEvents.length}</summary>
+                  {item.agentEvents.map((event, index) => (
+                    <pre key={`${event.id || index}-${event.type}`}>{JSON.stringify(event, null, 2)}</pre>
+                  ))}
+                </details>
+              ) : null}
             </article>
           ))}
-          {busy && <div className="debug-pending">模型处理中...</div>}
+          {busy && (
+            <div className="debug-pending">
+              {liveAgentEvents.length
+                ? liveAgentEvents.map((event) => event.message || event.type).join('\n')
+                : '模型处理中...'}
+            </div>
+          )}
         </div>
 
         <div className="debug-composer">
