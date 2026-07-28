@@ -23,7 +23,7 @@ type DbAsset = {
   lastStatus?: string;
   lastLatencyMs?: number;
   lastMessage?: string;
-  lastCheckedAt?: string | Date;
+  lastCheckedAt?: string;
   cts?: string;
   uts?: string;
 };
@@ -32,7 +32,7 @@ type UserProfile = {
   userId: string;
   username: string;
   role?: string; // 兼容旧字段
-  roles?: string[]; // 新结构，可能是字符串数组
+  roles?: Array<string | { code?: string }>;
 };
 
 type AuthState = 'pending' | 'ok' | 'need-login' | 'forbidden' | 'error';
@@ -57,12 +57,6 @@ const initialForm: DbAsset = {
   description: '',
 };
 
-const formatTime = (value?: string | Date) => {
-  if (!value) return '--';
-  const date = typeof value === 'string' ? new Date(value) : value;
-  return date.toLocaleString('zh-CN');
-};
-
 const badgeClass = (type: DbType | string) => {
   switch (type) {
     case 'mysql':
@@ -83,7 +77,7 @@ const statusClass = (status?: string) => {
 };
 
 const maskSecret = (value?: string) => {
-  if (!value) return '--';
+  if (!value) return '';
   return value.length <= 3 ? '***' : `${value.slice(0, 2)}***${value.slice(-1)}`;
 };
 
@@ -94,21 +88,6 @@ const buildAssetAddress = (asset: DbAsset) => {
   const portPart = asset.port ? `:${asset.port}` : '';
   const dbPart = asset.databaseName ? `/${asset.databaseName}` : '';
   return `${host}${portPart}${dbPart}`;
-};
-
-const maskAddressForDisplay = (address: string) => {
-  if (!address) return address;
-  const schemeIndex = address.indexOf('://');
-  if (schemeIndex < 0) return address;
-  const afterScheme = address.slice(schemeIndex + 3);
-  const atIndex = afterScheme.indexOf('@');
-  if (atIndex < 0) return address;
-  const auth = afterScheme.slice(0, atIndex);
-  const rest = afterScheme.slice(atIndex);
-  const colonIndex = auth.indexOf(':');
-  if (colonIndex < 0) return address;
-  const user = auth.slice(0, colonIndex);
-  return `${address.slice(0, schemeIndex + 3)}${user}:***${rest}`;
 };
 
 const LIST_DEBOUNCE = 300;
@@ -152,7 +131,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
       const data = unwrap<DbAsset[]>(await client('/v1/db-assets/list', payload));
       // 丢弃过期响应，避免旧关键词覆盖最新列表
       if (seq !== listSeqRef.current) return;
-      setAssets(data);
+      setAssets(Array.isArray(data) ? data : []);
     } catch (err) {
       if (seq !== listSeqRef.current) return;
       if (getErrorStatus(err) === 401) {
@@ -173,7 +152,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
 
       const isAdmin =
         info.role === 'admin' ||
-        (Array.isArray(info.roles) && info.roles.find((item) => (item as any).code === 'admin'));
+        info.roles?.some((role) => (typeof role === 'string' ? role === 'admin' : role.code === 'admin'));
 
       if (!isAdmin) {
         setAuthState('forbidden');
@@ -487,7 +466,6 @@ export default function App({ basename: _basename }: { basename?: string }) {
               {assets.map((item) => {
                 const selected = item.id && item.id === selectedAssetId;
                 const addr = buildAssetAddress(item);
-                const displayAddr = maskAddressForDisplay(addr);
                 return (
                   <tr
                     key={item.id ?? item.name}
@@ -496,7 +474,7 @@ export default function App({ basename: _basename }: { basename?: string }) {
                   >
                     <td>
                       <span className={statusClass(item.lastStatus)}></span>
-                      <span style={{ marginLeft: 8, textTransform: 'uppercase' }}>{item.lastStatus ?? 'unknown'}</span>
+                      <span style={{ marginLeft: 8 }}>{item.lastStatus}</span>
                     </td>
                     <td>
                       <div className="ellipsis" title={item.name}>
@@ -511,16 +489,23 @@ export default function App({ basename: _basename }: { basename?: string }) {
                     <td>
                       <span className={badgeClass(item.type)}>{item.type}</span>
                     </td>
-                    <td>{item.environment ?? '--'}</td>
+                    <td>{item.environment}</td>
                     <td>
-                      <div className="mono ellipsis" title={displayAddr || '--'}>
-                        {displayAddr || '--'}
-                      </div>
+                      {item.connectionUri && (
+                        <div className="mono ellipsis" title={item.connectionUri}>
+                          {item.connectionUri}
+                        </div>
+                      )}
+                      {item.host && (
+                        <div className="mono ellipsis" title={item.host}>
+                          {item.host}
+                        </div>
+                      )}
+                      <div className="sub">{item.port}</div>
+                      <div className="sub">{item.databaseName}</div>
                     </td>
-                    <td className="mono">
-                      {typeof item.lastLatencyMs === 'number' ? `${item.lastLatencyMs}ms` : '--'}
-                    </td>
-                    <td className="mono">{formatTime(item.lastCheckedAt)}</td>
+                    <td className="mono">{item.lastLatencyMs}</td>
+                    <td className="mono">{item.lastCheckedAt}</td>
                     <td>
                       <div className="cell-actions">
                         <button
@@ -587,7 +572,6 @@ export default function App({ basename: _basename }: { basename?: string }) {
       }
 
       const addr = buildAssetAddress(selectedAsset);
-      const displayAddr = maskAddressForDisplay(addr);
       const secretOpen = selectedAsset.id ? secretVisible[selectedAsset.id] : false;
 
       return (
@@ -620,31 +604,29 @@ export default function App({ basename: _basename }: { basename?: string }) {
               <div className="k">状态</div>
               <div className="v">
                 <span className={statusClass(selectedAsset.lastStatus)}></span>
-                <span style={{ marginLeft: 8, textTransform: 'uppercase' }}>
-                  {selectedAsset.lastStatus ?? 'unknown'}
-                </span>
+                <span style={{ marginLeft: 8 }}>{selectedAsset.lastStatus}</span>
                 {typeof selectedAsset.lastLatencyMs === 'number' && (
                   <span className="mono" style={{ marginLeft: 8, color: 'var(--muted)' }}>
-                    {selectedAsset.lastLatencyMs}ms
+                    {selectedAsset.lastLatencyMs}
                   </span>
                 )}
               </div>
 
-              <div className="k">地址</div>
-              <div className="v">
-                <div className="mono ellipsis" title={displayAddr || '--'}>
-                  {displayAddr || '--'}
-                </div>
-              </div>
+              <div className="k">连接串</div>
+              <div className="v mono">{selectedAsset.connectionUri}</div>
+
+              <div className="k">主机</div>
+              <div className="v mono">{selectedAsset.host}</div>
+
+              <div className="k">端口</div>
+              <div className="v mono">{selectedAsset.port}</div>
 
               <div className="k">账号</div>
-              <div className="v">{selectedAsset.username || '--'}</div>
+              <div className="v">{selectedAsset.username}</div>
 
               <div className="k">密码</div>
               <div className="v">
-                <span className="mono">
-                  {secretOpen ? selectedAsset.password || '--' : maskSecret(selectedAsset.password)}
-                </span>
+                <span className="mono">{secretOpen ? selectedAsset.password : maskSecret(selectedAsset.password)}</span>
                 {selectedAsset.id && selectedAsset.password && (
                   <button className="link" onClick={() => toggleSecret(selectedAsset.id)} style={{ marginLeft: 10 }}>
                     {secretOpen ? '隐藏' : '显示'}
@@ -653,27 +635,27 @@ export default function App({ basename: _basename }: { basename?: string }) {
               </div>
 
               <div className="k">环境</div>
-              <div className="v">{selectedAsset.environment || '--'}</div>
+              <div className="v">{selectedAsset.environment}</div>
 
               <div className="k">库 / 命名空间</div>
-              <div className="v">{selectedAsset.databaseName || '--'}</div>
+              <div className="v">{selectedAsset.databaseName}</div>
 
               <div className="k">标签</div>
               <div className="v">
-                <div className="ellipsis" title={selectedAsset.tags || '--'}>
-                  {selectedAsset.tags || '--'}
+                <div className="ellipsis" title={selectedAsset.tags}>
+                  {selectedAsset.tags}
                 </div>
               </div>
 
               <div className="k">备注</div>
               <div className="v">
-                <div className="ellipsis" title={selectedAsset.description || '--'}>
-                  {selectedAsset.description || '--'}
+                <div className="ellipsis" title={selectedAsset.description}>
+                  {selectedAsset.description}
                 </div>
               </div>
 
               <div className="k">上次检查</div>
-              <div className="v mono">{formatTime(selectedAsset.lastCheckedAt)}</div>
+              <div className="v mono">{selectedAsset.lastCheckedAt}</div>
             </div>
 
             {selectedAsset.lastMessage && (

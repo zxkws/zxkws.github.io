@@ -1,121 +1,146 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="x-ua-compatible" content="ie=edge,chrome=1" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
-  />
-  <title>ZXKWS 开发者工具集</title>
-  <meta name="description"
-    content="ZXKWS 微前端工具集，集合文本对比、数据库管控、笔记等开发者常用工具。" />
-  <meta name="keywords"
-    content="ZXKWS, 微前端, 开发者工具, 数据库管控, 笔记, 文本差异对比" />
-  <meta name="theme-color" content="#0d1117" />
-  <meta name="color-scheme" content="light dark" />
-  <meta name="robots" content="index,follow,max-image-preview:large" />
-  <link rel="manifest" href="/manifest.json" />
-  <link rel="dns-prefetch" href="https://system.zxkws.nyc.mn" />
-  <link rel="preconnect" href="https://system.zxkws.nyc.mn" crossorigin />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="ZXKWS" />
-  <link rel="apple-touch-icon" href="/tech-favicon.svg" />
-  <link rel="icon" type="image/svg+xml" href="/tech-favicon.svg" />
-  <link rel="alternate icon" href="/favicon.ico" />
-  <link rel="canonical" href="/" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="ZXKWS 开发者工具集" />
-  <meta property="og:title" content="ZXKWS 开发者工具集" />
-  <meta property="og:description"
-    content="ZXKWS 微前端工具集，集合文本对比、数据库管控、笔记等开发者常用工具。" />
-  <meta property="og:url" content="/" />
-  <meta property="og:image" content="/tech-favicon.svg" />
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="ZXKWS 开发者工具集" />
-  <meta name="twitter:description"
-    content="ZXKWS 微前端工具集，集合文本对比、数据库管控、笔记等开发者常用工具。" />
-  <meta name="twitter:image" content="/tech-favicon.svg" />
-  <meta name="twitter:url" content="/" />
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "ZXKWS 开发者工具集",
-      "url": "/",
-      "inLanguage": "zh-CN",
-      "description": "ZXKWS 微前端工具集，集合文本对比、数据库管控、笔记等开发者常用工具。",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://www.google.com/search?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-  </script>
-  <script>
-    (() => {
-      const origin = window.location.origin;
-      const host = window.location.hostname;
-      const selectOrCreate = (selector, tag, attributes) => {
-        const existing = document.head.querySelector(selector);
-        if (existing) return existing;
-        const el = document.createElement(tag);
-        Object.entries(attributes || {}).forEach(([key, value]) => el.setAttribute(key, value));
-        document.head.appendChild(el);
-        return el;
-      };
-
-      const syncUrl = (path) => {
-        const canonicalUrl = origin.replace(/\/$/, '') + path;
-        selectOrCreate('link[rel="canonical"]', 'link', { rel: 'canonical' }).setAttribute('href', canonicalUrl);
-        selectOrCreate('meta[property="og:url"]', 'meta', { property: 'og:url' }).setAttribute('content', canonicalUrl);
-        selectOrCreate('meta[name="twitter:url"]', 'meta', { name: 'twitter:url' }).setAttribute('content', canonicalUrl);
-        return canonicalUrl;
-      };
-
-      const syncImage = (path) => {
-        const imageUrl = origin.replace(/\/$/, '') + path;
-        selectOrCreate('meta[property="og:image"]', 'meta', { property: 'og:image' }).setAttribute('content', imageUrl);
-        selectOrCreate('meta[name="twitter:image"]', 'meta', { name: 'twitter:image' }).setAttribute('content', imageUrl);
-      };
-
-      const syncSchema = (canonicalUrl) => {
-        const schemaEl = document.head.querySelector('script[type="application/ld+json"]');
-        if (!schemaEl || !schemaEl.textContent) return;
-        try {
-          const data = JSON.parse(schemaEl.textContent);
-          if (!data || typeof data !== 'object') return;
-          data.url = canonicalUrl;
-          if (data.potentialAction && typeof data.potentialAction === 'object') {
-            data.potentialAction.target = `https://www.google.com/search?q={search_term_string}+site:${host}`;
-          }
-          schemaEl.textContent = JSON.stringify(data);
-        } catch {
-          // ignore
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <title>ZXKWS 开发者门户与工作台</title>
+    <meta
+      name="description"
+      content="ZXKWS 开发者门户，提供文本比对、JSON 查看、Curl 转换等公开工具，以及数据库、AI、权限管理工作台。"
+    />
+    <meta name="keywords" content="ZXKWS, 开发者门户, 微前端, 开发者工具, 数据库管控, AI 工作台, 文本差异对比" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="dns-prefetch" href="https://system.zxkws.nyc.mn" />
+    <link rel="preconnect" href="https://system.zxkws.nyc.mn" crossorigin />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ZXKWS" />
+    <link rel="apple-touch-icon" href="/tech-favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/tech-favicon.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <link rel="canonical" href="/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ZXKWS 开发者门户与工作台" />
+    <meta property="og:title" content="ZXKWS 开发者门户与工作台" />
+    <meta property="og:description" content="公开开发者工具与登录后的数据库、AI、权限管理工作台。" />
+    <meta property="og:url" content="/" />
+    <meta property="og:image" content="/tech-favicon.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="ZXKWS 开发者门户与工作台" />
+    <meta name="twitter:description" content="公开开发者工具与登录后的数据库、AI、权限管理工作台。" />
+    <meta name="twitter:image" content="/tech-favicon.svg" />
+    <meta name="twitter:url" content="/" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "ZXKWS 开发者门户与工作台",
+        "url": "/",
+        "inLanguage": "zh-CN",
+        "description": "ZXKWS 开发者门户，提供公开工具与登录后的数据库、AI、权限管理工作台。",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://www.google.com/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
         }
-      };
+      }
+    </script>
+    <script>
+      (() => {
+        try {
+          const savedTheme = window.localStorage.getItem('main-app-theme');
+          const theme =
+            savedTheme === 'dark' || savedTheme === 'light'
+              ? savedTheme
+              : window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light';
+          document.documentElement.setAttribute('data-theme', theme);
+          document.documentElement.classList.toggle('dark', theme === 'dark');
+          const themeColor = document.head.querySelector('meta[name="theme-color"]');
+          if (themeColor) themeColor.setAttribute('content', theme === 'dark' ? '#151515' : '#ffffff');
+        } catch {
+          // Keep the light theme when browser storage is unavailable.
+        }
+      })();
+    </script>
+    <script>
+      (() => {
+        const origin = window.location.origin;
+        const host = window.location.hostname;
+        const selectOrCreate = (selector, tag, attributes) => {
+          const existing = document.head.querySelector(selector);
+          if (existing) return existing;
+          const el = document.createElement(tag);
+          Object.entries(attributes || {}).forEach(([key, value]) => el.setAttribute(key, value));
+          document.head.appendChild(el);
+          return el;
+        };
 
-      const current = window.location.pathname + window.location.search + window.location.hash;
-      const canonicalUrl = syncUrl(current || '/');
-      syncImage('/tech-favicon.svg');
-      syncSchema(canonicalUrl);
+        const syncUrl = (path) => {
+          const canonicalUrl = origin.replace(/\/$/, '') + path;
+          selectOrCreate('link[rel="canonical"]', 'link', { rel: 'canonical' }).setAttribute('href', canonicalUrl);
+          selectOrCreate('meta[property="og:url"]', 'meta', { property: 'og:url' }).setAttribute(
+            'content',
+            canonicalUrl,
+          );
+          selectOrCreate('meta[name="twitter:url"]', 'meta', { name: 'twitter:url' }).setAttribute(
+            'content',
+            canonicalUrl,
+          );
+          return canonicalUrl;
+        };
 
-      window.addEventListener('main-route-change', (event) => {
-        const nextPath = typeof event.detail === 'string' ? event.detail : window.location.pathname;
-        const next = nextPath + window.location.search + window.location.hash;
-        syncSchema(syncUrl(next || '/'));
-      });
-    })();
-  </script>
-  <% for (var i in htmlWebpackPlugin.options.cdn) { %>
+        const syncImage = (path) => {
+          const imageUrl = origin.replace(/\/$/, '') + path;
+          selectOrCreate('meta[property="og:image"]', 'meta', { property: 'og:image' }).setAttribute(
+            'content',
+            imageUrl,
+          );
+          selectOrCreate('meta[name="twitter:image"]', 'meta', { name: 'twitter:image' }).setAttribute(
+            'content',
+            imageUrl,
+          );
+        };
+
+        const syncSchema = (canonicalUrl) => {
+          const schemaEl = document.head.querySelector('script[type="application/ld+json"]');
+          if (!schemaEl || !schemaEl.textContent) return;
+          try {
+            const data = JSON.parse(schemaEl.textContent);
+            if (!data || typeof data !== 'object') return;
+            data.url = canonicalUrl;
+            if (data.potentialAction && typeof data.potentialAction === 'object') {
+              data.potentialAction.target = `https://www.google.com/search?q={search_term_string}+site:${host}`;
+            }
+            schemaEl.textContent = JSON.stringify(data);
+          } catch {
+            // ignore
+          }
+        };
+
+        const current = window.location.pathname + window.location.search + window.location.hash;
+        const canonicalUrl = syncUrl(current || '/');
+        syncImage('/tech-favicon.svg');
+        syncSchema(canonicalUrl);
+
+        window.addEventListener('main-route-change', (event) => {
+          const nextPath = typeof event.detail === 'string' ? event.detail : window.location.pathname;
+          const next = nextPath + window.location.search + window.location.hash;
+          syncSchema(syncUrl(next || '/'));
+        });
+      })();
+    </script>
+    <% for (var i in htmlWebpackPlugin.options.cdn) { %>
     <script src="<%= htmlWebpackPlugin.options.cdn[i] %>"></script>
     <% } %>
-</head>
+  </head>
 
-<body>
-  <div id="main-app-container"></div>
-</body>
-
+  <body>
+    <div id="main-app-container"></div>
+  </body>
 </html>

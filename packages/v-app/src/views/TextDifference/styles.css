@@ -11,7 +11,7 @@
   color: var(--color-fg, #0f172a);
   background: var(--color-canvas, #f7f8fa);
   border: 1px solid var(--workbench-border);
-  border-radius: 14px;
+  border-radius: var(--radius-md, 8px);
   box-shadow: var(--shadow-sm);
 }
 
@@ -51,8 +51,8 @@
   height: 36px;
   flex: none;
   place-items: center;
-  color: var(--color-on-primary, #fff);
-  background: var(--color-primary, #1677ff);
+  color: var(--color-on-primary, #171717);
+  background: var(--color-primary, #3ecf8e);
   border-radius: 10px;
   font-size: 22px;
   font-weight: 800;
@@ -131,8 +131,8 @@
 }
 
 .primary-action {
-  color: var(--color-on-primary, #fff);
-  background: var(--color-primary, #1677ff);
+  color: var(--color-on-primary, #171717);
+  background: var(--color-primary, #3ecf8e);
 }
 
 .tool-toggle {

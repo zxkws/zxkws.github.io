@@ -14,9 +14,11 @@ body {
   padding: 0;
   overflow: hidden;
   font-family: var(--font-sans);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  transition: color 0.3s ease;
+  background-color: var(--color-canvas);
+  color: var(--color-fg);
+  transition:
+    background-color var(--duration-base) var(--ease-standard),
+    color var(--duration-base) var(--ease-standard);
 }
 
 #app {
@@ -24,35 +26,28 @@ body {
   height: 100%;
 }
 
-/* Modern Card Style */
 .cards {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(12px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
 }
 
 .cards:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow);
-  border-color: var(--accent-color);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Glassmorphism Utility */
 .glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
-/* Typography Utilities */
 .text-gradient {
-  background: linear-gradient(135deg, var(--accent-color), #818cf8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--color-primary-active);
 }
 
 /* Scrollbar */
@@ -62,9 +57,8 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  background-color: var(--text-secondary);
-  opacity: 0.3;
+  border-radius: 999px;
+  background-color: var(--color-border-strong);
 }
 
 ::-webkit-scrollbar-track {
@@ -74,7 +68,7 @@ body {
 /* Animations */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity var(--duration-base) var(--ease-standard);
 }
 
 .fade-enter-from,

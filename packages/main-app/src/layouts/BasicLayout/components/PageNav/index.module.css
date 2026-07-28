@@ -1,157 +1,227 @@
-.dockContainer {
-	position: relative;
-	width: 256px;
-	height: calc(100% - var(--layout-stage-pad) - var(--layout-stage-pad));
-	margin: var(--layout-stage-pad) 0 var(--layout-stage-pad)
-		var(--layout-stage-pad);
-	background: var(--color-surface);
-	border: 1px solid var(--color-divider);
-	border-radius: var(--radius-md);
+.sidebar,
+.mobileDrawer {
 	display: flex;
 	flex-direction: column;
-	align-items: stretch;
-	padding: var(--space-3);
-	gap: var(--space-1);
-	box-shadow: var(--shadow-sm);
-	z-index: 30;
-	overflow-y: auto;
-	overflow-x: hidden;
-	scrollbar-width: thin;
-	scrollbar-color: rgba(148, 163, 184, 0.6) transparent;
+	background: var(--color-canvas);
 }
 
-.dockContainer::-webkit-scrollbar {
-	width: 6px;
+.sidebar {
+	width: 244px;
+	flex-shrink: 0;
+	margin: 16px;
+	border: 1px solid var(--color-divider);
+	border-radius: var(--radius-lg);
+	overflow: hidden;
 }
 
-.dockContainer::-webkit-scrollbar-track {
-	background: transparent;
-}
-
-.dockContainer::-webkit-scrollbar-thumb {
-	background: rgba(148, 163, 184, 0.5);
-	border-radius: 999px;
-}
-
-.dockContainer:hover::-webkit-scrollbar-thumb {
-	background: rgba(148, 163, 184, 0.7);
-}
-
-.dockItem {
-	width: 100%;
-	height: 44px;
-	border-radius: var(--radius-sm);
+.navHeading {
 	display: flex;
 	align-items: center;
-	justify-content: flex-start;
-	gap: var(--space-3);
-	padding: 0 var(--space-3);
-	color: var(--color-fg-secondary);
+	justify-content: space-between;
+	padding: 18px 16px 14px;
+	border-bottom: 1px solid var(--color-divider);
+}
+
+.navHeading > div {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.eyebrow {
+	color: var(--color-primary-deep);
+	font-family: var(--font-mono);
+	font-size: 9px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+}
+
+.navHeading strong {
+	color: var(--color-fg);
+	font-size: 15px;
+	font-weight: 500;
+	letter-spacing: -0.02em;
+}
+
+.navList {
+	display: flex;
+	flex: 1;
+	min-height: 0;
+	flex-direction: column;
+	gap: 2px;
+	padding: 10px;
+	overflow-y: auto;
+	scrollbar-color: var(--color-border) transparent;
+	scrollbar-width: thin;
+}
+
+.navItem {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 38px;
+	padding: 0 10px;
+	color: var(--color-fg-tertiary);
+	border-radius: 6px;
+	font-size: 13px;
 	text-decoration: none;
 	transition:
-		background-color var(--duration-fast) var(--ease-standard),
 		color var(--duration-fast) var(--ease-standard),
-		box-shadow var(--duration-fast) var(--ease-standard);
-	position: relative;
-	overflow: hidden;
-	flex-shrink: 0;
+		background-color var(--duration-fast) var(--ease-standard);
 }
 
-.dockItem:hover {
-	background: var(--color-surface-3);
+.navItem:hover {
 	color: var(--color-fg);
+	background: var(--color-surface-2);
 }
 
-.dockItemActive {
-	background: var(--color-surface-3);
+.navItemActive {
 	color: var(--color-fg);
-	font-weight: 600;
+	background: var(--color-surface-2);
+	box-shadow: inset 0 0 0 1px var(--color-divider);
 }
 
-.dockItemActive::before {
-	content: "";
+.navItemActive::before {
 	position: absolute;
-	left: 0;
 	top: 10px;
 	bottom: 10px;
-	width: 3px;
-	border-radius: 999px;
-	background: var(--color-primary);
+	left: -1px;
+	width: 2px;
+	background: var(--color-primary-deep);
+	border-radius: 0 2px 2px 0;
+	content: "";
 }
 
 .iconBox {
+	display: grid;
 	width: 20px;
 	height: 20px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 16px;
 	flex-shrink: 0;
+	place-items: center;
+	color: currentColor;
 }
 
 .label {
-	opacity: 1;
-	white-space: nowrap;
-	font-weight: 500;
-	font-size: 14px;
-	transform: none;
-	transition: opacity 0.2s ease;
-	overflow: hidden;
-	text-overflow: ellipsis;
 	min-width: 0;
+	overflow: hidden;
+	font-weight: 450;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
-.dockContainer:hover .label {
-	opacity: 1;
-	transform: none;
+.nestedGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
 }
 
-/* Mobile Drawer Styles */
+.groupLabel {
+	padding: 12px 10px 5px;
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 9px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.commandHint {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin: 8px 10px 10px;
+	padding: 9px 10px;
+	color: var(--color-fg-tertiary);
+	background: var(--color-surface);
+	border: 1px solid var(--color-divider);
+	border-radius: 6px;
+	font-family: inherit;
+	font-size: 11px;
+	cursor: pointer;
+}
+
+.commandHint:hover {
+	color: var(--color-fg);
+	border-color: var(--color-border-strong);
+}
+
+.commandHint kbd {
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 9px;
+}
+
 .mobileDrawer {
 	position: fixed;
+	z-index: 110;
 	top: 0;
-	left: 0;
 	bottom: 0;
-	width: 280px;
-	background: var(--color-surface);
-	border-right: 1px solid var(--color-divider);
-	z-index: 100;
+	left: 0;
+	width: min(310px, 88vw);
+	border-right: 1px solid var(--color-border);
+	box-shadow: var(--shadow-xl);
 	transform: translateX(-100%);
-	transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	padding: var(--space-6);
-	box-shadow: var(--shadow-md);
-	overflow-y: auto;
+	visibility: hidden;
+	pointer-events: none;
+	transition:
+		transform var(--duration-base) var(--ease-emphasized),
+		visibility 0s linear var(--duration-base);
 }
 
 .mobileDrawerOpen {
 	transform: translateX(0);
+	visibility: visible;
+	pointer-events: auto;
+	transition-delay: 0s;
 }
 
 .mobileOverlay {
 	position: fixed;
+	z-index: 100;
 	inset: 0;
-	background: rgba(2, 6, 23, 0.45);
-	z-index: 90;
-	opacity: 0;
-	pointer-events: none;
-	transition: opacity 0.3s;
-	/* Button reset styles */
-	border: none;
-	padding: 0;
-	margin: 0;
 	width: 100%;
 	height: 100%;
-	cursor: pointer;
-	appearance: none;
+	padding: 0;
+	background: rgb(0 0 0 / 42%);
+	border: 0;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transition:
+		opacity var(--duration-base) var(--ease-standard),
+		visibility 0s linear var(--duration-base);
 }
 
 .mobileOverlayOpen {
 	opacity: 1;
+	visibility: visible;
 	pointer-events: auto;
+	transition-delay: 0s;
 }
 
-@media (max-width: 768px) {
-	.dockContainer {
+.closeButton {
+	display: grid;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	place-items: center;
+	color: var(--color-fg-tertiary);
+	background: transparent;
+	border: 1px solid var(--color-divider);
+	border-radius: 6px;
+}
+
+.closeButton svg {
+	width: 16px;
+	height: 16px;
+	fill: none;
+	stroke: currentColor;
+	stroke-linecap: round;
+	stroke-width: 1.7;
+}
+
+@media (max-width: 860px) {
+	.sidebar {
 		display: none;
 	}
 }

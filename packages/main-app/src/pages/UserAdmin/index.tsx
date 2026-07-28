@@ -1,4 +1,4 @@
-import { Button, Input, message, Popconfirm, Select, Space, Table, Tag, Tooltip } from 'antd';
+import { Button, Input, message, Popconfirm, Select, Space, Table, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { deleteUser, fetchUsers, updateStatus } from '../../services/adminUserService';
@@ -17,19 +17,15 @@ type AdminUser = Omit<UserProfile, 'roles'> & {
   roles?: AdminRole[];
 };
 
-const statusColor: Record<UserStatus, string> = {
-  active: 'green',
-  frozen: 'gold',
-  banned: 'red',
-};
-
 export default function UserAdmin() {
   const [data, setData] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [keyword, setKeyword] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetchUsers(keyword.trim() || undefined);
       const resUnknown = res as unknown;
@@ -39,7 +35,9 @@ export default function UserAdmin() {
           : resUnknown;
       setData(Array.isArray(dataSource) ? (dataSource as AdminUser[]) : []);
     } catch (err) {
-      message.error(err instanceof Error ? err.message : '加载失败');
+      const text = err instanceof Error ? err.message : '加载失败';
+      setError(text);
+      message.error(text);
     } finally {
       setLoading(false);
     }
@@ -54,12 +52,15 @@ export default function UserAdmin() {
   const handleStatus = useCallback(
     async (record: AdminUser, status: UserStatus) => {
       if (record.status === status) return;
+      setError(null);
       try {
         await updateStatus(String(record.userId || ''), status);
         message.success('状态已更新');
         load();
       } catch (err) {
-        message.error(err instanceof Error ? err.message : '状态更新失败');
+        const text = err instanceof Error ? err.message : '状态更新失败';
+        setError(text);
+        message.error(text);
       }
     },
     [load],
@@ -74,12 +75,15 @@ export default function UserAdmin() {
         message.info('已取消删除');
         return;
       }
+      setError(null);
       try {
         await deleteUser(String(record.userId || ''));
         message.success('用户已删除，相关数据将不可恢复');
         load();
       } catch (err) {
-        message.error(err instanceof Error ? err.message : '删除失败');
+        const text = err instanceof Error ? err.message : '删除失败';
+        setError(text);
+        message.error(text);
       }
     },
     [load],
@@ -93,25 +97,21 @@ export default function UserAdmin() {
         title: '角色',
         dataIndex: 'roles',
         key: 'roles',
-        render: (roles?: AdminRole[]) => (roles ?? []).map((item) => item.code).join(', '),
+        render: (roles?: AdminRole[]) => (
+          <div className="workspace-role-list">
+            {(roles ?? []).map((role, index) => (
+              <Tag key={`${role.code}-${index}`}>{role.code}</Tag>
+            ))}
+          </div>
+        ),
       },
       {
         title: '状态',
         dataIndex: 'status',
         key: 'status',
-        render: (status: UserStatus = 'active', record) => (
+        render: (status: UserStatus | undefined, record) => (
           <Space>
-            <Tooltip
-              title={
-                status === 'active'
-                  ? '正常可登录'
-                  : status === 'frozen'
-                    ? '冻结：不可登录，可由管理员解冻'
-                    : '封禁：不可登录，需要管理员解除'
-              }
-            >
-              <Tag color={statusColor[status]}>{status}</Tag>
-            </Tooltip>
+            <Tag>{status}</Tag>
             <Select<UserStatus>
               size="small"
               value={status}
@@ -149,27 +149,46 @@ export default function UserAdmin() {
   );
 
   return (
-    <div className="flex h-full w-full flex-col gap-4 bg-[var(--color-bg)] px-6 py-6 text-[var(--color-text)]">
-      <header className="flex items-center justify-between">
+    <div className="workspace-page">
+      <header className="workspace-page__header">
         <div>
-          <h1 className="text-xl font-semibold">用户管理</h1>
-          <p className="text-sm text-[var(--color-muted)]">管理员可查询/封禁/删除用户；删除不可恢复</p>
+          <p className="workspace-page__eyebrow">User operations</p>
+          <h1>用户管理</h1>
+          <p className="workspace-page__description">查询用户、调整账号状态或删除账号。删除操作不可恢复。</p>
         </div>
-        <Space>
+        <div className="workspace-page__actions">
           <Input.Search
             placeholder="按用户名/邮箱搜索"
+            aria-label="按用户名或邮箱搜索"
             allowClear
             value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            onChange={(event) => setKeyword(event.target.value)}
             onSearch={load}
-            style={{ width: 240 }}
+            className="workspace-search"
           />
           <Button onClick={load} loading={loading}>
             刷新
           </Button>
-        </Space>
+        </div>
       </header>
-      <Table rowKey={(r) => String(r.userId)} loading={loading} columns={columns} dataSource={data} />
+
+      {error && (
+        <div className="workspace-feedback workspace-feedback--error" role="alert">
+          {error}
+        </div>
+      )}
+
+      <section className="workspace-panel workspace-panel--flush">
+        <Table
+          rowKey={(record) => String(record.userId)}
+          loading={loading}
+          columns={columns}
+          dataSource={data}
+          pagination={{ hideOnSinglePage: true }}
+          scroll={{ x: 760 }}
+          locale={{ emptyText: loading ? '正在加载用户数据…' : '暂无用户数据' }}
+        />
+      </section>
     </div>
   );
 }

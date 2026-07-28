@@ -3,14 +3,33 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 type SocketLike = {
   id?: string;
-  on: (_event: string, _cb: (..._args: unknown[]) => void) => void;
+  on: <T = unknown>(_event: string, _callback: (payload: T) => void) => void;
   emit: (_event: string, _payload?: unknown) => void;
   disconnect: () => void;
 };
 
+type RoomPayload = {
+  hostId?: unknown;
+  roomId?: unknown;
+};
+
+type ChatPayload = {
+  from?: {
+    name?: unknown;
+  };
+  text?: unknown;
+};
+
+type PlaybackState = RoomPayload & {
+  serverNow?: unknown;
+  position?: unknown;
+  isPlaying?: unknown;
+  mediaUrl?: unknown;
+};
+
 declare global {
   interface Window {
-    io?: (_uri: string, _opts?: unknown) => SocketLike;
+    io?: (_uri: string, _options?: unknown) => SocketLike;
   }
 }
 
@@ -31,26 +50,33 @@ const resolveSocketOrigin = () => {
 
 const loadScriptOnce = (src: string) =>
   new Promise<void>((resolve, reject) => {
-    const existed = document.querySelector(`script[data-socket-io="1"][src="${src}"]`);
-    if (existed) {
+    if (window.io) {
       resolve();
       return;
     }
-    const el = document.createElement('script');
-    el.src = src;
-    el.async = true;
-    el.dataset.socketIo = '1';
-    el.onload = () => resolve();
-    el.onerror = () => reject(new Error('socket.io 脚本加载失败'));
-    document.head.appendChild(el);
+
+    const existing = document.querySelector<HTMLScriptElement>(`script[data-socket-io="1"][src="${src}"]`);
+    if (existing) {
+      existing.addEventListener('load', () => resolve(), { once: true });
+      existing.addEventListener('error', () => reject(new Error('socket.io 脚本加载失败')), { once: true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = true;
+    script.dataset.socketIo = '1';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('socket.io 脚本加载失败'));
+    document.head.appendChild(script);
   });
 
 const randomRoomId = () => Math.random().toString(36).slice(2, 10);
 
 export default function WatchTogetherPage() {
   const initialRoom = useMemo(() => {
-    const qs = new URLSearchParams(window.location.search);
-    return (qs.get('room') || '').trim() || randomRoomId();
+    const query = new URLSearchParams(window.location.search);
+    return (query.get('room') || '').trim() || randomRoomId();
   }, []);
 
   const [roomId, setRoomId] = useState(initialRoom);
@@ -67,21 +93,33 @@ export default function WatchTogetherPage() {
   const socketRef = useRef<SocketLike | null>(null);
   const applyingRemote = useRef(false);
 
-  const isHost = socketId && hostId && socketId === hostId;
+  const isHost = Boolean(socketId && hostId && socketId === hostId);
 
   const appendChat = (line: string) => {
-    setChatLines((prev) => [...prev.slice(-200), line]);
+    setChatLines((previous) => [...previous.slice(-200), line]);
   };
 
   const connect = async () => {
+    const nextRoomId = roomId.trim();
+    if (!nextRoomId) {
+      throw new Error('请输入房间 ID');
+    }
+
     const origin = resolveSocketOrigin();
     const clientScriptUrl = `${origin}/socket.io/socket.io.js`;
+    const roomUrl = new URL(window.location.href);
+    roomUrl.searchParams.set('room', nextRoomId);
+    window.history.replaceState(window.history.state, '', roomUrl);
 
-    setStatusText('加载 socket.io…');
+    setStatusText('正在加载连接组件…');
     await loadScriptOnce(clientScriptUrl);
     if (!window.io) throw new Error('socket.io client 未注入（window.io 缺失）');
 
     socketRef.current?.disconnect();
+    setSocketId('');
+    setHostId('');
+    setMembers(null);
+
     const socket = window.io(`${origin}/watch-together`, {
       transports: ['websocket', 'polling'],
       withCredentials: true,
@@ -92,82 +130,82 @@ export default function WatchTogetherPage() {
       const id = socket.id || '';
       setSocketId(id);
       setStatusText('已连接');
-      socket.emit('join', { roomId, name });
+      socket.emit('join', { roomId: nextRoomId, name });
     });
 
-    socket.on('joined', (data: any) => {
-      setHostId(String(data?.hostId || ''));
-      appendChat(`[system] joined room=${data?.roomId} socket=${socket.id} host=${data?.hostId}`);
+    socket.on<RoomPayload>('joined', (data) => {
+      setHostId(String(data?.hostId ?? ''));
+      appendChat(
+        `[system] joined room=${String(data?.roomId ?? '')} socket=${socket.id ?? ''} host=${String(data?.hostId ?? '')}`,
+      );
     });
 
-    socket.on('host', (data: any) => {
-      setHostId(String(data?.hostId || ''));
-      appendChat(`[system] new host=${data?.hostId}`);
+    socket.on<RoomPayload>('host', (data) => {
+      setHostId(String(data?.hostId ?? ''));
+      appendChat(`[system] new host=${String(data?.hostId ?? '')}`);
     });
 
-    socket.on('members', (data: any) => {
-      setHostId(String(data?.hostId || ''));
+    socket.on<RoomPayload>('members', (data) => {
+      setHostId(String(data?.hostId ?? ''));
       setMembers(data);
     });
 
-    socket.on('chat', (msg: any) => {
-      const who = String(msg?.from?.name || 'unknown');
-      const text = String(msg?.text || '');
-      appendChat(`[${who}] ${text}`);
+    socket.on<ChatPayload>('chat', (message) => {
+      appendChat(`[${String(message?.from?.name ?? '')}] ${String(message?.text ?? '')}`);
     });
 
-    socket.on('error', (e: any) => {
-      appendChat(`[error] ${typeof e === 'string' ? e : JSON.stringify(e)}`);
+    socket.on<unknown>('error', (error) => {
+      appendChat(`[error] ${typeof error === 'string' ? error : JSON.stringify(error)}`);
+    });
+
+    socket.on<Error>('connect_error', (error) => {
+      setStatusText(error?.message || '连接失败');
     });
 
     socket.on('disconnect', () => {
+      setSocketId('');
       setStatusText('已断开');
     });
 
-    socket.on('state', async (s: any) => {
-      setHostId(String(s?.hostId || ''));
+    socket.on<PlaybackState>('state', async (state) => {
+      setHostId(String(state?.hostId ?? ''));
 
       const video = videoRef.current;
       if (!video) return;
 
       const now = Date.now();
-      const serverNow = typeof s?.serverNow === 'number' ? s.serverNow : now;
-      const rttFixSec = Math.max(0, (now - serverNow) / 1000);
-      const targetPos = (typeof s?.position === 'number' ? s.position : 0) + (s?.isPlaying ? rttFixSec : 0);
+      const serverNow = typeof state?.serverNow === 'number' ? state.serverNow : now;
+      const latencySeconds = Math.max(0, (now - serverNow) / 1000);
+      const position = typeof state?.position === 'number' ? state.position : 0;
+      const targetPosition = position + (state?.isPlaying ? latencySeconds : 0);
 
       applyingRemote.current = true;
       try {
-        const url = String(s?.mediaUrl || '').trim();
-        if (url && video.src !== url) {
+        const url = typeof state?.mediaUrl === 'string' ? state.mediaUrl : '';
+        if (url && video.getAttribute('src') !== url) {
           video.src = url;
           setMediaUrl(url);
         }
 
-        const drift = (video.currentTime || 0) - targetPos;
-        const absDrift = Math.abs(drift);
-
-        // 纠偏策略：
-        // 1. 大漂移 (> 0.5s)：直接跳转 (Jump)
-        // 2. 小漂移 (0.1s ~ 0.5s)：倍速微调 (Smooth Sync)
-        // 3. 微漂移 (< 0.1s)：保持原速
-        if (absDrift > 0.5 && Number.isFinite(targetPos)) {
-          video.currentTime = targetPos;
-          video.playbackRate = 1.0;
-        } else if (absDrift > 0.1 && s?.isPlaying) {
-          // 慢了就加速 5%，快了就减速 5%
+        const drift = (video.currentTime || 0) - targetPosition;
+        const absoluteDrift = Math.abs(drift);
+        if (absoluteDrift > 0.5 && Number.isFinite(targetPosition)) {
+          video.currentTime = targetPosition;
+          video.playbackRate = 1;
+        } else if (absoluteDrift > 0.1 && state?.isPlaying) {
           video.playbackRate = drift < 0 ? 1.05 : 0.95;
         } else {
-          video.playbackRate = 1.0;
+          video.playbackRate = 1;
         }
 
-        if (s?.isPlaying) {
-          const p = video.play();
-          if (p && typeof p.catch === 'function') {
-            p.catch(() => undefined);
+        if (state?.isPlaying) {
+          const playResult = video.play();
+          if (playResult && typeof playResult.catch === 'function') {
+            playResult.catch(() => undefined);
           }
         } else {
           video.pause();
-          video.playbackRate = 1.0;
+          video.playbackRate = 1;
         }
       } finally {
         window.setTimeout(() => {
@@ -177,40 +215,65 @@ export default function WatchTogetherPage() {
     });
   };
 
+  const handleConnect = () => {
+    connect().catch((error) => {
+      const text = error instanceof Error ? error.message : '连接失败';
+      setStatusText(text);
+      appendChat(`[error] ${text}`);
+    });
+  };
+
+  const disconnect = () => {
+    socketRef.current?.disconnect();
+    socketRef.current = null;
+    setSocketId('');
+    setHostId('');
+    setMembers(null);
+    setStatusText('已断开');
+  };
+
   const emitControl = (action: 'play' | 'pause' | 'seek', position?: number) => {
-    const socket = socketRef.current;
-    if (!socket) return;
-    socket.emit('control', { roomId, action, position });
+    socketRef.current?.emit('control', { roomId: roomId.trim(), action, position });
   };
 
   const setRemoteMedia = () => {
     const socket = socketRef.current;
-    if (!socket) return;
-    if (!isHost) {
-      appendChat('[system] 只有房主可操作');
+    if (!socket) {
+      appendChat('[system] 请先连接房间');
       return;
     }
-    socket.emit('setMedia', { roomId, url: mediaUrl.trim() });
+    if (!isHost) {
+      appendChat('[system] 只有房主可设置媒体');
+      return;
+    }
+    socket.emit('setMedia', { roomId: roomId.trim(), url: mediaUrl.trim() });
   };
 
   const sendChat = () => {
     const socket = socketRef.current;
-    if (!socket) return;
+    if (!socket) {
+      appendChat('[system] 请先连接房间');
+      return;
+    }
     const text = chatInput.trim();
     if (!text) return;
     setChatInput('');
-    socket.emit('chat', { roomId, text, name: name.trim() });
+    socket.emit('chat', { roomId: roomId.trim(), text, name: name.trim() });
   };
 
   const copyLink = async () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('room', roomId.trim());
-    await navigator.clipboard.writeText(url.toString());
-    appendChat('[system] link copied');
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('room', roomId.trim());
+      await navigator.clipboard.writeText(url.toString());
+      appendChat('[system] 房间链接已复制');
+    } catch (error) {
+      appendChat(`[error] ${error instanceof Error ? error.message : '复制失败'}`);
+    }
   };
 
   useEffect(() => {
-    connect().catch((e) => setStatusText(e instanceof Error ? e.message : '连接失败'));
+    handleConnect();
     return () => {
       socketRef.current?.disconnect();
       socketRef.current = null;
@@ -227,19 +290,19 @@ export default function WatchTogetherPage() {
     if (!video) return;
 
     const onPlay = () => {
-      if (applyingRemote.current) return;
-      if (!isHost) return;
-      emitControl('play', video.currentTime || 0);
+      if (!applyingRemote.current && isHost) {
+        emitControl('play', video.currentTime || 0);
+      }
     };
     const onPause = () => {
-      if (applyingRemote.current) return;
-      if (!isHost) return;
-      emitControl('pause', video.currentTime || 0);
+      if (!applyingRemote.current && isHost) {
+        emitControl('pause', video.currentTime || 0);
+      }
     };
     const onSeeked = () => {
-      if (applyingRemote.current) return;
-      if (!isHost) return;
-      emitControl('seek', video.currentTime || 0);
+      if (!applyingRemote.current && isHost) {
+        emitControl('seek', video.currentTime || 0);
+      }
     };
 
     video.addEventListener('play', onPlay);
@@ -253,147 +316,154 @@ export default function WatchTogetherPage() {
   }, [isHost, roomId]);
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-6 text-[var(--color-text)]">
-      <div className="flex items-center justify-between">
+    <div className="workspace-page">
+      <header className="workspace-page__header">
         <div>
-          <div className="text-xs text-slate-500">Idea 3 · Watch Together</div>
-          <div className="text-lg font-semibold">一起看（Socket.io 同步 + 聊天 · MVP）</div>
+          <p className="workspace-page__eyebrow">Synchronized room</p>
+          <h1>一起看</h1>
+          <p className="workspace-page__description">共享媒体地址、同步播放进度，并在同一个房间内实时聊天。</p>
         </div>
-        <div className="text-sm text-slate-600">
-          状态：{statusText} · 角色：{isHost ? '房主' : '观众'}
+        <div className="workspace-page__actions">
+          <span className="workspace-status" data-connected={Boolean(socketId)}>
+            {statusText} · {isHost ? '房主' : '观众'}
+          </span>
+          {socketId && (
+            <button type="button" className="workspace-button" onClick={disconnect}>
+              断开
+            </button>
+          )}
         </div>
-      </div>
+      </header>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2 rounded-lg border border-[var(--header-border)] bg-[var(--card-bg)] p-4 shadow-sm">
-          <div className="grid gap-3 md:grid-cols-3">
-            <label className="flex flex-col gap-1 text-sm">
-              roomId
+      <div className="watch-layout">
+        <section className="workspace-panel">
+          <div className="workspace-panel__header">
+            <div>
+              <h2>房间与媒体</h2>
+              <p className="workspace-panel__meta">连接后，房主的播放、暂停和跳转操作会同步给所有成员。</p>
+            </div>
+          </div>
+
+          <div className="watch-connect-grid">
+            <label className="workspace-field">
+              <span>房间 ID</span>
               <input
-                className="rounded border border-slate-200 p-2 font-mono"
+                className="workspace-input workspace-input--mono"
                 value={roomId}
-                onChange={(e) => setRoomId(e.target.value)}
+                onChange={(event) => setRoomId(event.target.value)}
               />
             </label>
-            <label className="flex flex-col gap-1 text-sm">
-              name
+            <label className="workspace-field">
+              <span>显示名称</span>
               <input
-                className="rounded border border-slate-200 p-2"
+                className="workspace-input"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Guest"
+                onChange={(event) => setName(event.target.value)}
+                placeholder="输入你的名称"
               />
             </label>
-            <div className="flex items-end gap-2">
-              <button
-                type="button"
-                className="w-full rounded bg-indigo-600 px-4 py-2 text-white shadow hover:bg-indigo-700"
-                onClick={() => connect().catch((e) => setStatusText(e instanceof Error ? e.message : '连接失败'))}
-              >
-                Join
+            <div className="workspace-inline-actions">
+              <button type="button" className="workspace-button workspace-button--primary" onClick={handleConnect}>
+                连接
               </button>
-              <button type="button" className="w-full rounded border border-slate-200 px-4 py-2" onClick={copyLink}>
-                Copy Link
+              <button type="button" className="workspace-button" onClick={copyLink}>
+                复制链接
               </button>
             </div>
           </div>
 
-          <div className="mt-4">
-            <video ref={videoRef} controls playsInline className="w-full rounded-lg bg-black/20">
-              <track kind="captions" />
-            </video>
-          </div>
+          <video ref={videoRef} controls playsInline className="watch-video">
+            <track kind="captions" />
+          </video>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <label className="md:col-span-2 flex flex-col gap-1 text-sm">
-              media url（直链 MP4 / HLS 等）
+          <div className="watch-media-grid">
+            <label className="workspace-field">
+              <span>媒体地址</span>
               <input
-                className="rounded border border-slate-200 p-2 font-mono"
+                className="workspace-input workspace-input--mono"
                 value={mediaUrl}
-                onChange={(e) => setMediaUrl(e.target.value)}
+                onChange={(event) => setMediaUrl(event.target.value)}
                 placeholder="https://example.com/video.mp4"
               />
             </label>
-            <div className="flex items-end">
-              <button
-                type="button"
-                className="w-full rounded bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 disabled:opacity-60"
-                onClick={setRemoteMedia}
-                disabled={!isHost}
-              >
-                Set Media（房主）
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-2">
             <button
               type="button"
-              className="rounded bg-emerald-600 px-3 py-2 text-white shadow hover:bg-emerald-700 disabled:opacity-60"
+              className="workspace-button workspace-button--primary"
+              onClick={setRemoteMedia}
+              disabled={!isHost}
+            >
+              设置媒体
+            </button>
+          </div>
+
+          <div className="watch-controls">
+            <button
+              type="button"
+              className="workspace-button workspace-button--primary"
               onClick={() => emitControl('play', videoRef.current?.currentTime || 0)}
               disabled={!isHost}
             >
-              Play（房主）
+              播放
             </button>
             <button
               type="button"
-              className="rounded bg-slate-700 px-3 py-2 text-white shadow hover:bg-slate-800 disabled:opacity-60"
+              className="workspace-button"
               onClick={() => emitControl('pause', videoRef.current?.currentTime || 0)}
               disabled={!isHost}
             >
-              Pause（房主）
+              暂停
             </button>
             <button
               type="button"
-              className="rounded border border-slate-200 px-3 py-2 disabled:opacity-60"
+              className="workspace-button"
               onClick={() => emitControl('seek', Math.max(0, (videoRef.current?.currentTime || 0) - 10))}
               disabled={!isHost}
             >
-              -10s（房主）
+              后退 10 秒
             </button>
             <button
               type="button"
-              className="rounded border border-slate-200 px-3 py-2 disabled:opacity-60"
+              className="workspace-button"
               onClick={() => emitControl('seek', (videoRef.current?.currentTime || 0) + 10)}
               disabled={!isHost}
             >
-              +10s（房主）
+              前进 10 秒
             </button>
-            <div className="ml-auto text-xs text-slate-600 font-mono">
-              socket={socketId || '-'} host={hostId || '-'}
+            <span className="watch-controls__ids">
+              socket={socketId} host={hostId}
+            </span>
+          </div>
+
+          <p className="watch-note">同步策略：漂移超过 0.5 秒时跳转；较小漂移通过短暂调整播放速度完成对齐。</p>
+        </section>
+
+        <aside className="workspace-panel watch-side">
+          <section>
+            <h2>成员数据</h2>
+            <pre className="watch-code">{members === null ? '暂无成员数据' : JSON.stringify(members, null, 2)}</pre>
+          </section>
+
+          <section>
+            <h2>房间聊天</h2>
+            <div className="watch-chat-form">
+              <input
+                className="workspace-input"
+                value={chatInput}
+                onChange={(event) => setChatInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                    sendChat();
+                  }
+                }}
+                placeholder="输入消息，按 Enter 发送"
+              />
+              <button type="button" className="workspace-button workspace-button--primary" onClick={sendChat}>
+                发送
+              </button>
             </div>
-          </div>
-
-          <div className="mt-3 text-xs text-slate-600">
-            同步策略（MVP）：收到 state 后，若漂移 &gt; 0.4s 则跳转；否则仅对 play/pause 做对齐。
-          </div>
-        </div>
-
-        <div className="rounded-lg border border-[var(--header-border)] bg-[var(--card-bg)] p-4 shadow-sm">
-          <div className="text-sm font-semibold">Members</div>
-          <pre className="mt-2 max-h-44 overflow-auto rounded bg-slate-50 p-3 text-xs text-slate-700">
-            {members ? JSON.stringify(members, null, 2) : '暂无'}
-          </pre>
-
-          <div className="mt-4 text-sm font-semibold">Chat</div>
-          <div className="mt-2 flex gap-2">
-            <input
-              className="w-full rounded border border-slate-200 p-2"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-            />
-            <button
-              type="button"
-              className="rounded bg-indigo-600 px-3 py-2 text-white shadow hover:bg-indigo-700"
-              onClick={sendChat}
-            >
-              Send
-            </button>
-          </div>
-          <pre className="mt-2 max-h-64 overflow-auto rounded bg-slate-50 p-3 text-xs text-slate-700">
-            {chatLines.join('\n')}
-          </pre>
-        </div>
+            <pre className="watch-code">{chatLines.join('\n')}</pre>
+          </section>
+        </aside>
       </div>
     </div>
   );

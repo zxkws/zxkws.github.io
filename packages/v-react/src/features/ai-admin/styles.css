@@ -2,18 +2,18 @@
 .ai-admin-state {
   max-width: 1480px;
   margin: 0 auto;
-  padding: 28px;
-  color: var(--color-text, #17202a);
+  padding: 32px;
+  color: var(--color-fg);
 }
 
 .ai-admin-root section,
-.ai-admin-header,
 .ai-admin-state {
   margin-bottom: 20px;
   padding: 20px;
-  border: 1px solid var(--color-border, #dfe4ea);
-  border-radius: 10px;
-  background: var(--color-bg-container, #fff);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
 }
 
 .ai-admin-header,
@@ -33,13 +33,15 @@
 }
 
 .ai-admin-root h2 {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .ai-admin-header p,
 .section-heading p {
   margin-top: 6px;
-  color: var(--color-text-secondary, #65717e);
+  color: var(--color-fg-tertiary);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .ai-admin-root label {
@@ -52,11 +54,17 @@
 .ai-admin-root button {
   min-height: 40px;
   padding: 8px 12px;
-  border: 1px solid var(--color-border, #b8c0ca);
-  border-radius: 7px;
-  background: var(--color-bg-container, #fff);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--color-surface);
   color: inherit;
   font: inherit;
+}
+
+.ai-admin-root input:focus,
+.ai-admin-root select:focus {
+  border-color: var(--color-primary-deep);
 }
 
 .ai-admin-root button {
@@ -70,7 +78,16 @@
 }
 
 .ai-admin-root button.danger {
-  color: #b42318;
+  color: var(--color-danger);
+}
+
+.ai-admin-header > button,
+.ai-bindings-section .section-heading > button,
+.ai-new-channel .ai-channel-form > button {
+  border-color: var(--color-primary-deep);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 600;
 }
 
 .ai-binding-grid {
@@ -112,7 +129,7 @@
 .ai-model-toolbar {
   justify-content: flex-start;
   margin-top: 20px;
-  color: var(--color-text-secondary, #65717e);
+  color: var(--color-fg-tertiary);
 }
 
 .ai-model-toolbar input {
@@ -122,8 +139,8 @@
 .ai-model-table-wrap {
   margin-top: 12px;
   overflow: auto;
-  border: 1px solid var(--color-border, #dfe4ea);
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
 }
 
 .ai-model-table {
@@ -135,13 +152,14 @@
 .ai-model-table th,
 .ai-model-table td {
   padding: 10px;
-  border-bottom: 1px solid var(--color-border, #dfe4ea);
+  border-bottom: 1px solid var(--color-border);
   text-align: left;
   vertical-align: top;
 }
 
 .ai-model-table th {
-  background: var(--color-bg-layout, #f6f8fa);
+  background: var(--color-surface-2);
+  color: var(--color-fg-tertiary);
   white-space: nowrap;
 }
 
@@ -179,6 +197,10 @@
   min-height: 22px;
   margin-top: 14px !important;
   white-space: pre-wrap;
+}
+
+.ai-admin-status {
+  color: var(--color-danger);
 }
 
 @media (max-width: 980px) {

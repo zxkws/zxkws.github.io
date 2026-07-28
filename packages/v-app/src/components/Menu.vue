@@ -1,122 +1,177 @@
 <script lang="ts" setup>
-import { Dialog, DialogPanel, TransitionRoot, TransitionChild } from '@headlessui/vue';
-import { mainStore } from '@/store';
+import { Dialog, DialogPanel, TransitionRoot } from '@headlessui/vue';
 import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { mainStore } from '@/store';
 
 const store = mainStore();
+const route = useRoute();
+const router = useRouter();
 const isMenuOpen = computed(() => store.isMenuOpen);
 const isMenuCollapsed = computed(() => store.isMenuCollapsed);
 
 const menus = [
-  {
-    label: '支付',
-    value: 'payment',
-    name: 'payment',
-  },
-  {
-    label: '文本对比',
-    value: 'textDifference',
-    name: 'textDifference',
-  },
-  {
-    label: 'JSON 工具',
-    value: 'jsonViewer',
-    name: 'jsonViewer',
-  },
-  {
-    label: 'TODO',
-    value: 'TODO',
-    name: 'todo',
-  },
+  { label: '文本对比', code: 'DF', name: 'textDifference' },
+  { label: 'JSON 工具', code: '{}', name: 'jsonViewer' },
+  { label: '待办事项', code: 'TD', name: 'todo' },
+  { label: '支付订单', code: 'PY', name: 'payment' },
 ];
 
-function closeMenu() {
+const closeMenu = () => {
   store.isMenuOpen = false;
-}
-</script>
-<template>
-  <!-- Mobile menu -->
-  <TransitionRoot as="template" :show="isMenuOpen">
-    <Dialog as="div" class="relative z-40 md:hidden" @close="closeMenu">
-      <TransitionChild
-        as="template"
-        enter="transition-opacity ease-linear duration-300"
-        enter-from="opacity-0"
-        enter-to="opacity-100"
-        leave="transition-opacity ease-linear duration-300"
-        leave-from="opacity-100"
-        leave-to="opacity-0"
-      >
-        <div class="fixed inset-0 bg-gray-600 bg-opacity-75" />
-      </TransitionChild>
+};
 
-      <div class="fixed inset-0 z-40 flex">
-        <TransitionChild
-          as="template"
-          enter="transition ease-in-out duration-300 transform"
-          enter-from="-translate-x-full"
-          enter-to="translate-x-0"
-          leave="transition ease-in-out duration-300 transform"
-          leave-from="translate-x-0"
-          leave-to="-translate-x-full"
-        >
-          <DialogPanel class="relative flex w-full max-w-xs flex-1 flex-col bg-white dark:bg-gray-800">
-            <ul class="space-y-2 mt-2 p-4">
-              <li
-                v-for="menu in menus"
-                class="p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600"
-                :key="menu.name"
-              >
-                <button
-                  @click="
-                    $router.push({ name: menu.name });
-                    closeMenu();
-                  "
-                  class="w-full text-left dark:text-white"
-                >
-                  {{ menu.label }}
-                </button>
-              </li>
-            </ul>
-          </DialogPanel>
-        </TransitionChild>
-      </div>
+const navigate = async (name: string) => {
+  await router.push({ name });
+  closeMenu();
+};
+</script>
+
+<template>
+  <TransitionRoot as="template" :show="isMenuOpen">
+    <Dialog as="div" class="tool-menu-dialog" @close="closeMenu">
+      <button class="tool-menu-backdrop" type="button" aria-label="关闭导航" @click="closeMenu" />
+      <DialogPanel class="tool-menu-panel tool-menu-panel--mobile">
+        <div class="tool-menu-title">工具导航</div>
+        <nav aria-label="工具导航">
+          <button
+            v-for="menu in menus"
+            :key="menu.name"
+            type="button"
+            class="tool-menu-link"
+            :data-active="route.name === menu.name"
+            @click="navigate(menu.name)"
+          >
+            <span class="tool-menu-code">{{ menu.code }}</span>
+            <span>{{ menu.label }}</span>
+          </button>
+        </nav>
+      </DialogPanel>
     </Dialog>
   </TransitionRoot>
 
-  <!-- Desktop sidebar -->
-  <div :class="['hidden md:flex md:flex-shrink-0 transition-all duration-300', isMenuCollapsed ? 'w-20' : 'w-64']">
-    <div class="flex w-full flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-      <ul class="space-y-2 mt-2 p-4">
-        <li
-          v-for="menu in menus"
-          class="p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600"
-          :key="menu.name"
-        >
-          <button
-            @click="$router.push({ name: menu.name })"
-            :title="menu.label"
-            class="w-full flex items-center h-8 dark:text-white"
-            :class="{ 'justify-center': isMenuCollapsed }"
-          >
-            <transition name="fade" mode="out-in">
-              <span v-if="!isMenuCollapsed" class="whitespace-nowrap">{{ menu.label }}</span>
-              <span v-else>{{ menu.label.charAt(0) }}</span>
-            </transition>
-          </button>
-        </li>
-      </ul>
-    </div>
-  </div>
+  <aside class="tool-menu-panel tool-menu-panel--desktop" :data-collapsed="isMenuCollapsed">
+    <div v-if="!isMenuCollapsed" class="tool-menu-title">工具导航</div>
+    <nav aria-label="工具导航">
+      <button
+        v-for="menu in menus"
+        :key="menu.name"
+        type="button"
+        class="tool-menu-link"
+        :data-active="route.name === menu.name"
+        :title="menu.label"
+        @click="navigate(menu.name)"
+      >
+        <span class="tool-menu-code">{{ menu.code }}</span>
+        <span v-if="!isMenuCollapsed">{{ menu.label }}</span>
+      </button>
+    </nav>
+  </aside>
 </template>
-<style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
+
+<style scoped>
+.tool-menu-panel {
+  width: 224px;
+  padding: 14px 10px;
+  border-right: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  transition: width var(--duration-base) var(--ease-standard);
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.tool-menu-panel[data-collapsed='true'] {
+  width: 64px;
+}
+
+.tool-menu-title {
+  padding: 4px 10px 12px;
+  color: var(--color-fg-tertiary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tool-menu-panel nav {
+  display: grid;
+  gap: 4px;
+}
+
+.tool-menu-link {
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 9px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-fg-secondary);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tool-menu-link:hover {
+  background: var(--color-surface-2);
+  color: var(--color-fg);
+}
+
+.tool-menu-link[data-active='true'] {
+  border-color: color-mix(in srgb, var(--color-primary-deep) 45%, var(--color-border));
+  background: var(--color-primary-muted);
+  color: var(--color-fg);
+}
+
+.tool-menu-code {
+  display: inline-grid;
+  width: 28px;
+  height: 24px;
+  flex: 0 0 28px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-fg-tertiary);
+  font-family: var(--font-mono);
+  font-size: 9px;
+}
+
+.tool-menu-link[data-active='true'] .tool-menu-code {
+  border-color: var(--color-primary-deep);
+  color: var(--color-primary-active);
+}
+
+.tool-menu-dialog {
+  position: fixed;
+  z-index: 80;
+  inset: 0;
+  display: none;
+}
+
+.tool-menu-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(0 0 0 / 45%);
+}
+
+.tool-menu-panel--mobile {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  box-shadow: var(--shadow-xl);
+}
+
+@media (max-width: 767px) {
+  .tool-menu-panel--desktop {
+    display: none;
+  }
+
+  .tool-menu-dialog {
+    display: block;
+  }
 }
 </style>

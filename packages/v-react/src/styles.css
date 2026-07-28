@@ -12,7 +12,7 @@
   min-height: 0;
   font-family: var(--font-sans);
   color: var(--color-fg);
-  background: transparent;
+  background: var(--color-canvas);
 }
 
 /* Standalone dev (container is #root) */
@@ -23,6 +23,21 @@
 .v-react-root,
 .v-react-root * {
   box-sizing: border-box;
+}
+
+.v-react-root button,
+.v-react-root input,
+.v-react-root select,
+.v-react-root textarea {
+  font-family: inherit;
+}
+
+.v-react-root button:focus-visible,
+.v-react-root input:focus-visible,
+.v-react-root select:focus-visible,
+.v-react-root textarea:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 1px;
 }
 
 /* Layout Structure */
@@ -88,10 +103,15 @@
 }
 
 .v-react-root .note-item {
+  width: 100%;
   padding: 12px;
   border-radius: var(--radius-md);
   cursor: pointer;
   border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   transition:
     background-color var(--duration-fast) var(--ease-standard),
     border-color var(--duration-fast) var(--ease-standard);
@@ -124,6 +144,17 @@
   justify-content: space-between;
 }
 
+.v-react-root .notes-error {
+  margin: 12px 12px 0;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--color-danger) 45%, var(--color-border));
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
 /* Main Content Area - Another Glass Card */
 .v-react-root .main {
   display: flex;
@@ -150,13 +181,16 @@
 
 .v-react-root .tab {
   padding: 6px 16px;
-  border-radius: 20px; /* Pill shape */
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--color-fg-tertiary);
   font-size: 13px;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all 0.2s;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
 }
 
 .v-react-root .tab:hover {
@@ -233,9 +267,15 @@
   line-height: 1.25;
 }
 
-.v-react-root .editor .preview h1 { font-size: 1.8em; }
-.v-react-root .editor .preview h2 { font-size: 1.5em; }
-.v-react-root .editor .preview h3 { font-size: 1.25em; }
+.v-react-root .editor .preview h1 {
+  font-size: 1.8em;
+}
+.v-react-root .editor .preview h2 {
+  font-size: 1.5em;
+}
+.v-react-root .editor .preview h3 {
+  font-size: 1.25em;
+}
 
 .v-react-root .editor .preview p {
   margin: 0.6em 0;
@@ -262,7 +302,7 @@
 .v-react-root .editor .preview code {
   font-family: var(--font-mono);
   font-size: 0.95em;
-  background: rgba(15, 23, 42, 0.06);
+  background: var(--color-surface-3);
   padding: 0.1em 0.3em;
   border-radius: 4px;
 }
@@ -308,7 +348,7 @@
 }
 
 .v-react-root .editor .preview tr:nth-child(even) {
-  background: rgba(0, 0, 0, 0.02);
+  background: var(--color-surface-3);
 }
 
 /* Callouts / Admonitions */
@@ -353,10 +393,17 @@
 }
 
 .v-react-root .empty::before {
-  content: '⚡';
-  font-size: 48px;
-  opacity: 0.5;
-  filter: drop-shadow(0 0 10px rgba(22, 119, 255, 0.35));
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-primary-active);
+  content: 'N';
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
 }
 
 /* Status Bar */
@@ -371,4 +418,41 @@
   font-size: 12px;
   color: var(--color-fg-tertiary);
   font-family: var(--font-mono);
+}
+
+.v-react-not-found {
+  display: grid;
+  min-height: 100%;
+  place-items: center;
+  padding: 24px;
+  background: var(--color-canvas);
+  color: var(--color-fg-tertiary);
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  .v-react-root .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: 220px minmax(560px, 1fr);
+    overflow: auto;
+  }
+
+  .v-react-root .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--color-divider);
+  }
+
+  .v-react-root .main {
+    border-left: 0;
+  }
+
+  .v-react-root .editor {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: minmax(260px, 1fr) 0 minmax(260px, 1fr);
+    overflow: visible;
+  }
+
+  .v-react-root .editor .splitter {
+    display: none;
+  }
 }

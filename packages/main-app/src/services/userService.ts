@@ -40,8 +40,11 @@ const sanitizeUser = (raw: unknown): UserProfile => {
     for (const item of value) {
       if (typeof item === 'string') {
         out.push(item);
-      } else if (item && typeof item === 'object' && 'code' in item && typeof (item as any).code === 'string') {
-        out.push((item as any).code);
+      } else if (item && typeof item === 'object' && 'code' in item) {
+        const code = (item as { code?: unknown }).code;
+        if (typeof code === 'string') {
+          out.push(code);
+        }
       }
     }
     return out.length ? out : undefined;

@@ -28,10 +28,7 @@ export const App = ({ basename }: { basename?: string }) => {
         {/* 访问 /v-react 时默认进入笔记 */}
         <Route index element={<Navigate to="notes" replace />} />
         {/* 未匹配时展示 404 */}
-        <Route
-          path="*"
-          element={<div style={{ padding: 16, fontSize: 14, color: 'var(--color-text, #666)' }}>页面不存在</div>}
-        />
+        <Route path="*" element={<div className="v-react-not-found">页面不存在</div>} />
       </Routes>
     </BrowserRouter>
   );

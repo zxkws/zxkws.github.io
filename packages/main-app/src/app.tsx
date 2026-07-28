@@ -19,6 +19,7 @@ import PageLoading from './components/PageLoading';
 import '@zxkws/shared-theme/theme.css';
 import './global.css';
 import './index.css';
+import './pages/workspace-pages.css';
 import { UserProvider } from './context/UserContext';
 import { ensureIcestarkAppsRegistered, loadConfig, resolveMicroApps } from './core/icestark';
 import BasicLayout from './layouts/BasicLayout';
@@ -26,7 +27,20 @@ import NavHome from './pages/NavHome';
 import { subscribeLoading } from './services/networkLoading';
 import { ensureHistoryIdx, replaceUrl } from './utils/safeHistory';
 
-const RouteNotFound = () => <div className="flex flex-1 items-center justify-center">页面飞走啦～</div>;
+const RouteNotFound = () => (
+  <div className="workspace-page workspace-feedback-screen">
+    <section className="workspace-panel workspace-feedback-card">
+      <p className="workspace-page__eyebrow">404 / Not found</p>
+      <h1>没有找到这个页面</h1>
+      <p className="workspace-page__description">当前地址没有匹配到可用功能，请返回门户重新选择入口。</p>
+      <div className="workspace-inline-actions workspace-feedback-actions">
+        <a className="workspace-button workspace-button--primary" href="/">
+          返回门户
+        </a>
+      </div>
+    </section>
+  </div>
+);
 const normalizePathname = (value: string) => (value.length > 1 && value.endsWith('/') ? value.slice(0, -1) : value);
 
 const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
@@ -34,21 +48,7 @@ const UserAdmin = lazy(() => import('./pages/UserAdmin'));
 const Profile = lazy(() => import('./pages/Profile'));
 const WatchTogetherPage = lazy(() => import('./pages/WatchTogether'));
 
-const MicroAppLoading = () => (
-  <div className="absolute inset-0 z-[2000] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-    <div className="flex flex-col items-center gap-3 rounded-lg bg-[var(--color-bg)] px-6 py-4 text-[var(--color-text)] shadow-lg">
-      <span
-        className="inline-flex h-8 w-8 animate-spin rounded-full border-4"
-        style={{
-          borderColor: 'var(--spinner-track)',
-          borderTopColor: 'var(--spinner-head)',
-        }}
-        aria-hidden="true"
-      />
-      <span className="text-sm font-medium tracking-wide">Loading...</span>
-    </div>
-  </div>
-);
+const MicroAppLoading = () => <PageLoading loading contained />;
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -276,16 +276,21 @@ function App() {
 
   if (configError) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--color-bg)] text-[var(--color-text)]">
-        <h1 className="mb-4 text-2xl font-semibold">无法加载配置中心数据</h1>
-        <p className="mb-6 text-sm opacity-80">{configError}</p>
-        <button
-          type="button"
-          className="rounded bg-primary-500 px-4 py-2 text-white shadow hover:bg-primary-600"
-          onClick={() => window.location.reload()}
-        >
-          刷新重试
-        </button>
+      <div className="workspace-page workspace-feedback-screen">
+        <section className="workspace-panel workspace-feedback-card">
+          <p className="workspace-page__eyebrow">Configuration error</p>
+          <h1>无法加载应用配置</h1>
+          <p className="workspace-page__description">{configError}</p>
+          <div className="workspace-inline-actions workspace-feedback-actions">
+            <button
+              type="button"
+              className="workspace-button workspace-button--primary"
+              onClick={() => window.location.reload()}
+            >
+              刷新重试
+            </button>
+          </div>
+        </section>
       </div>
     );
   }

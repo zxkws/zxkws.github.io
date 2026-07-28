@@ -92,8 +92,8 @@ const submitSmsLogin = async (payload: { phone: string; code: string }) => {
 <template>
   <AuthPageShell>
     <template #visual>
-      <h1 class="hero-text">Work<br />Reimagined.</h1>
-      <p class="hero-sub">Enter the workspace designed for the future. Seamless, efficient, and beautiful.</p>
+      <h1 class="hero-text">Tools first.<br />Workspace behind.</h1>
+      <p class="hero-sub">公开工具无需登录；数据库、AI 与权限能力，在一个账号之后保持集中和安静。</p>
     </template>
 
     <template #form>
@@ -106,7 +106,13 @@ const submitSmsLogin = async (payload: { phone: string; code: string }) => {
           :on-submit="submitPasswordLogin"
           :on-error="onError"
         />
-        <SmsLoginForm v-else :loading="loading" :on-send-code="sendSmsCode" :on-submit="submitSmsLogin" :on-error="onError" />
+        <SmsLoginForm
+          v-else
+          :loading="loading"
+          :on-send-code="sendSmsCode"
+          :on-submit="submitSmsLogin"
+          :on-error="onError"
+        />
 
         <GithubLoginButton :disabled="loading" @click="onGithubLogin" />
 

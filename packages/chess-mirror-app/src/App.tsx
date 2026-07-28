@@ -42,6 +42,34 @@ type AnalysisView = {
   source?: string;
 };
 
+const AnalysisLines = ({ label, moves }: { label: string; moves: AnalysisMove[] }) => (
+  <div className="candidate-group">
+    <span>{label}</span>
+    <div className="candidate-list">
+      {moves.map((move, index) => (
+        <div key={`${move.move}-${index}`}>
+          <b>{index + 1}</b>
+          <span className="candidate-move">
+            <span>{move.move}</span>
+            <span>{move.moveText}</span>
+            <span className="candidate-tags">
+              {move.tags?.map((tag) => (
+                <i key={tag}>{tag}</i>
+              ))}
+            </span>
+          </span>
+          <span className="candidate-meta">
+            <small>{move.score}</small>
+            <small>{move.rank}</small>
+            <small>{move.note}</small>
+            <small>{move.winrate}</small>
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 const errorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 const App: React.FC = () => {
@@ -77,7 +105,6 @@ const App: React.FC = () => {
   const lastVideoRequestRef = useRef(0);
 
   const bestMove = analysis?.bestMove || null;
-  const bestMoveLabel = analysis?.bestMoveText || analysis?.bestMove || null;
 
   useEffect(() => {
     visionService
@@ -151,7 +178,7 @@ const App: React.FC = () => {
     setCurrentFen(result.fen);
     setSideToMove(result.fen.split(' ')[1] === 'b' ? 'b' : 'w');
     setPhase('result');
-    setStatus(result.bestMoveText || result.bestMove);
+    setStatus(result.bestMove);
     return result;
   }, []);
 
@@ -431,7 +458,7 @@ const App: React.FC = () => {
               <canvas ref={overlayRef} />
               {(cameraEnabled || preview) && (
                 <div className={boardFound ? 'camera-state found' : 'camera-state'}>
-                  {view === 'video' && bestMoveLabel ? bestMoveLabel : status}
+                  {view === 'video' && analysis ? analysis.bestMove : status}
                 </div>
               )}
               {cameraEnabled && (
@@ -543,30 +570,35 @@ const App: React.FC = () => {
           {analysis && (
             <div className="analysis-card">
               <span>建议着法</span>
-              <strong>{bestMoveLabel}</strong>
-              {(analysis.evaluationText !== undefined ||
-                analysis.assessment !== undefined ||
-                analysis.evaluation !== undefined) && (
-                <div className="evaluation">
-                  {analysis.evaluationText ?? analysis.assessment ?? analysis.evaluation}
+              <strong>{analysis.bestMove}</strong>
+              <dl className="analysis-fields">
+                <div>
+                  <dt>bestMoveText</dt>
+                  <dd>{analysis.bestMoveText}</dd>
                 </div>
-              )}
-              {(analysis.lines ?? analysis.moves)?.length > 0 && (
-                <div className="candidate-list">
-                  {(analysis.lines ?? analysis.moves ?? []).map((move, index) => (
-                    <div key={`${move.move}-${index}`}>
-                      <b>{index + 1}</b>
-                      <span className="candidate-move">
-                        <span>{move.moveText || move.move}</span>
-                        {move.tags?.map((tag) => (
-                          <i key={tag}>{tag}</i>
-                        ))}
-                      </span>
-                      {move.score !== undefined && <small>{move.score}</small>}
-                    </div>
-                  ))}
+                <div>
+                  <dt>evaluation</dt>
+                  <dd>{analysis.evaluation}</dd>
                 </div>
-              )}
+                <div>
+                  <dt>evaluationText</dt>
+                  <dd>{analysis.evaluationText}</dd>
+                </div>
+                <div>
+                  <dt>assessment</dt>
+                  <dd>{analysis.assessment}</dd>
+                </div>
+                <div>
+                  <dt>source</dt>
+                  <dd>{analysis.source}</dd>
+                </div>
+                <div>
+                  <dt>fen</dt>
+                  <dd>{analysis.fen}</dd>
+                </div>
+              </dl>
+              {analysis.lines && <AnalysisLines label="lines" moves={analysis.lines} />}
+              {analysis.moves && <AnalysisLines label="moves" moves={analysis.moves} />}
               <button className="secondary full-action" onClick={adjustBoard}>
                 调整局面
               </button>

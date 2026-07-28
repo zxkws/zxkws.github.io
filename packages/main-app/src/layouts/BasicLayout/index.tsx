@@ -7,11 +7,15 @@ import type { MenuItem } from '../../types/menu';
 import { clearPwaCachesAndReload } from '../../utils/pwa';
 import HeaderBar from './components/HeaderBar';
 import PageNav from './components/PageNav';
+import * as styles from './index.module.css';
 import { builtInAsideMenus } from './menuConfig';
+
+const readPathname = () => (typeof window === 'undefined' ? '/' : window.location.pathname || '/');
 
 export default function BasicLayout({ children }: { children: ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const [pathname, setPathname] = useState(readPathname);
   const { user, loading } = useUser();
   const [menus, setMenus] = useState<MenuItem[]>(builtInAsideMenus);
 
@@ -20,33 +24,24 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
     const filterMenus = (items: MenuItem[]): MenuItem[] =>
       items.flatMap((item) => {
         if (item.visible === false || (item.requiresAuth && !user) || (item.adminOnly && !isAdmin)) return [];
-        const children = item.children ? filterMenus(item.children) : undefined;
-        return [{ ...item, children }];
+        const nestedItems = item.children ? filterMenus(item.children) : undefined;
+        return [{ ...item, children: nestedItems }];
       });
     return filterMenus(menus);
   }, [menus, user]);
 
-  useEffect(() => {
-    console.log('[BasicLayout] Current menus:', menus);
-  }, [menus]);
-
-  const isPublicRoute = (() => {
-    if (typeof window === 'undefined') return true;
-    const pathname = window.location.pathname || '/';
-    // 允许首页、工具页、以及象棋·镜在未登录时完全公开访问
-    return (
-      pathname === '/' ||
-      pathname === '/chess-mirror' ||
-      pathname.startsWith('/chess-mirror/') ||
-      pathname.startsWith('/tools/') ||
-      pathname === '/app/watch-together' ||
-      pathname === '/textdiff' ||
-      pathname === '/v-app/text-difference' ||
-      pathname.startsWith('/v-app/text-difference/') ||
-      pathname === '/v-app/json-viewer' ||
-      pathname.startsWith('/v-app/json-viewer/')
-    );
-  })();
+  const isPortalRoute = pathname === '/';
+  const isPublicRoute =
+    isPortalRoute ||
+    pathname === '/chess-mirror' ||
+    pathname.startsWith('/chess-mirror/') ||
+    pathname.startsWith('/tools/') ||
+    pathname === '/app/watch-together' ||
+    pathname === '/textdiff' ||
+    pathname === '/v-app/text-difference' ||
+    pathname.startsWith('/v-app/text-difference/') ||
+    pathname === '/v-app/json-viewer' ||
+    pathname.startsWith('/v-app/json-viewer/');
 
   const commandItems = useMemo<CommandItem[]>(() => {
     const flatten = (items: MenuItem[], prefix: string[] = []) => {
@@ -64,9 +59,8 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
             keywords,
           });
         }
-        const children = item.children;
-        if (children?.length) {
-          out.push(...flatten(children, [...keywords]));
+        if (item.children?.length) {
+          out.push(...flatten(item.children, keywords));
         }
       });
       return out;
@@ -86,12 +80,6 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
         subtitle: 'Service Worker / Cache Storage',
         action: () => clearPwaCachesAndReload(),
       },
-      {
-        id: 'action:open-devtools-help',
-        title: '打开性能面板（提示）',
-        subtitle: 'DevTools → Performance / Application',
-        action: () => window.alert('DevTools → Performance / Application（Service Worker）'),
-      },
     ];
 
     const seen = new Set<string>();
@@ -102,10 +90,8 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
     });
   }, [visibleMenus]);
 
-  // 核心鉴权逻辑：如果没有用户信息且加载已完成，强制跳转登录
   useEffect(() => {
     if (!loading && !user && !isPublicRoute) {
-      // 记录当前 URL 以便登录后跳转回来
       const currentUrl = window.location.href;
       const isDev = process.env.NODE_ENV === 'development';
       const authBase = isDev ? 'http://localhost:5183' : `${window.location.origin}/auth-app`;
@@ -114,58 +100,65 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
   }, [user, loading, isPublicRoute]);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    const media = window.matchMedia('(max-width: 860px)');
+    const syncViewport = () => setIsMobile(media.matches);
+    syncViewport();
+    media.addEventListener('change', syncViewport);
+    return () => media.removeEventListener('change', syncViewport);
   }, []);
 
-  // 菜单加载逻辑
   useEffect(() => {
-    if (user) {
-      let mounted = true;
-      fetchRemoteMenus(true)
-        .then((remote) => {
-          if (!mounted) return;
-          if (remote && remote.length > 0) {
-            setMenus(remote);
-          } else {
-            setMenus(builtInAsideMenus);
-          }
-        })
-        .catch(() => {
-          if (mounted) setMenus(builtInAsideMenus);
-        });
-      return () => {
-        mounted = false;
-      };
+    const syncPathname = () => {
+      setPathname(readPathname());
+      setIsNavOpen(false);
+    };
+    window.addEventListener('main-route-change', syncPathname);
+    window.addEventListener('popstate', syncPathname);
+    return () => {
+      window.removeEventListener('main-route-change', syncPathname);
+      window.removeEventListener('popstate', syncPathname);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setMenus(builtInAsideMenus);
+      return;
     }
+
+    let mounted = true;
+    fetchRemoteMenus(true)
+      .then((remote) => {
+        if (!mounted) return;
+        setMenus(remote?.length ? remote : builtInAsideMenus);
+      })
+      .catch(() => {
+        if (mounted) setMenus(builtInAsideMenus);
+      });
+    return () => {
+      mounted = false;
+    };
   }, [user]);
 
-  // 如果正在检查登录状态，或者未登录（即将跳转），显示全屏 Loading 或空状态，避免闪屏
   if (loading || (!user && !isPublicRoute)) {
-    return <PageLoading loading />; // 避免首屏空白，同时给跳转登录留出过渡
+    return <PageLoading loading />;
   }
 
   return (
-    <div className="w-full h-full relative overflow-hidden flex flex-col">
+    <div className={`${styles.layout} ${isPortalRoute ? styles.portalLayout : styles.workspaceLayout}`}>
       <CommandPalette commands={commandItems} />
-      {/* 1) Header always on top */}
-      <HeaderBar isMobile={isMobile} onMenuToggle={() => setIsNavOpen(true)} />
+      <HeaderBar isMobile={isMobile} isPortal={isPortalRoute} onMenuToggle={() => setIsNavOpen(true)} />
 
-      {/* 2) Body: Left Dock + Main Stage */}
-      <div className="flex flex-1 min-h-0 relative overflow-hidden">
-        <PageNav isMobile={isMobile} isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} menus={visibleMenus} />
-
-        <div className="flex-1 flex flex-col min-w-0 h-full relative z-10">
-          {/* The "Main Stage" - A floating glass card */}
-          <main className="flex-1 p-4 md:p-6 overflow-hidden relative">
-            <div className="w-full h-full rounded-[12px] bg-[var(--stage-bg)] border border-[var(--color-divider)] shadow-[var(--stage-shadow)] overflow-hidden flex flex-col transition-all duration-300">
-              {children}
-            </div>
+      {isPortalRoute ? (
+        <main className={styles.portalMain}>{children}</main>
+      ) : (
+        <div className={styles.workspaceBody}>
+          <PageNav isMobile={isMobile} isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} menus={visibleMenus} />
+          <main className={styles.workspaceMain}>
+            <div className={styles.workspaceStage}>{children}</div>
           </main>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import Loading from '@/components/Loading.vue';
-import Menu from '@/components/Menu.vue';
 import Header from '@/components/Header.vue';
 import { useResizeWidth } from '@/hooks';
 import { mainStore } from '@/store';
-import { onMounted, computed } from 'vue';
+import Menu from '@/components/Menu.vue';
+import { computed, onMounted } from 'vue';
 
 useResizeWidth();
 
@@ -17,17 +16,42 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="w-full h-full flex flex-col">
-    <Loading />
+  <div class="tool-shell">
     <Header v-if="!isMicroApp" />
-    <div class="flex flex-1 overflow-hidden">
+    <div class="tool-shell__body">
       <Menu v-if="!isMicroApp" />
-      <section
-        class="flex-1 overflow-y-auto"
-        :class="isMicroApp ? 'p-0 bg-transparent' : 'p-5 bg-gray-100 dark:bg-gray-900'"
-      >
+      <section class="tool-shell__content" :class="{ 'tool-shell__content--micro': isMicroApp }">
         <router-view />
       </section>
     </div>
   </div>
 </template>
+
+<style scoped>
+.tool-shell {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  background: var(--color-canvas);
+  color: var(--color-fg);
+}
+
+.tool-shell__body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.tool-shell__content {
+  min-width: 0;
+  flex: 1;
+  overflow-y: auto;
+  background: var(--color-canvas);
+}
+
+.tool-shell__content--micro {
+  background: transparent;
+}
+</style>

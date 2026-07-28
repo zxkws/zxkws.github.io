@@ -1,16 +1,39 @@
-const { getStylelintConfig } = require('@iceworks/spec');
-
-const baseConfig = getStylelintConfig('react');
-
 module.exports = {
-  ...baseConfig,
   rules: {
-    ...baseConfig.rules,
-    // Keep consistent with existing CSS code style in this repo.
-    indentation: 'tab',
-    // Allow multi-line values (e.g. gradients) while still enforcing single-line spacing.
-    'declaration-colon-space-after': 'always-single-line',
-    // Global styles rely on IDs for root containers.
-    'selector-max-id': null,
+    'at-rule-no-unknown': [
+      true,
+      {
+        ignoreAtRules: ['apply', 'config', 'layer', 'tailwind', 'theme'],
+      },
+    ],
+    'block-no-empty': true,
+    'color-no-invalid-hex': true,
+    'declaration-block-no-duplicate-custom-properties': true,
+    'declaration-block-no-duplicate-properties': [
+      true,
+      {
+        ignore: ['consecutive-duplicates-with-different-values'],
+      },
+    ],
+    'font-family-no-duplicate-names': true,
+    'function-calc-no-unspaced-operator': true,
+    'keyframe-block-no-duplicate-selectors': true,
+    'no-duplicate-at-import-rules': true,
+    'no-duplicate-selectors': true,
+    'property-no-unknown': [
+      true,
+      {
+        ignoreProperties: ['composes'],
+      },
+    ],
+    'selector-pseudo-class-no-unknown': [
+      true,
+      {
+        ignorePseudoClasses: ['global'],
+      },
+    ],
+    'selector-pseudo-element-no-unknown': true,
+    'string-no-newline': true,
+    'unit-no-unknown': true,
   },
 };

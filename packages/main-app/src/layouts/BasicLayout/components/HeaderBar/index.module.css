@@ -1,57 +1,121 @@
 .headerBar {
+	position: relative;
+	z-index: 50;
+	flex-shrink: 0;
+	height: 64px;
+	background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+	border-bottom: 1px solid var(--color-divider);
+	backdrop-filter: blur(16px);
+}
+
+.headerInner {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0 var(--space-6);
-	height: 64px;
-	flex-shrink: 0;
-	background: var(--color-surface);
-	border-bottom: 1px solid var(--color-divider);
-	z-index: 20;
+	width: 100%;
+	max-width: 1440px;
+	height: 100%;
+	margin: 0 auto;
+	padding: 0 24px;
 }
 
-.leftArea {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-}
-
-.menuToggle {
-	display: none; /* Desktop hidden by default */
-	background: transparent;
-	border: none;
-	color: var(--color-fg);
-	cursor: pointer;
-	padding: var(--space-2);
-	border-radius: var(--radius-sm);
-}
-
-.menuToggle:hover {
-	background: var(--color-surface-3);
-}
-
-.menuToggle:focus-visible {
-	outline: 3px solid var(--color-focus-ring);
-	outline-offset: 2px;
-}
-
+.leftArea,
 .actions {
 	display: flex;
 	align-items: center;
-	gap: 16px;
-	margin-left: auto; /* Push to right */
+	min-width: 0;
 }
 
-.themeBtn {
-	background: var(--color-surface);
-	border: 1px solid var(--color-border);
+.leftArea {
+	gap: 28px;
+}
+
+.actions {
+	gap: 8px;
+}
+
+.brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 9px;
+	flex-shrink: 0;
 	color: var(--color-fg);
-	width: 36px;
-	height: 36px;
-	border-radius: var(--radius-md);
+	font-size: 15px;
+	font-weight: 650;
+	letter-spacing: -0.02em;
+	text-decoration: none;
+}
+
+.brandMark {
+	display: grid;
+	width: 27px;
+	height: 27px;
+	place-items: center;
+	color: #171717;
+	background: var(--color-primary);
+	border-radius: 6px;
+	box-shadow: inset 0 0 0 1px rgb(0 0 0 / 8%);
+}
+
+.brandMark svg {
+	width: 17px;
+	height: 17px;
+	fill: currentColor;
+}
+
+.portalNav {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	gap: 4px;
+}
+
+.portalNav a,
+.workspaceLabel {
+	color: var(--color-fg-tertiary);
+	font-size: 13px;
+	font-weight: 450;
+	text-decoration: none;
+}
+
+.portalNav a {
+	padding: 7px 10px;
+	border-radius: 6px;
+	transition:
+		color var(--duration-fast) var(--ease-standard),
+		background-color var(--duration-fast) var(--ease-standard);
+}
+
+.portalNav a:hover {
+	color: var(--color-fg);
+	background: var(--color-surface-2);
+}
+
+.workspaceLabel {
+	padding-left: 18px;
+	border-left: 1px solid var(--color-divider);
+	font-family: var(--font-mono);
+	font-size: 11px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.iconButton,
+.commandButton,
+.userButton,
+.menuItem {
+	font: inherit;
+}
+
+.iconButton {
+	display: grid;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	place-items: center;
+	color: var(--color-fg-secondary);
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 6px;
 	cursor: pointer;
 	transition:
 		background-color var(--duration-fast) var(--ease-standard),
@@ -59,108 +123,317 @@
 		color var(--duration-fast) var(--ease-standard);
 }
 
-.themeBtn:hover {
-	background: var(--color-surface-3);
+.iconButton:hover {
+	color: var(--color-fg);
+	background: var(--color-surface-2);
+	border-color: var(--color-divider);
 }
 
-.themeBtn:focus-visible {
-	outline: 3px solid var(--color-focus-ring);
-	outline-offset: 2px;
+.iconButton svg {
+	width: 18px;
+	height: 18px;
+	fill: none;
+	stroke: currentColor;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	stroke-width: 1.7;
+}
+
+.commandButton {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 36px;
+	padding: 0 8px 0 10px;
+	color: var(--color-fg-tertiary);
+	background: var(--color-surface);
+	border: 1px solid var(--color-border);
+	border-radius: 6px;
+	box-shadow: var(--shadow-xs);
+	cursor: pointer;
+	transition:
+		border-color var(--duration-fast) var(--ease-standard),
+		color var(--duration-fast) var(--ease-standard),
+		box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.commandButton:hover {
+	color: var(--color-fg);
+	border-color: var(--color-border-strong);
+	box-shadow: var(--shadow-sm);
+}
+
+.commandButton svg {
+	width: 16px;
+	height: 16px;
+	fill: none;
+	stroke: currentColor;
+	stroke-linecap: round;
+	stroke-width: 1.7;
+}
+
+.commandButton span {
+	font-size: 13px;
+}
+
+.commandButton kbd {
+	padding: 2px 5px;
+	color: var(--color-fg-tertiary);
+	background: var(--color-surface-2);
+	border: 1px solid var(--color-divider);
+	border-radius: 4px;
+	font-family: var(--font-mono);
+	font-size: 10px;
+	box-shadow: 0 1px 0 var(--color-divider);
+}
+
+.loginButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 36px;
+	padding: 0 14px;
+	color: #171717;
+	background: var(--color-primary);
+	border: 1px solid
+		color-mix(in srgb, var(--color-primary-deep) 72%, transparent);
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 550;
+	text-decoration: none;
+	box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+	transition:
+		background-color var(--duration-fast) var(--ease-standard),
+		transform var(--duration-fast) var(--ease-standard);
+}
+
+.loginButton:hover {
+	background: var(--color-primary-deep);
+	transform: translateY(-1px);
 }
 
 .userProfile {
 	position: relative;
 }
 
-.userBtn {
+.userButton {
 	display: flex;
 	align-items: center;
-	gap: var(--space-2);
-	background: var(--color-surface-2);
-	border: 1px solid var(--color-border);
-	padding: 4px var(--space-3) 4px 4px;
-	border-radius: 999px;
+	gap: 8px;
+	height: 38px;
+	padding: 3px 7px 3px 3px;
+	color: var(--color-fg);
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 8px;
 	cursor: pointer;
 	transition:
 		background-color var(--duration-fast) var(--ease-standard),
-		border-color var(--duration-fast) var(--ease-standard),
-		box-shadow var(--duration-fast) var(--ease-standard);
+		border-color var(--duration-fast) var(--ease-standard);
 }
 
-.userBtn:hover {
-	background: var(--color-surface-3);
-	box-shadow: var(--shadow-sm);
+.userButton:hover {
+	background: var(--color-surface-2);
+	border-color: var(--color-divider);
+}
+
+.avatar,
+.avatarFallback {
+	width: 30px;
+	height: 30px;
+	border-radius: 6px;
 }
 
 .avatar {
-	width: 32px;
-	height: 32px;
-	border-radius: 50%;
 	object-fit: cover;
-	border: 1px solid var(--color-border);
+	border: 1px solid var(--color-divider);
+}
+
+.avatarFallback {
+	display: grid;
+	place-items: center;
+	color: var(--color-fg-secondary);
+	background: var(--color-surface-2);
+	border: 1px solid var(--color-divider);
+}
+
+.avatarFallback svg {
+	width: 17px;
+	height: 17px;
+	fill: none;
+	stroke: currentColor;
+	stroke-linecap: round;
+	stroke-width: 1.7;
 }
 
 .username {
-	font-size: 14px;
-	font-weight: 600;
-	color: var(--color-fg);
-	letter-spacing: -0.01em;
+	max-width: 120px;
+	overflow: hidden;
+	font-size: 13px;
+	font-weight: 500;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.chevron {
+	width: 14px;
+	height: 14px;
+	fill: none;
+	stroke: var(--color-fg-tertiary);
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	stroke-width: 1.7;
 }
 
 .dropdown {
 	position: absolute;
-	top: calc(100% + 12px);
+	top: calc(100% + 9px);
 	right: 0;
-	width: 180px;
-	background: var(--color-surface);
-	border: 1px solid var(--color-divider);
-	border-radius: var(--radius-md);
-	box-shadow: var(--shadow-md);
-	padding: var(--space-2);
 	display: flex;
+	width: 190px;
 	flex-direction: column;
-	gap: var(--space-1);
-	z-index: 50;
-	transform-origin: top right;
-	animation: dropdownFade 0.2s ease-out;
+	gap: 2px;
+	padding: 6px;
+	background: var(--color-surface);
+	border: 1px solid var(--color-border);
+	border-radius: 8px;
+	box-shadow: var(--shadow-lg);
+	animation: dropdown-in 160ms var(--ease-emphasized);
 }
 
-@keyframes dropdownFade {
+@keyframes dropdown-in {
 	from {
 		opacity: 0;
-		transform: scale(0.95) translateY(-10px);
-	}
-	to {
-		opacity: 1;
-		transform: scale(1) translateY(0);
+		transform: translateY(-4px);
 	}
 }
 
 .menuItem {
-	text-decoration: none;
-	color: var(--color-fg);
-	padding: var(--space-2) var(--space-3);
-	font-size: 14px;
-	font-weight: 500;
-	border-radius: var(--radius-sm);
-	transition:
-		background-color var(--duration-fast) var(--ease-standard),
-		color var(--duration-fast) var(--ease-standard);
-	cursor: pointer;
-	background: transparent;
-	border: none;
-	text-align: left;
 	display: flex;
 	align-items: center;
+	width: 100%;
+	min-height: 34px;
+	padding: 0 10px;
+	color: var(--color-fg-secondary);
+	background: transparent;
+	border: 0;
+	border-radius: 5px;
+	font-size: 13px;
+	text-align: left;
+	text-decoration: none;
+	cursor: pointer;
 }
 
 .menuItem:hover {
-	background: var(--color-surface-3);
 	color: var(--color-fg);
+	background: var(--color-surface-2);
 }
 
-@media (max-width: 768px) {
-	.menuToggle {
-		display: flex;
+.dangerItem {
+	color: var(--color-danger);
+}
+
+.modalOverlay {
+	position: fixed;
+	z-index: 9999;
+	inset: 0;
+	display: grid;
+	padding: 24px;
+	place-items: center;
+	background: rgb(0 0 0 / 48%);
+	backdrop-filter: blur(4px);
+}
+
+.modal {
+	width: min(100%, 440px);
+	padding: 24px;
+	background: var(--color-surface);
+	border: 1px solid var(--color-border);
+	border-radius: 12px;
+	box-shadow: var(--shadow-xl);
+}
+
+.modalHeading {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	margin-bottom: 24px;
+}
+
+.eyebrow {
+	color: var(--color-primary-deep);
+	font-family: var(--font-mono);
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+}
+
+.modalHeading h2 {
+	margin: 5px 0 0;
+	font-size: 22px;
+	font-weight: 500;
+	letter-spacing: -0.03em;
+}
+
+.infoList {
+	display: grid;
+	gap: 0;
+	margin: 0;
+	border: 1px solid var(--color-divider);
+	border-radius: 8px;
+}
+
+.infoList div {
+	display: grid;
+	grid-template-columns: 120px minmax(0, 1fr);
+	gap: 16px;
+	padding: 13px 14px;
+	border-bottom: 1px solid var(--color-divider);
+}
+
+.infoList div:last-child {
+	border-bottom: 0;
+}
+
+.infoList dt,
+.infoList dd {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.infoList dt {
+	color: var(--color-fg-tertiary);
+}
+
+.infoList dd {
+	overflow-wrap: anywhere;
+	color: var(--color-fg);
+	font-family: var(--font-mono);
+}
+
+@media (max-width: 760px) {
+	.headerInner {
+		padding: 0 12px;
+	}
+
+	.leftArea {
+		gap: 10px;
+	}
+
+	.portalNav,
+	.workspaceLabel,
+	.commandButton,
+	.username,
+	.chevron {
+		display: none;
+	}
+
+	.actions {
+		gap: 4px;
+	}
+
+	.loginButton {
+		padding: 0 11px;
 	}
 }

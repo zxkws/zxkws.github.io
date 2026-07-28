@@ -71,6 +71,12 @@ export const useNotes = () => {
   });
 
   const activeNote = ui.activeId ? notes[ui.activeId] : undefined;
+  const operationError = listQuery.error || mutateNote.error || createDailyMutation.error || createEmptyMutation.error;
+  const errorMessage = operationError
+    ? operationError instanceof Error
+      ? operationError.message
+      : String(operationError)
+    : '';
 
   useEffect(() => {
     if (listQuery.data) {
@@ -91,6 +97,7 @@ export const useNotes = () => {
     ui,
     activeNote,
     saving,
+    errorMessage,
     setActive,
     createToday: () => createDailyMutation.mutate(),
     createBlank: () => createEmptyMutation.mutate(),

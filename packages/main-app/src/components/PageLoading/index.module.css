@@ -1,0 +1,61 @@
+.content {
+	position: relative;
+	display: flex;
+	min-width: 0;
+	min-height: 0;
+	flex: 1;
+	flex-direction: column;
+}
+
+.overlay {
+	z-index: 2000;
+	display: grid;
+	place-items: center;
+	background: color-mix(in srgb, var(--color-canvas) 72%, transparent);
+	backdrop-filter: blur(3px);
+}
+
+.contained {
+	position: absolute;
+	inset: 0;
+}
+
+.fullscreen {
+	position: fixed;
+	inset: 0;
+}
+
+.card {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	padding: 14px 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-md);
+	background: var(--color-surface);
+	color: var(--color-fg-secondary);
+	box-shadow: var(--shadow-md);
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.spinner {
+	width: 18px;
+	height: 18px;
+	border: 2px solid var(--spinner-track);
+	border-top-color: var(--spinner-head);
+	border-radius: 50%;
+	animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.spinner {
+		animation-duration: 1.8s;
+	}
+}

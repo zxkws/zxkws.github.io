@@ -129,13 +129,16 @@ onBeforeUnmount(clearPolling);
 <template>
   <main class="payment-page">
     <section class="payment-card">
+      <p class="payment-eyebrow">Payment console</p>
       <div class="title-row">
         <div>
-          <h1>支付</h1>
-          <p>创建收款订单后，使用微信扫码或跳转支付宝完成支付。</p>
+          <h1>支付订单</h1>
+          <p>创建订单后，使用微信扫码或跳转支付宝完成支付；订单状态会自动轮询。</p>
         </div>
         <button v-if="order" class="secondary-button" type="button" @click="reset">新建订单</button>
       </div>
+
+      <p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>
 
       <form v-if="!order" class="payment-form" @submit.prevent="createOrder">
         <label>
@@ -149,14 +152,16 @@ onBeforeUnmount(clearPolling);
 
         <fieldset>
           <legend>支付方式</legend>
-          <label class="provider-option" :class="{ selected: provider === 'wechat' }">
-            <input v-model="provider" type="radio" value="wechat" />
-            <span>微信支付</span>
-          </label>
-          <label class="provider-option" :class="{ selected: provider === 'alipay' }">
-            <input v-model="provider" type="radio" value="alipay" />
-            <span>支付宝</span>
-          </label>
+          <div class="provider-grid">
+            <label class="provider-option" :class="{ selected: provider === 'wechat' }">
+              <input v-model="provider" type="radio" value="wechat" />
+              <span>微信支付</span>
+            </label>
+            <label class="provider-option" :class="{ selected: provider === 'alipay' }">
+              <input v-model="provider" type="radio" value="alipay" />
+              <span>支付宝</span>
+            </label>
+          </div>
         </fieldset>
 
         <button class="primary-button" type="submit" :disabled="!canSubmit || submitting">
@@ -198,6 +203,14 @@ onBeforeUnmount(clearPolling);
             <dt>paidAt</dt>
             <dd>{{ order.paidAt }}</dd>
           </div>
+          <div>
+            <dt>createdAt</dt>
+            <dd>{{ order.createdAt }}</dd>
+          </div>
+          <div>
+            <dt>updatedAt</dt>
+            <dd>{{ order.updatedAt }}</dd>
+          </div>
         </dl>
 
         <div v-if="qrCodeDataUrl && order.status === 'pending'" class="qr-panel">
@@ -215,127 +228,177 @@ onBeforeUnmount(clearPolling);
           {{ syncing ? '查询中' : '我已支付，查询结果' }}
         </button>
       </section>
-
-      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     </section>
   </main>
 </template>
 
 <style scoped>
 .payment-page {
+  box-sizing: border-box;
   min-height: 100%;
-  padding: 32px 20px;
-  background: #f6f7f9;
-  color: #171717;
+  padding: 32px;
+  background: var(--color-canvas);
+  color: var(--color-fg);
 }
+
 .payment-card {
-  width: min(720px, 100%);
-  margin: 0 auto;
-  padding: 28px;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 12px 36px rgb(15 23 42 / 8%);
+  width: min(760px, 100%);
+  padding: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
 }
+
+.payment-eyebrow {
+  margin: 0 0 8px;
+  color: var(--color-primary-deep);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .title-row {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
 }
+
 h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: clamp(24px, 3vw, 32px);
+  letter-spacing: var(--tracking-tight);
 }
+
 .title-row p {
   margin: 8px 0 0;
-  color: #64748b;
+  color: var(--color-fg-tertiary);
+  font-size: 14px;
+  line-height: 1.6;
 }
+
 .payment-form {
   display: grid;
   gap: 20px;
   margin-top: 28px;
 }
+
 .payment-form > label {
   display: grid;
   gap: 8px;
+  color: var(--color-fg-secondary);
+  font-size: 13px;
   font-weight: 600;
 }
+
 input {
   padding: 11px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: transparent;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--color-surface);
   color: inherit;
   font: inherit;
 }
+
+input:focus {
+  border-color: var(--color-primary-deep);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
 fieldset {
-  display: flex;
-  gap: 12px;
   margin: 0;
   padding: 0;
   border: 0;
 }
+
 legend {
   margin-bottom: 8px;
+  color: var(--color-fg-secondary);
+  font-size: 13px;
   font-weight: 600;
 }
+
+.provider-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .provider-option {
-  flex: 1;
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--color-fg-secondary);
   cursor: pointer;
 }
+
 .provider-option.selected {
-  border-color: #2563eb;
-  background: #eff6ff;
+  border-color: var(--color-primary-deep);
+  background: var(--color-primary-muted);
+  color: var(--color-fg);
 }
+
+.provider-option input {
+  accent-color: var(--color-primary-deep);
+}
+
 button {
   font: inherit;
   cursor: pointer;
 }
+
 button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
+
 .primary-button {
   width: 100%;
   padding: 12px 16px;
-  border: 0;
-  border-radius: 9px;
-  background: #2563eb;
-  color: #fff;
-  font-weight: 700;
+  border: 1px solid var(--color-primary-deep);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 600;
 }
+
 .secondary-button {
   padding: 8px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #fff;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-fg);
 }
+
 .order-result {
   display: grid;
   gap: 22px;
   margin-top: 28px;
 }
+
 dl {
   display: grid;
   gap: 1px;
   overflow: hidden;
   margin: 0;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  background: #e2e8f0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-divider);
 }
+
 dl div {
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr);
-  background: #fff;
+  background: var(--color-surface);
 }
+
 dt,
 dd {
   min-width: 0;
@@ -343,65 +406,70 @@ dd {
   padding: 10px 12px;
   overflow-wrap: anywhere;
 }
+
 dt {
-  color: #64748b;
+  color: var(--color-fg-tertiary);
+  font-family: var(--font-mono);
+  font-size: 12px;
 }
+
+dd {
+  color: var(--color-fg);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
 .qr-panel {
   text-align: center;
 }
+
 .qr-panel img {
   width: 240px;
   max-width: 100%;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #fff;
 }
+
 .qr-panel p {
   margin: 8px 0 0;
+  color: var(--color-fg-tertiary);
+  font-size: 13px;
 }
+
 .error-message {
   margin: 20px 0 0;
-  color: #dc2626;
+  padding: 11px 13px;
+  border: 1px solid color-mix(in srgb, var(--color-danger) 45%, var(--color-border));
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+  font-size: 13px;
   overflow-wrap: anywhere;
 }
-@media (prefers-color-scheme: dark) {
-  .payment-page {
-    background: #0f172a;
-    color: #e2e8f0;
-  }
-  .payment-card,
-  dl div {
-    background: #1e293b;
-  }
-  .payment-card {
-    border-color: #334155;
-  }
-  input,
-  .provider-option {
-    border-color: #475569;
-  }
-  .provider-option.selected {
-    background: #1e3a5f;
-  }
-  .secondary-button {
-    border-color: #475569;
-    background: #1e293b;
-    color: #e2e8f0;
-  }
-  dl {
-    border-color: #334155;
-    background: #334155;
-  }
-}
+
 @media (max-width: 560px) {
   .payment-page {
-    padding: 16px 10px;
+    padding: 20px 14px;
   }
+
   .payment-card {
-    padding: 20px 16px;
+    padding: 18px 14px;
   }
-  fieldset {
+
+  .title-row,
+  .provider-grid {
+    grid-template-columns: 1fr;
     flex-direction: column;
   }
+
   dl div {
-    grid-template-columns: 112px minmax(0, 1fr);
+    grid-template-columns: 1fr;
+  }
+
+  dt {
+    padding-bottom: 0;
   }
 }
 </style>

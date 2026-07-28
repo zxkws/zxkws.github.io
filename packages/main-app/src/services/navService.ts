@@ -1,4 +1,4 @@
-import { client } from './httpClient';
+import { backgroundClient, client } from './httpClient';
 
 export type NavItem = {
   id: string;
@@ -23,7 +23,7 @@ const unwrap = <T>(payload: unknown): T => {
 };
 
 export const fetchNavItems = async () => {
-  const res = await client<unknown>('/v1/nav-items', undefined, { method: 'GET' });
+  const res = await backgroundClient<unknown>('/v1/nav-items', undefined, { method: 'GET' });
   const list = unwrap<NavItem[]>(res);
   return Array.isArray(list) ? list : [];
 };

@@ -208,11 +208,12 @@ export const Editor = ({ note, onChange }: { note: Note; onChange: (md: string) 
       <div className="splitter" onPointerDown={handleSplitterPointerDown} />
       <div className="preview">
         <ReactMarkdown
-          remarkPlugins={[remarkGfm as any, remarkMath, remarkFrontmatter, wikiLinkPlugin]}
-          rehypePlugins={[[rehypeHighlight as any, { ignoreMissing: true }], rehypeKatex]}
+          remarkPlugins={[remarkGfm, remarkMath, remarkFrontmatter, wikiLinkPlugin] as never}
+          rehypePlugins={[[rehypeHighlight, { ignoreMissing: true }], rehypeKatex] as never}
           components={{
             code(props) {
               const { children, className, node, ...rest } = props;
+              void node;
               const match = /language-(\w+)/.exec(className || '');
               if (match && match[1] === 'mermaid') {
                 return <Mermaid content={String(children).replace(/\n$/, '')} />;

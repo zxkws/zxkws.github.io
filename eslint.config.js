@@ -6,13 +6,7 @@ import globals from 'globals';
 
 export default [
   {
-    ignores: [
-      'dist',
-      'node_modules',
-      '**/dist',
-      '**/build',
-      'packages/v-app/public/sw.js',
-    ],
+    ignores: ['dist', 'node_modules', '**/dist', '**/build', 'packages/v-app/public/sw.js'],
   },
   {
     files: ['**/*.{js,jsx,ts,tsx}'],
@@ -37,7 +31,7 @@ export default [
       ...prettierPlugin.configs.recommended.rules,
       'prettier/prettier': 'error',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-unused-vars': 'off',
       'no-undef': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'off',

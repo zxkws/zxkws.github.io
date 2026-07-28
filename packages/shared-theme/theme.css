@@ -15,12 +15,11 @@
   color-scheme: light;
 
   /* ---- Typography ---- */
-  --font-sans: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui,
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial,
-    sans-serif;
-  --font-display: "Lexend", "Inter", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", monospace;
+  --font-sans:
+    'Inter', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Inter', 'PingFang SC', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
 
   /* ---- Type scale (rem, base 16px) ---- */
   --text-xs: 0.75rem; /* 12 */
@@ -63,16 +62,18 @@
   --space-12: 3rem; /* 48 */
   --space-16: 4rem; /* 64 */
 
-  /* Radius (enterprise console defaults) */
-  --radius-sm: 0.5rem; /* 8 */
-  --radius-md: 0.75rem; /* 12 */
-  --radius-lg: 1rem; /* 16 */
-  --radius-xl: 1.25rem; /* 20 */
-  --radius-2xl: 1.5rem; /* 24 */
+  /* Supabase-inspired square technical geometry */
+  --radius-sm: 0.375rem; /* 6 */
+  --radius-md: 0.5rem; /* 8 */
+  --radius-lg: 0.75rem; /* 12 */
+  --radius-xl: 1rem; /* 16 */
+  --radius-2xl: 1rem; /* 16 */
 
-  --shadow-sm: 0 1px 2px rgba(2, 6, 23, 0.06);
-  --shadow-md: 0 8px 24px rgba(2, 6, 23, 0.1);
-  --shadow-lg: 0 24px 60px rgba(2, 6, 23, 0.14);
+  --shadow-xs: 0 1px 2px rgba(23, 23, 23, 0.04);
+  --shadow-sm: 0 1px 3px rgba(23, 23, 23, 0.06);
+  --shadow-md: 0 8px 24px rgba(23, 23, 23, 0.08);
+  --shadow-lg: 0 16px 48px rgba(23, 23, 23, 0.12);
+  --shadow-xl: 0 24px 72px rgba(23, 23, 23, 0.18);
 
   /* ---- Motion ---- */
   --duration-fast: 150ms;
@@ -81,7 +82,7 @@
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
 
-  /* ---- Color primitives (Slate) ---- */
+  /* ---- Color primitives (kept for compatibility) ---- */
   --slate-50: #f8fafc;
   --slate-100: #f1f5f9;
   --slate-200: #e2e8f0;
@@ -95,30 +96,35 @@
   --slate-950: #020617;
 
   /* ---- Semantic colors (v2) ---- */
-  --color-canvas: #f7f8fa; /* page background */
-  --color-surface: #ffffff; /* primary container */
-  --color-surface-2: #f3f5f7; /* secondary container */
-  --color-surface-3: #eef2f6; /* hover/selected container */
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-2: #fafafa;
+  --color-surface-3: #f4f4f4;
 
-  --color-border: rgba(15, 23, 42, 0.1);
-  --color-divider: rgba(15, 23, 42, 0.08);
+  --color-border: #dfdfdf;
+  --color-border-strong: #c7c7c7;
+  --color-divider: #ededed;
 
-  --color-fg: #0f172a;
-  --color-fg-secondary: #334155;
-  --color-fg-tertiary: #5b6b82; /* ensure >= 4.5:1 on canvas */
-  --color-fg-disabled: rgba(15, 23, 42, 0.35);
+  --color-fg: #171717;
+  --color-fg-secondary: #4f4f4f;
+  --color-fg-tertiary: #707070;
+  --color-fg-disabled: #b2b2b2;
 
-  --color-primary: #1677ff;
-  --color-primary-hover: #0958d9;
-  --color-primary-active: #003eb3;
-  --color-on-primary: #ffffff;
+  --color-primary: #3ecf8e;
+  --color-primary-deep: #24b47e;
+  --color-primary-hover: #24b47e;
+  --color-primary-active: #1f9d70;
+  --color-primary-muted: rgba(62, 207, 142, 0.16);
+  --color-on-primary: #171717;
 
-  --color-success: #16a34a;
-  --color-warning: #f59e0b;
-  --color-danger: #dc2626;
-  --color-info: #0ea5e9;
+  --color-success: #24b47e;
+  --color-warning: #b7791f;
+  --color-danger: #d14343;
+  --color-danger-muted: rgba(209, 67, 67, 0.08);
+  --color-info: #3974d8;
 
-  --color-focus-ring: rgba(22, 119, 255, 0.35);
+  --color-focus-ring: rgba(62, 207, 142, 0.28);
+  --portal-grid-line: rgba(23, 23, 23, 0.035);
 
   /* ---- Glass / Stage (shared aliases) ---- */
   /* Keep names for backward compatibility, but values are now readability-first. */
@@ -158,41 +164,48 @@
 
   --glass-bg: var(--color-surface);
 
-  --shadow-glow: 0 8px 24px rgba(22, 119, 255, 0.22);
+  --shadow-glow: 0 8px 24px rgba(62, 207, 142, 0.18);
 }
 
-html[data-theme="dark"],
+html[data-theme='dark'],
 html.dark {
   color-scheme: dark;
 
-  --color-canvas: #0b1220;
-  --color-surface: #111a2c;
-  --color-surface-2: #0f172a;
-  --color-surface-3: #18233a;
+  --color-canvas: #151515;
+  --color-surface: #1c1c1c;
+  --color-surface-2: #232323;
+  --color-surface-3: #292929;
 
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-divider: rgba(255, 255, 255, 0.08);
+  --color-border: #383838;
+  --color-border-strong: #4a4a4a;
+  --color-divider: #303030;
 
-  --color-fg: #e5e7eb;
-  --color-fg-secondary: #b6c2d6;
-  --color-fg-tertiary: #94a3b8;
-  --color-fg-disabled: rgba(229, 231, 235, 0.35);
+  --color-fg: #f5f5f5;
+  --color-fg-secondary: #c2c2c2;
+  --color-fg-tertiary: #929292;
+  --color-fg-disabled: #606060;
 
-  --color-primary: #4c9aff;
-  --color-primary-hover: #79b8ff;
-  --color-primary-active: #2b7de9;
-  --color-on-primary: #07111f;
+  --color-primary: #3ecf8e;
+  --color-primary-deep: #24b47e;
+  --color-primary-hover: #4ade9c;
+  --color-primary-active: #24b47e;
+  --color-primary-muted: rgba(62, 207, 142, 0.15);
+  --color-on-primary: #171717;
 
-  --color-success: #22c55e;
-  --color-warning: #fbbf24;
-  --color-danger: #f87171;
-  --color-info: #38bdf8;
+  --color-success: #3ecf8e;
+  --color-warning: #e4b252;
+  --color-danger: #f17b7b;
+  --color-danger-muted: rgba(241, 123, 123, 0.1);
+  --color-info: #75a7ff;
 
-  --color-focus-ring: rgba(76, 154, 255, 0.4);
+  --color-focus-ring: rgba(62, 207, 142, 0.34);
+  --portal-grid-line: rgba(255, 255, 255, 0.035);
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.32);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.38);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.46);
+  --shadow-xl: 0 24px 72px rgba(0, 0, 0, 0.56);
 
-  --spinner-track: rgba(229, 231, 235, 0.18);
+  --spinner-track: rgba(245, 245, 245, 0.18);
 }

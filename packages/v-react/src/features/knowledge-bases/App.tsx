@@ -13,15 +13,22 @@ export default function KnowledgeBasesApp() {
   const [documentForm, setDocumentForm] = useState({ id: '', title: '', content: '' });
   const [showBaseForm, setShowBaseForm] = useState(false);
   const [status, setStatus] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const load = () =>
-    knowledgeApi
-      .list()
-      .then(setItems)
-      .catch((error) => setStatus(errorText(error)));
+  const load = async () => {
+    setLoading(true);
+    setStatus('');
+    try {
+      setItems(await knowledgeApi.list());
+    } catch (error) {
+      setStatus(errorText(error));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    load();
+    void load();
   }, []);
 
   const saveBase = async () => {
@@ -70,6 +77,30 @@ export default function KnowledgeBasesApp() {
     }
   };
 
+  const removeBase = async (item: KnowledgeBase) => {
+    if (!window.confirm(`删除知识库“${item.name}”？`)) return;
+    setStatus('');
+    try {
+      await knowledgeApi.remove(item.id);
+      setItems((current) => current.filter((value) => value.id !== item.id));
+    } catch (error) {
+      setStatus(errorText(error));
+    }
+  };
+
+  const removeDocument = async () => {
+    if (!editing || !documentForm.id) return;
+    if (!window.confirm(`删除文档“${documentForm.title}”？`)) return;
+    setStatus('');
+    try {
+      await knowledgeApi.removeDocument(editing.id, documentForm.id);
+      setDocuments((current) => current.filter((item) => item.id !== documentForm.id));
+      setDocumentForm({ id: '', title: '', content: '' });
+    } catch (error) {
+      setStatus(errorText(error));
+    }
+  };
+
   return (
     <main className="assistants-root">
       <header className="assistants-header">
@@ -88,20 +119,17 @@ export default function KnowledgeBasesApp() {
           新建知识库
         </button>
       </header>
-      {status && <p className="assistants-status">{status}</p>}
+      {status && (
+        <p className="assistants-status" role="alert">
+          {status}
+        </p>
+      )}
       <div className="assistant-grid">
         {items.map((item) => (
           <article className="assistant-card" key={item.id}>
             <div className="assistant-card-title">
               <h2>{item.name}</h2>
-              <button
-                className="danger-link"
-                onClick={async () => {
-                  if (!window.confirm(`删除知识库“${item.name}”？`)) return;
-                  await knowledgeApi.remove(item.id);
-                  setItems((current) => current.filter((value) => value.id !== item.id));
-                }}
-              >
+              <button className="danger-link" onClick={() => void removeBase(item)}>
                 删除
               </button>
             </div>
@@ -122,7 +150,7 @@ export default function KnowledgeBasesApp() {
             </div>
           </article>
         ))}
-        {!items.length && <div className="assistant-empty">暂无知识库</div>}
+        {!items.length && <div className="assistant-empty">{loading ? '正在加载知识库…' : '暂无知识库'}</div>}
       </div>
 
       {showBaseForm && (
@@ -195,14 +223,7 @@ export default function KnowledgeBasesApp() {
                 </label>
                 <div className="wide knowledge-editor-actions">
                   {documentForm.id && (
-                    <button
-                      className="danger-link"
-                      onClick={async () => {
-                        await knowledgeApi.removeDocument(editing.id, documentForm.id);
-                        setDocuments((current) => current.filter((item) => item.id !== documentForm.id));
-                        setDocumentForm({ id: '', title: '', content: '' });
-                      }}
-                    >
+                    <button className="danger-link" onClick={() => void removeDocument()}>
                       删除文档
                     </button>
                   )}

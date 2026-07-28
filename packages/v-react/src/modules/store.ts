@@ -69,7 +69,8 @@ export const useNoteStore = create<NoteState>()(
       },
       removeLocal(id) {
         set((state) => {
-          const { [id]: _, ...rest } = state.notes;
+          const rest = { ...state.notes };
+          delete rest[id];
           const openTabs = state.ui.openTabs.filter((t) => t !== id);
           const activeId = state.ui.activeId === id ? openTabs.at(-1) : state.ui.activeId;
           return { notes: rest, ui: { openTabs, activeId } };

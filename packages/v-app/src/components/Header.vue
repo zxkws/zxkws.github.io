@@ -1,137 +1,173 @@
-<template>
-  <div class="header-container bg-white dark:bg-gray-800 dark:border-gray-700">
-    <!-- Left Side -->
-    <div class="flex items-center">
-      <!-- Mobile menu button -->
-      <button @click="store.toggleMenu()" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 md:hidden mr-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-        </svg>
-      </button>
-      <!-- Desktop collapse button -->
-      <button @click="store.toggleMenuCollapse()" class="hidden md:block p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 mr-2">
-         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
-        </svg>
-      </button>
-      <div class="logo text-gray-800 dark:text-white">My App</div>
-    </div>
-
-    <!-- Right Side -->
-    <div class="flex items-center space-x-5">
-      <!-- Theme Switcher -->
-      <Menu as="div" class="relative inline-block text-left">
-        <div>
-          <MenuButton class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-800 focus:ring-indigo-500">
-            <span class="sr-only">Open theme options</span>
-            <!-- Sun icon for light mode, Moon for dark mode -->
-            <svg v-if="store.theme === 'light'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            <svg v-else-if="store.theme === 'dark'" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </MenuButton>
-        </div>
-
-        <transition enter-active-class="transition ease-out duration-100" enter-from-class="transform opacity-0 scale-95" enter-to-class="transform opacity-100 scale-100" leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100" leave-to-class="transform opacity-0 scale-95">
-          <MenuItems class="origin-top-right absolute right-0 mt-2 w-36 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none">
-            <div class="py-1">
-              <MenuItem v-slot="{ active }">
-                <button @click="store.setTheme('light')" :class="[active ? 'bg-gray-100 dark:bg-gray-700' : '', 'w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 flex items-center']">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  Light
-                </button>
-              </MenuItem>
-              <MenuItem v-slot="{ active }">
-                <button @click="store.setTheme('dark')" :class="[active ? 'bg-gray-100 dark:bg-gray-700' : '', 'w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 flex items-center']">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                  </svg>
-                  Dark
-                </button>
-              </MenuItem>
-              <MenuItem v-slot="{ active }">
-                <button @click="store.setTheme('system')" :class="[active ? 'bg-gray-100 dark:bg-gray-700' : '', 'w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 flex items-center']">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  System
-                </button>
-              </MenuItem>
-            </div>
-          </MenuItems>
-        </transition>
-      </Menu>
-
-      <!-- User Info -->
-      <div class="user-info text-gray-800 dark:text-white">
-        <div class="flex items-center relative cursor-pointer">
-            <div class="avatar-z">
-              <img class="w-[36px] h-[36px] rounded-full transition-all duration-300 dark:brightness-90"
-                src="https://p3-search.byteimg.com/obj/labis/240409394f2fa795c03c46212d79ec52" />
-            </div>
-            <div class="ml-2 dark:text-white hidden sm:block">zxkws</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script lang="ts" setup>
 import { mainStore } from '@/store';
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue';
 
 const store = mainStore();
+
+const themeOptions = [
+  { label: '浅色', value: 'light' as const },
+  { label: '深色', value: 'dark' as const },
+  { label: '跟随系统', value: 'system' as const },
+];
 </script>
 
+<template>
+  <header class="tool-header">
+    <div class="tool-header__left">
+      <button
+        type="button"
+        class="tool-header__icon tool-header__mobile-menu"
+        aria-label="打开导航"
+        @click="store.toggleMenu()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="tool-header__icon tool-header__collapse"
+        :aria-label="store.isMenuCollapsed ? '展开导航' : '收起导航'"
+        @click="store.toggleMenuCollapse()"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 7h14M5 12h9M5 17h14" />
+        </svg>
+      </button>
+      <a class="tool-header__brand" href="/">
+        <span class="tool-header__brand-mark">Z</span>
+        <span>zxkws tools</span>
+      </a>
+    </div>
+
+    <div class="tool-theme-switch" aria-label="主题设置">
+      <button
+        v-for="option in themeOptions"
+        :key="option.value"
+        type="button"
+        :data-active="store.theme === option.value"
+        @click="store.setTheme(option.value)"
+      >
+        {{ option.label }}
+      </button>
+    </div>
+  </header>
+</template>
+
 <style scoped>
-.header-container {
+.tool-header {
   display: flex;
-  justify-content: space-between;
+  height: 58px;
+  flex: 0 0 58px;
   align-items: center;
-  padding: 0 20px;
-  height: 60px;
-  border-bottom: 1px solid #eee;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
 }
 
-.logo {
-  font-size: 20px;
-  font-weight: bold;
+.tool-header__left {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
 }
 
-@keyframes pulse {
-  0% {
-    opacity: .5;
-    transform: scale(0.95)
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1)
-  }
-
-  100% {
-    opacity: .5;
-    transform: scale(0.95)
-  }
+.tool-header__icon {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-fg-tertiary);
+  cursor: pointer;
 }
 
-.avatar-z::after {
-  width: 36px;
-  height: 36px;
-  position: absolute;
-  top: 1px;
-  content: " ";
-  display: block;
-  border-radius: 50%;
-  pointer-events: none;
-  box-shadow: 0 0 20px #961cc4;
-  animation: pulse 3s ease-in-out infinite;
+.tool-header__icon:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-fg);
+}
+
+.tool-header__icon svg {
+  width: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.tool-header__mobile-menu {
+  display: none;
+}
+
+.tool-header__brand {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  color: var(--color-fg);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tool-header__brand-mark {
+  display: inline-grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tool-theme-switch {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+}
+
+.tool-theme-switch button {
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-fg-tertiary);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.tool-theme-switch button[data-active='true'] {
+  background: var(--color-surface);
+  color: var(--color-fg);
+  box-shadow: var(--shadow-xs);
+}
+
+@media (max-width: 767px) {
+  .tool-header {
+    padding: 0 12px;
+  }
+
+  .tool-header__mobile-menu {
+    display: inline-grid;
+  }
+
+  .tool-header__collapse {
+    display: none;
+  }
+
+  .tool-theme-switch button {
+    min-width: 32px;
+    padding: 0 7px;
+  }
 }
 </style>

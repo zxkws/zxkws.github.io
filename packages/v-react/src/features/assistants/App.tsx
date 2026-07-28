@@ -32,17 +32,21 @@ export default function AssistantsApp() {
   const [loading, setLoading] = useState(false);
 
   const load = async () => {
+    setLoading(true);
+    setStatus('');
     try {
       const [assistantList, voiceList] = await Promise.all([assistantApi.list(), assistantApi.voices()]);
       setAssistants(assistantList);
       setVoices(voiceList);
     } catch (error) {
       setStatus(errorText(error));
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    load();
+    void load();
   }, []);
 
   const create = async () => {
@@ -123,6 +127,17 @@ export default function AssistantsApp() {
     }
   };
 
+  const removeMemory = async (memory: Memory) => {
+    if (!editing) return;
+    setStatus('');
+    try {
+      await assistantApi.removeMemory(editing.id, memory.id);
+      setMemories((items) => items.filter((item) => item.id !== memory.id));
+    } catch (error) {
+      setStatus(errorText(error));
+    }
+  };
+
   const updateEditing = <K extends keyof Assistant>(key: K, value: Assistant[K]) => {
     setEditing((current) => (current ? { ...current, [key]: value } : current));
   };
@@ -139,7 +154,11 @@ export default function AssistantsApp() {
         </button>
       </header>
 
-      {status && <p className="assistants-status">{status}</p>}
+      {status && (
+        <p className="assistants-status" role="status">
+          {status}
+        </p>
+      )}
       <div className="assistant-grid">
         {assistants.map((assistant) => (
           <article className="assistant-card" key={assistant.id}>
@@ -171,7 +190,7 @@ export default function AssistantsApp() {
             </div>
           </article>
         ))}
-        {!assistants.length && <div className="assistant-empty">暂无智能体</div>}
+        {!assistants.length && <div className="assistant-empty">{loading ? '正在加载智能体…' : '暂无智能体'}</div>}
       </div>
 
       {creating && (
@@ -344,14 +363,7 @@ export default function AssistantsApp() {
                     {memories.map((memory) => (
                       <li key={memory.id}>
                         <span>{memory.content}</span>
-                        <button
-                          onClick={async () => {
-                            await assistantApi.removeMemory(editing.id, memory.id);
-                            setMemories((items) => items.filter((item) => item.id !== memory.id));
-                          }}
-                        >
-                          删除
-                        </button>
+                        <button onClick={() => void removeMemory(memory)}>删除</button>
                       </li>
                     ))}
                   </ul>
@@ -426,13 +438,19 @@ function ChatDialog({ assistant, onClose }: { assistant: Assistant; onClose: () 
   }, [assistant.id]);
 
   const selectConversation = async (id: string) => {
-    setConversationId(id || undefined);
-    setMessages(id ? await assistantApi.messages(assistant.id, id) : []);
+    setStatus('');
+    try {
+      setConversationId(id || undefined);
+      setMessages(id ? await assistantApi.messages(assistant.id, id) : []);
+    } catch (error) {
+      setStatus(errorText(error));
+    }
   };
 
   const send = async () => {
     if (!text || loading) return;
     setLoading(true);
+    setStatus('');
     try {
       const result = await assistantApi.chat(assistant.id, text, conversationId);
       setMessages((items) => [...items, result.userMessage, result.assistantMessage]);
@@ -505,7 +523,9 @@ function ChatDialog({ assistant, onClose }: { assistant: Assistant; onClose: () 
 
   useEffect(
     () => () => {
-      recorderRef.current?.state === 'recording' && recorderRef.current.stop();
+      if (recorderRef.current?.state === 'recording') {
+        recorderRef.current.stop();
+      }
       streamRef.current?.getTracks().forEach((track) => track.stop());
     },
     [],
@@ -557,7 +577,7 @@ function ChatDialog({ assistant, onClose }: { assistant: Assistant; onClose: () 
               }
             }}
           />
-          <button className="primary" disabled={loading} onClick={send}>
+          <button className="primary" disabled={!text || loading} onClick={send}>
             发送
           </button>
         </footer>

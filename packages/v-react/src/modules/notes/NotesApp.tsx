@@ -6,7 +6,8 @@ import { Editor } from '../components/Editor';
 import { StatusBar } from '../components/StatusBar';
 
 export const NotesApp = ({ basename }: { basename?: string }) => {
-  const { listQuery, notes, ui, activeNote, saving, setActive, createToday, createBlank, updateContent } = useNotes();
+  const { listQuery, notes, ui, activeNote, saving, errorMessage, setActive, createToday, createBlank, updateContent } =
+    useNotes();
 
   useEffect(() => {
     if (!ui.activeId && ui.openTabs.length === 0 && listQuery.data?.[0]) {
@@ -21,6 +22,11 @@ export const NotesApp = ({ basename }: { basename?: string }) => {
           <button onClick={createToday}>今日</button>
           <button onClick={createBlank}>新建</button>
         </div>
+        {errorMessage && (
+          <div className="notes-error" role="alert">
+            {errorMessage}
+          </div>
+        )}
         <NoteList notes={Object.values(notes)} activeId={ui.activeId} onSelect={setActive} />
       </aside>
       <main className="main">
@@ -28,7 +34,7 @@ export const NotesApp = ({ basename }: { basename?: string }) => {
         {activeNote ? (
           <Editor note={activeNote} onChange={(md) => updateContent(activeNote.id, md, activeNote.version)} />
         ) : (
-          <div className="empty">选择或创建一条笔记</div>
+          <div className="empty">{listQuery.isFetching ? '正在加载笔记…' : '选择或创建一条笔记'}</div>
         )}
         <StatusBar saving={saving} loading={listQuery.isFetching} />
       </main>

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import isInIcestark from '@ice/stark-app/lib/isInIcestark';
 import setLibraryName from '@ice/stark-app/lib/setLibraryName';
 import App from './App';
+import '@zxkws/shared-theme/theme.css';
 import './index.css';
 
 setLibraryName('chess-mirror');
@@ -54,6 +55,6 @@ if (!isInIcestark()) {
   document.documentElement.style.height = '100%';
   document.body.style.height = '100%';
   document.body.style.margin = '0';
-  document.body.style.background = '#020617';
+  document.body.style.background = 'var(--color-canvas, #151515)';
   mount({ container: '#root' });
 }

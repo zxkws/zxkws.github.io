@@ -1,28 +1,23 @@
 import type { PropsWithChildren } from 'react';
+import * as styles from './index.module.css';
 
 type PageLoadingProps = PropsWithChildren<{
   loading?: boolean;
+  contained?: boolean;
 }>;
 
-const PageLoading = ({ children, loading = false }: PageLoadingProps) => {
+const PageLoading = ({ children, loading = false, contained = false }: PageLoadingProps) => {
   const isEmpty = !children;
-  const overlayClassName = isEmpty ? 'fixed' : 'absolute';
   const overlay = loading ? (
-    <div
-      className={`${overlayClassName} inset-0 z-[2000] flex items-center justify-center bg-black/40 backdrop-blur-sm`}
+    <output
+      className={`${styles.overlay} ${contained || !isEmpty ? styles.contained : styles.fullscreen}`}
+      aria-live="polite"
     >
-      <div className="flex flex-col items-center gap-3 rounded-lg bg-[var(--color-bg)] px-6 py-4 text-[var(--color-text)] shadow-lg">
-        <span
-          className="inline-flex h-8 w-8 animate-spin rounded-full border-4"
-          style={{
-            borderColor: 'var(--spinner-track)',
-            borderTopColor: 'var(--spinner-head)',
-          }}
-          aria-hidden="true"
-        />
-        <span className="text-sm font-medium tracking-wide">Loading...</span>
+      <div className={styles.card}>
+        <span className={styles.spinner} aria-hidden="true" />
+        <span>正在加载…</span>
       </div>
-    </div>
+    </output>
   ) : null;
 
   if (isEmpty) {
@@ -30,7 +25,7 @@ const PageLoading = ({ children, loading = false }: PageLoadingProps) => {
   }
 
   return (
-    <div className="relative flex flex-1 min-h-0 flex-col">
+    <div className={styles.content} aria-busy={loading}>
       {children}
       {overlay}
     </div>

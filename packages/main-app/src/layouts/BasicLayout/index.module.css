@@ -1,0 +1,68 @@
+.layout {
+	width: 100%;
+	height: 100%;
+	min-width: 0;
+	background: var(--color-canvas);
+	color: var(--color-fg);
+}
+
+.portalLayout {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.portalMain {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	overflow: auto;
+	background: var(--color-canvas);
+}
+
+.workspaceLayout {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.workspaceBody {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.workspaceMain {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	padding: 16px;
+	padding-left: 0;
+}
+
+.workspaceStage {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+	background: var(--color-surface);
+	border: 1px solid var(--color-divider);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 860px) {
+	.workspaceMain {
+		padding: 12px;
+	}
+
+	.workspaceStage {
+		border-radius: var(--radius-md);
+	}
+}

@@ -1,244 +1,322 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { deleteTodo, modifyTodo, queryTodos, type TodoResponse } from '@/http';
 import { mainStore } from '@/store';
 
 const store = mainStore();
-
 const todoParams = ref('');
-
 const todos = ref<TodoResponse[]>([]);
-
 const errorMessage = ref('');
-
-const displayTodos = computed(() =>
-  todos.value.map((item) => ({
-    ...item,
-    description: item.description?.trim() || '（未填写内容）',
-  })),
-);
-
-onMounted(() => {
-  queryTodo();
-});
+const submitting = ref(false);
+const deletingId = ref<string | null>(null);
 
 const toMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
-const queryTodo = () => {
-  store.setLoading(true, '查询todo....');
+const queryTodo = async () => {
+  store.setLoading(true, '正在加载待办…');
   errorMessage.value = '';
-  queryTodos({})
-    .then((res) => {
-      todos.value = res.data || [];
-    })
-    .catch((error) => {
-      errorMessage.value = `加载待办失败：${toMessage(error)}`;
-    })
-    .finally(() => {
-      store.setLoading(false);
-    });
+  try {
+    const response = await queryTodos({});
+    todos.value = Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    errorMessage.value = `加载待办失败：${toMessage(error)}`;
+  } finally {
+    store.setLoading(false);
+  }
 };
 
-const add = () => {
+const add = async () => {
+  if (!todoParams.value.trim()) {
+    errorMessage.value = '请输入待办内容';
+    return;
+  }
+
+  submitting.value = true;
   errorMessage.value = '';
-  modifyTodo({
-    description: todoParams.value,
-  })
-    .then(() => {
-      todoParams.value = '';
-      queryTodo();
-    })
-    .catch((error) => {
-      errorMessage.value = `添加待办失败：${toMessage(error)}`;
-    });
+  try {
+    await modifyTodo({ description: todoParams.value });
+    todoParams.value = '';
+    await queryTodo();
+  } catch (error) {
+    errorMessage.value = `添加待办失败：${toMessage(error)}`;
+  } finally {
+    submitting.value = false;
+  }
 };
 
-const deleteItem = (id: string) => {
+const deleteItem = async (id: string) => {
+  deletingId.value = id;
   errorMessage.value = '';
-  deleteTodo({ id })
-    .then(() => {
-      queryTodo();
-    })
-    .catch((error) => {
-      errorMessage.value = `删除待办失败：${toMessage(error)}`;
-    });
+  try {
+    await deleteTodo({ id });
+    await queryTodo();
+  } catch (error) {
+    errorMessage.value = `删除待办失败：${toMessage(error)}`;
+  } finally {
+    deletingId.value = null;
+  }
 };
+
+onMounted(queryTodo);
 </script>
 
 <template>
-  <div class="todo-page">
+  <main class="todo-page">
     <header class="todo-header">
-      <h2>Todo List</h2>
-      <p class="hint">已按用户隔离存储，当前仅展示你的任务</p>
+      <div>
+        <p class="todo-eyebrow">Personal queue</p>
+        <h1>待办事项</h1>
+        <p class="todo-description">任务按当前账号隔离保存，列表内容保持后端返回值原样展示。</p>
+      </div>
+      <span class="todo-count">{{ todos.length }} items</span>
     </header>
 
-    <p v-if="errorMessage" class="todo-error">{{ errorMessage }}</p>
+    <p v-if="errorMessage" class="todo-error" role="alert">{{ errorMessage }}</p>
 
-    <section class="todo-list" v-if="displayTodos.length">
-      <article v-for="todo in displayTodos" :key="todo._id" class="todo-item">
-        <p class="todo-text">{{ todo.description }}</p>
-        <button class="todo-delete" @click="() => deleteItem(todo._id)">删除</button>
-      </article>
+    <section class="todo-panel">
+      <div v-if="todos.length" class="todo-list">
+        <article v-for="todo in todos" :key="todo._id" class="todo-item">
+          <p class="todo-text">{{ todo.description }}</p>
+          <button class="todo-delete" type="button" :disabled="deletingId === todo._id" @click="deleteItem(todo._id)">
+            {{ deletingId === todo._id ? '删除中…' : '删除' }}
+          </button>
+        </article>
+      </div>
+      <div v-else class="todo-empty">
+        <strong>暂无待办</strong>
+        <span>在下方输入第一条任务。</span>
+      </div>
     </section>
-    <section v-else class="todo-empty">暂无待办，添加一条吧~</section>
 
-    <footer class="todo-input-bar">
-      <textarea class="todo-input" rows="1" placeholder="输入新的 Todo..." v-model="todoParams"></textarea>
-      <button @click="add" class="todo-add">添加</button>
-    </footer>
-  </div>
+    <form class="todo-input-bar" @submit.prevent="add">
+      <label for="todo-description">新增待办</label>
+      <div class="todo-compose">
+        <textarea
+          id="todo-description"
+          v-model="todoParams"
+          class="todo-input"
+          rows="2"
+          placeholder="输入待办内容"
+          @keydown.meta.enter.prevent="add"
+          @keydown.ctrl.enter.prevent="add"
+        />
+        <button type="submit" class="todo-add" :disabled="submitting">
+          {{ submitting ? '添加中…' : '添加待办' }}
+        </button>
+      </div>
+      <span class="todo-shortcut">⌘ / Ctrl + Enter 快速添加</span>
+    </form>
+  </main>
 </template>
 
 <style scoped>
 .todo-page {
-  min-height: 100vh;
   display: flex;
+  min-height: 100%;
   flex-direction: column;
-  gap: 12px;
-  padding: 20px 24px 32px;
-  background: var(--color-bg, #0f172a);
-  color: var(--color-text, #e2e8f0);
+  gap: 20px;
+  padding: 32px;
+  background: var(--color-canvas);
+  color: var(--color-fg);
 }
 
 .todo-header {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
 }
 
-.todo-header h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.hint {
-  margin: 0;
+.todo-eyebrow {
+  margin: 0 0 8px;
+  color: var(--color-primary-deep);
+  font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--color-muted, #94a3b8);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.todo-header h1 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 32px);
+  letter-spacing: var(--tracking-tight);
+}
+
+.todo-description {
+  margin: 8px 0 0;
+  color: var(--color-fg-tertiary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.todo-count {
+  padding: 6px 9px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-fg-tertiary);
+  font-family: var(--font-mono);
+  font-size: 11px;
 }
 
 .todo-error {
   margin: 0;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(220, 38, 38, 0.45);
-  background: rgba(220, 38, 38, 0.12);
-  color: #f87171;
+  padding: 11px 13px;
+  border: 1px solid color-mix(in srgb, var(--color-danger) 45%, var(--color-border));
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
   font-size: 13px;
   overflow-wrap: anywhere;
 }
 
+.todo-panel,
+.todo-input-bar {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.todo-panel {
+  min-height: 220px;
+}
+
 .todo-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex: 1;
-  min-height: 200px;
+  display: grid;
 }
 
 .todo-item {
   display: flex;
-  gap: 12px;
   align-items: center;
-  padding: 12px 14px;
-  background: var(--card-bg, rgba(15, 23, 42, 0.55));
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px -20px rgba(0, 0, 0, 0.5);
+  gap: 14px;
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.todo-item:last-child {
+  border-bottom: 0;
 }
 
 .todo-text {
   flex: 1;
   margin: 0;
+  color: var(--color-fg);
   font-size: 14px;
-  line-height: 1.5;
-  color: var(--color-text, #e2e8f0);
+  line-height: 1.6;
+  white-space: pre-wrap;
   word-break: break-word;
 }
 
-.todo-delete {
-  border: none;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  color: #fff;
-  cursor: pointer;
+.todo-delete,
+.todo-add {
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font: inherit;
   font-size: 13px;
-  transition:
-    transform 0.15s ease,
-    opacity 0.15s ease;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.todo-delete:hover {
-  transform: translateY(-1px);
-  opacity: 0.92;
+.todo-delete {
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-danger);
+}
+
+.todo-delete:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  background: var(--color-danger-muted);
 }
 
 .todo-empty {
-  padding: 24px;
-  text-align: center;
-  color: var(--color-muted, #94a3b8);
-  background: var(--card-bg, rgba(15, 23, 42, 0.4));
-  border: 1px dashed rgba(148, 163, 184, 0.35);
-  border-radius: 12px;
+  display: flex;
+  min-height: 218px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--color-fg-tertiary);
+  font-size: 13px;
+}
+
+.todo-empty strong {
+  color: var(--color-fg-secondary);
+  font-size: 15px;
 }
 
 .todo-input-bar {
+  display: grid;
+  gap: 9px;
+  padding: 16px;
+}
+
+.todo-input-bar > label {
+  color: var(--color-fg-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.todo-compose {
   display: flex;
+  align-items: stretch;
   gap: 10px;
-  padding: 14px;
-  background: var(--card-bg, rgba(15, 23, 42, 0.55));
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 12px;
-  position: sticky;
-  bottom: 12px;
-  backdrop-filter: blur(8px);
 }
 
 .todo-input {
+  min-height: 62px;
   flex: 1;
-  resize: none;
+  resize: vertical;
   padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: transparent;
-  color: var(--color-text, #e2e8f0);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font: inherit;
   font-size: 14px;
 }
 
 .todo-input:focus {
-  outline: none;
-  border-color: var(--accent, #38bdf8);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35);
+  border-color: var(--color-primary-deep);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 .todo-add {
-  border: none;
-  padding: 10px 16px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent, #38bdf8), #2563eb);
-  color: #fff;
-  cursor: pointer;
-  font-weight: 600;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+  min-width: 100px;
+  border: 1px solid var(--color-primary-deep);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
 }
 
-.todo-add:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 30px -18px rgba(37, 99, 235, 0.8);
+.todo-delete:disabled,
+.todo-add:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
-@media (max-width: 900px) {
+.todo-shortcut {
+  color: var(--color-fg-tertiary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+@media (max-width: 640px) {
   .todo-page {
-    padding: 16px;
+    padding: 20px 14px;
   }
-  .todo-item {
-    align-items: flex-start;
+
+  .todo-header {
+    flex-direction: column;
+  }
+
+  .todo-compose {
+    flex-direction: column;
+  }
+
+  .todo-add {
+    width: 100%;
   }
 }
 </style>
