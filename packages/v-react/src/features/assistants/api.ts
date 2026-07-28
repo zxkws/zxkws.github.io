@@ -39,8 +39,28 @@ export type KnowledgeDocument = {
   knowledgeBaseId: string;
   title: string;
   content: string;
+  status: 'pending' | 'processing' | 'ready' | 'failed';
+  chunkCount: number;
+  contentHash?: string | null;
+  ingestVersion: number;
+  embeddingStatus: 'not_configured' | 'ready' | 'failed';
+  embeddingModel?: string | null;
+  ingestionError?: string | null;
+  indexedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+};
+export type KnowledgeSearchResult = {
+  citation: string;
+  knowledgeBaseId: string;
+  documentId: string;
+  chunkId: string;
+  title: string;
+  chunkIndex: number;
+  charStart: number;
+  charEnd: number;
+  score: number;
+  content: string;
 };
 
 const unwrap = <T>(payload: unknown): T => {
@@ -96,4 +116,8 @@ export const knowledgeApi = {
     patch<KnowledgeDocument>(`/ai/knowledge-bases/${id}/documents/${documentId}`, body),
   removeDocument: (id: string, documentId: string) =>
     remove<{ success: boolean }>(`/ai/knowledge-bases/${id}/documents/${documentId}`),
+  reindexDocument: (id: string, documentId: string) =>
+    post<KnowledgeDocument>(`/ai/knowledge-bases/${id}/documents/${documentId}/reindex`),
+  search: (id: string, query: string, topK = 8) =>
+    post<KnowledgeSearchResult[]>(`/ai/knowledge-bases/${id}/search`, { query, topK }),
 };

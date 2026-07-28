@@ -1,8 +1,10 @@
 import { message } from 'antd';
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 import {
+  type AgentEvaluation,
   type AgentMcpServer,
   type AgentRun,
+  type AgentRunEvent,
   type AgentSkill,
   agentPlatformService,
   type McpTestResult,
@@ -27,6 +29,7 @@ const emptyMcp = {
   command: '',
   args: '[]',
   allowedTools: '',
+  approvalRequiredTools: '',
   headers: '{}',
   env: '{}',
   enabled: true,
@@ -53,11 +56,43 @@ export default function AgentPlatform() {
   const [knowledgeBaseIds, setKnowledgeBaseIds] = useState('');
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [selectedMcpIds, setSelectedMcpIds] = useState<string[]>([]);
+  const [approvedToolKeys, setApprovedToolKeys] = useState<string[]>([]);
   const [activeRun, setActiveRun] = useState<AgentRun | null>(null);
+  const [runEvents, setRunEvents] = useState<AgentRunEvent[]>([]);
+  const [evaluations, setEvaluations] = useState<AgentEvaluation[]>([]);
+  const [evaluationDraft, setEvaluationDraft] = useState({
+    label: '',
+    expectedContains: '',
+    forbiddenContains: '',
+    minimumCitationCount: '',
+    maximumDurationMs: '',
+  });
+  const [liveOutput, setLiveOutput] = useState('');
+  const [threadId, setThreadId] = useState('');
+  const [runningRunId, setRunningRunId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [running, setRunning] = useState(false);
+  const streamController = useRef<AbortController | null>(null);
 
-  const load = async () => {
+  const selectRun = async (run: AgentRun) => {
+    setActiveRun(run);
+    setLiveOutput('');
+    try {
+      const [details, events, evaluationRows] = await Promise.all([
+        agentPlatformService.getRun(run.id),
+        agentPlatformService.listRunEvents(run.id),
+        agentPlatformService.listEvaluations(run.id),
+      ]);
+      setActiveRun(details);
+      setRunEvents(events);
+      setEvaluations(evaluationRows);
+      setThreadId(details.threadId);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '运行详情加载失败');
+    }
+  };
+
+  const load = async (preferredRunId?: string) => {
     setLoading(true);
     try {
       const [skillRows, serverRows, runRows] = await Promise.all([
@@ -68,7 +103,21 @@ export default function AgentPlatform() {
       setSkills(skillRows);
       setServers(serverRows);
       setRuns(runRows);
-      setActiveRun((current) => runRows.find((row) => row.id === current?.id) || runRows[0] || null);
+      const selected = runRows.find((row) => row.id === (preferredRunId || activeRun?.id)) || runRows[0] || null;
+      setActiveRun(selected);
+      if (selected) {
+        const [details, events, evaluationRows] = await Promise.all([
+          agentPlatformService.getRun(selected.id),
+          agentPlatformService.listRunEvents(selected.id),
+          agentPlatformService.listEvaluations(selected.id),
+        ]);
+        setActiveRun(details);
+        setRunEvents(events);
+        setEvaluations(evaluationRows);
+      } else {
+        setRunEvents([]);
+        setEvaluations([]);
+      }
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'Agent 平台加载失败');
     } finally {
@@ -78,7 +127,8 @@ export default function AgentPlatform() {
 
   useEffect(() => {
     document.title = 'Agent 平台 · 光域';
-    load();
+    void load();
+    return () => streamController.current?.abort();
   }, []);
 
   const saveSkill = async (event: FormEvent) => {
@@ -129,6 +179,7 @@ export default function AgentPlatform() {
       command: mcpDraft.transport === 'stdio' ? mcpDraft.command : undefined,
       args,
       allowedTools: csv(mcpDraft.allowedTools),
+      approvalRequiredTools: csv(mcpDraft.approvalRequiredTools),
       enabled: mcpDraft.enabled,
     };
     if (mcpDraft.headers.trim()) {
@@ -175,6 +226,7 @@ export default function AgentPlatform() {
       command: server.command || '',
       args: JSON.stringify(server.args || [], null, 2),
       allowedTools: (server.allowedTools || []).join(', '),
+      approvalRequiredTools: (server.approvalRequiredTools || []).join(', '),
       headers: '',
       env: '',
       enabled: server.enabled,
@@ -206,22 +258,104 @@ export default function AgentPlatform() {
   const runAgent = async (event: FormEvent) => {
     event.preventDefault();
     setRunning(true);
+    setRunningRunId(null);
+    setRunEvents([]);
+    setLiveOutput('');
+    const controller = new AbortController();
+    streamController.current = controller;
     try {
-      const result = await agentPlatformService.run({
-        input: prompt,
-        skillIds: selectedSkillIds,
-        knowledgeBaseIds: csv(knowledgeBaseIds),
-        mcpServerIds: selectedMcpIds,
-      });
+      const result = await agentPlatformService.streamRun(
+        {
+          input: prompt,
+          threadId: threadId.trim() || undefined,
+          idempotencyKey:
+            typeof crypto.randomUUID === 'function'
+              ? crypto.randomUUID()
+              : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          skillIds: selectedSkillIds,
+          knowledgeBaseIds: csv(knowledgeBaseIds),
+          mcpServerIds: selectedMcpIds,
+          approvedToolKeys,
+        },
+        (runtimeEvent) => {
+          if (runtimeEvent.runId) setRunningRunId(runtimeEvent.runId);
+          const token = runtimeEvent.data?.token;
+          if (runtimeEvent.type === 'model.token' && typeof token === 'string') {
+            setLiveOutput((current) => current + token);
+          }
+          if (!runtimeEvent.type.startsWith('stream.')) {
+            setRunEvents((current) => [...current, runtimeEvent].slice(-500));
+          }
+        },
+        controller.signal,
+      );
       setActiveRun(result);
+      setThreadId(result.threadId);
       setPrompt('');
-      await load();
-      message.success('Agent 运行完成');
+      await load(result.id);
+      if (result.status === 'completed') message.success('Agent 运行完成');
+      else if (result.status === 'cancelled') message.info('Agent 运行已取消');
+      else message.error(result.error || 'Agent 运行失败');
     } catch (error) {
-      message.error(error instanceof Error ? error.message : 'Agent 运行失败');
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        message.error(error instanceof Error ? error.message : 'Agent 运行失败');
+      }
       await load();
     } finally {
+      streamController.current = null;
+      setRunningRunId(null);
       setRunning(false);
+    }
+  };
+
+  const cancelRun = async () => {
+    const id = runningRunId || (activeRun && ['pending', 'running'].includes(activeRun.status) ? activeRun.id : null);
+    if (!id) return;
+    try {
+      const result = await agentPlatformService.cancelRun(id);
+      setActiveRun(result);
+      message.info(result.status === 'cancelled' ? 'Agent 运行已取消' : '已请求取消 Agent 运行');
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '取消 Agent 运行失败');
+    }
+  };
+
+  const retryRun = async () => {
+    if (!activeRun || !['completed', 'failed', 'cancelled'].includes(activeRun.status)) return;
+    setRunning(true);
+    try {
+      const result = await agentPlatformService.retryRun(activeRun.id);
+      setActiveRun(result);
+      setThreadId(result.threadId);
+      await load(result.id);
+      message.success(result.status === 'completed' ? 'Agent 重试完成' : `Agent 重试状态：${result.status}`);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'Agent 重试失败');
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  const evaluateRun = async () => {
+    if (!activeRun) return;
+    const payload: Record<string, unknown> = {};
+    if (evaluationDraft.label.trim()) payload.label = evaluationDraft.label.trim();
+    const expectedContains = csv(evaluationDraft.expectedContains);
+    const forbiddenContains = csv(evaluationDraft.forbiddenContains);
+    if (expectedContains.length) payload.expectedContains = expectedContains;
+    if (forbiddenContains.length) payload.forbiddenContains = forbiddenContains;
+    if (evaluationDraft.minimumCitationCount) {
+      payload.minimumCitationCount = Number(evaluationDraft.minimumCitationCount);
+    }
+    if (evaluationDraft.maximumDurationMs) {
+      payload.maximumDurationMs = Number(evaluationDraft.maximumDurationMs);
+    }
+    try {
+      const result = await agentPlatformService.evaluateRun(activeRun.id, payload);
+      setEvaluations((current) => [result, ...current]);
+      message.success(result.passed ? '评测通过' : '评测未通过');
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'Agent 评测失败');
     }
   };
 
@@ -235,7 +369,7 @@ export default function AgentPlatform() {
             配置可执行 Skill 和 MCP 工具，选择知识库上下文，再由 LangGraph 运行并保存工具调用轨迹。
           </p>
         </div>
-        <button type="button" className="workspace-button" onClick={load} disabled={loading}>
+        <button type="button" className="workspace-button" onClick={() => void load()} disabled={loading}>
           刷新
         </button>
       </header>
@@ -257,6 +391,15 @@ export default function AgentPlatform() {
               required
             />
           </label>
+          <label className="workspace-field">
+            threadId（留空创建新会话）
+            <input
+              className="workspace-input workspace-input--mono"
+              value={threadId}
+              onChange={(event) => setThreadId(event.target.value)}
+              maxLength={100}
+            />
+          </label>
           <fieldset className="rbac-fieldset">
             <legend>Skills</legend>
             <div className="rbac-checkbox-grid">
@@ -274,6 +417,33 @@ export default function AgentPlatform() {
                 ))}
             </div>
           </fieldset>
+          {selectedMcpIds.length ? (
+            <fieldset className="rbac-fieldset">
+              <legend>本次批准的 MCP 工具</legend>
+              <p className="workspace-panel__meta">
+                未声明只读的工具默认需要本次明确批准；未批准的工具不会暴露给模型。
+              </p>
+              <div className="rbac-checkbox-grid">
+                {servers
+                  .filter((server) => selectedMcpIds.includes(server.id))
+                  .flatMap((server) =>
+                    (server.allowedTools || []).map((toolName) => {
+                      const toolKey = `${server.id}:${toolName}`;
+                      return (
+                        <label className="rbac-check" key={toolKey}>
+                          <input
+                            type="checkbox"
+                            checked={approvedToolKeys.includes(toolKey)}
+                            onChange={() => setApprovedToolKeys(toggle(approvedToolKeys, toolKey))}
+                          />
+                          {server.code}:{toolName}
+                        </label>
+                      );
+                    }),
+                  )}
+              </div>
+            </fieldset>
+          ) : null}
           <fieldset className="rbac-fieldset">
             <legend>MCP Servers</legend>
             <div className="rbac-checkbox-grid">
@@ -299,9 +469,30 @@ export default function AgentPlatform() {
               onChange={(event) => setKnowledgeBaseIds(event.target.value)}
             />
           </label>
-          <button type="submit" className="workspace-button workspace-button--primary" disabled={running}>
-            {running ? 'Agent 正在执行…' : '运行'}
-          </button>
+          <div className="workspace-inline-actions studio-run-actions">
+            <button type="submit" className="workspace-button workspace-button--primary" disabled={running}>
+              {running ? 'Agent 正在执行…' : '运行'}
+            </button>
+            {running ? (
+              <button type="button" className="workspace-button workspace-button--danger" onClick={cancelRun}>
+                取消运行
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="workspace-button"
+              disabled={running}
+              onClick={() => {
+                setThreadId('');
+                setActiveRun(null);
+                setRunEvents([]);
+                setEvaluations([]);
+                setLiveOutput('');
+              }}
+            >
+              新会话
+            </button>
+          </div>
         </form>
       </section>
 
@@ -315,7 +506,7 @@ export default function AgentPlatform() {
                 className="studio-list__item"
                 data-active={run.id === activeRun?.id}
                 key={run.id}
-                onClick={() => setActiveRun(run)}
+                onClick={() => void selectRun(run)}
               >
                 <strong>{run.input}</strong>
                 <span>status: {run.status}</span>
@@ -325,16 +516,57 @@ export default function AgentPlatform() {
           </div>
         </aside>
         <section className="workspace-panel">
-          <h2>运行结果</h2>
+          <div className="workspace-panel__header">
+            <h2>运行结果</h2>
+            {activeRun && ['completed', 'failed', 'cancelled'].includes(activeRun.status) ? (
+              <button type="button" className="workspace-button" onClick={retryRun} disabled={running}>
+                重试
+              </button>
+            ) : null}
+          </div>
           {activeRun ? (
             <dl className="workspace-data-list studio-agent-result">
+              <div>
+                <dt>id</dt>
+                <dd>{activeRun.id}</dd>
+              </div>
+              <div>
+                <dt>threadId</dt>
+                <dd>{activeRun.threadId}</dd>
+              </div>
               <div>
                 <dt>status</dt>
                 <dd>{activeRun.status}</dd>
               </div>
               <div>
                 <dt>output</dt>
-                <dd className="studio-prewrap">{activeRun.output}</dd>
+                <dd className="studio-prewrap">{liveOutput || activeRun.output}</dd>
+              </div>
+              <div>
+                <dt>model</dt>
+                <dd>{activeRun.model}</dd>
+              </div>
+              <div>
+                <dt>channelName</dt>
+                <dd>{activeRun.channelName}</dd>
+              </div>
+              <div>
+                <dt>usage</dt>
+                <dd className="workspace-code studio-prewrap">{JSON.stringify(activeRun.usage, null, 2)}</dd>
+              </div>
+              <div>
+                <dt>citations</dt>
+                <dd className="workspace-code studio-prewrap">{JSON.stringify(activeRun.citations, null, 2)}</dd>
+              </div>
+              <div>
+                <dt>modelCallCount / toolCallCount / eventCount</dt>
+                <dd>
+                  {activeRun.modelCallCount} / {activeRun.toolCallCount} / {activeRun.eventCount}
+                </dd>
+              </div>
+              <div>
+                <dt>durationMs</dt>
+                <dd>{activeRun.durationMs}</dd>
               </div>
               <div>
                 <dt>trace</dt>
@@ -343,6 +575,99 @@ export default function AgentPlatform() {
               <div>
                 <dt>error</dt>
                 <dd>{activeRun.error}</dd>
+              </div>
+              <div>
+                <dt>events</dt>
+                <dd>
+                  <div className="studio-event-list">
+                    {runEvents.map((runtimeEvent, index) => (
+                      <article
+                        key={
+                          runtimeEvent.id !== undefined
+                            ? `persisted-${runtimeEvent.id}`
+                            : `transient-${runtimeEvent.type}-${index}`
+                        }
+                        data-level={runtimeEvent.level || 'info'}
+                      >
+                        <strong>{runtimeEvent.type}</strong>
+                        <span>{runtimeEvent.node}</span>
+                        <span>{runtimeEvent.createdAt}</span>
+                        {runtimeEvent.message ? <p>{runtimeEvent.message}</p> : null}
+                        {runtimeEvent.data ? (
+                          <pre className="studio-prewrap">{JSON.stringify(runtimeEvent.data, null, 2)}</pre>
+                        ) : null}
+                      </article>
+                    ))}
+                  </div>
+                </dd>
+              </div>
+              <div>
+                <dt>evaluations</dt>
+                <dd>
+                  <div className="studio-evaluation">
+                    <div className="studio-evaluation-form">
+                      <input
+                        className="workspace-input"
+                        placeholder="评测标签"
+                        value={evaluationDraft.label}
+                        onChange={(event) => setEvaluationDraft({ ...evaluationDraft, label: event.target.value })}
+                      />
+                      <input
+                        className="workspace-input"
+                        placeholder="必须包含，逗号分隔"
+                        value={evaluationDraft.expectedContains}
+                        onChange={(event) =>
+                          setEvaluationDraft({ ...evaluationDraft, expectedContains: event.target.value })
+                        }
+                      />
+                      <input
+                        className="workspace-input"
+                        placeholder="禁止包含，逗号分隔"
+                        value={evaluationDraft.forbiddenContains}
+                        onChange={(event) =>
+                          setEvaluationDraft({ ...evaluationDraft, forbiddenContains: event.target.value })
+                        }
+                      />
+                      <input
+                        className="workspace-input"
+                        type="number"
+                        min="0"
+                        max="100"
+                        placeholder="最少引用数"
+                        value={evaluationDraft.minimumCitationCount}
+                        onChange={(event) =>
+                          setEvaluationDraft({ ...evaluationDraft, minimumCitationCount: event.target.value })
+                        }
+                      />
+                      <input
+                        className="workspace-input"
+                        type="number"
+                        min="1"
+                        max="300000"
+                        placeholder="最大耗时 ms"
+                        value={evaluationDraft.maximumDurationMs}
+                        onChange={(event) =>
+                          setEvaluationDraft({ ...evaluationDraft, maximumDurationMs: event.target.value })
+                        }
+                      />
+                      <button type="button" className="workspace-button" onClick={evaluateRun}>
+                        执行评测
+                      </button>
+                    </div>
+                    <div className="studio-evaluation-list">
+                      {evaluations.map((evaluation) => (
+                        <article key={evaluation.id} data-passed={evaluation.passed}>
+                          <strong>
+                            {evaluation.label || evaluation.evaluator} · passed: {String(evaluation.passed)} · score:{' '}
+                            {evaluation.score}
+                          </strong>
+                          <span>{evaluation.createdAt}</span>
+                          <pre className="studio-prewrap">{JSON.stringify(evaluation.details, null, 2)}</pre>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                </dd>
               </div>
             </dl>
           ) : (
@@ -464,6 +789,7 @@ export default function AgentPlatform() {
                     {server.transport} · hasSecrets: {String(server.hasSecrets)}
                   </span>
                   <span>allowedTools: {JSON.stringify(server.allowedTools)}</span>
+                  <span>approvalRequiredTools: {JSON.stringify(server.approvalRequiredTools)}</span>
                 </div>
                 <div className="workspace-inline-actions">
                   <button type="button" className="workspace-button" onClick={() => testMcp(server)}>
@@ -553,6 +879,14 @@ export default function AgentPlatform() {
                 className="workspace-input workspace-input--mono"
                 value={mcpDraft.allowedTools}
                 onChange={(event) => setMcpDraft({ ...mcpDraft, allowedTools: event.target.value })}
+              />
+            </label>
+            <label className="workspace-field">
+              强制逐次批准的工具（必须已在允许列表，逗号分隔）
+              <input
+                className="workspace-input workspace-input--mono"
+                value={mcpDraft.approvalRequiredTools}
+                onChange={(event) => setMcpDraft({ ...mcpDraft, approvalRequiredTools: event.target.value })}
               />
             </label>
             <label className="workspace-field">

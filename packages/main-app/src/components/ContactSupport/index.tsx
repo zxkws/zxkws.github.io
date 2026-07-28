@@ -1,10 +1,32 @@
-import { type FormEvent, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react';
+import {
+  type FormEvent,
+  type ClipboardEvent as ReactClipboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useLanguage } from '../../i18n';
 import { submitContactRequest } from '../../services/contactService';
 import * as styles from './index.module.css';
 
 const POSITION_STORAGE_KEY = 'lightspace-contact-position';
 const VIEWPORT_GAP = 8;
+const MAX_IMAGES = 3;
+const MAX_IMAGE_BYTES = 1024 * 1024;
+const MAX_TOTAL_IMAGE_BYTES = 2 * 1024 * 1024;
+const TARGET_COMPRESSED_BYTES = 700 * 1024;
+const ACCEPTED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
+
+type ContactImageType = 'image/png' | 'image/jpeg' | 'image/webp' | 'image/gif';
+
+type ContactImage = {
+  id: string;
+  name: string;
+  type: ContactImageType;
+  data: string;
+  size: number;
+};
 
 type TriggerPosition = {
   x: number;
@@ -43,6 +65,63 @@ const clampToViewport = (next: TriggerPosition, element: HTMLElement | null): Tr
   };
 };
 
+const canvasBlob = (canvas: HTMLCanvasElement, quality: number) =>
+  new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/webp', quality));
+
+const loadImage = (file: File) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('decode'));
+    };
+    image.src = url;
+  });
+
+const prepareImage = async (file: File): Promise<File> => {
+  if (!ACCEPTED_IMAGE_TYPES.has(file.type)) throw new Error('type');
+  if (file.size <= MAX_IMAGE_BYTES) return file;
+  if (file.type === 'image/gif') throw new Error('size');
+
+  const image = await loadImage(file);
+  let scale = Math.min(1, 1800 / Math.max(image.naturalWidth, image.naturalHeight));
+  let quality = 0.82;
+  let compressed: Blob | null = null;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('decode');
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    compressed = await canvasBlob(canvas, quality);
+    if (compressed && compressed.size <= TARGET_COMPRESSED_BYTES) break;
+    scale *= 0.78;
+    quality = Math.max(0.5, quality - 0.08);
+  }
+  if (!compressed || compressed.size > MAX_IMAGE_BYTES) throw new Error('size');
+  const stem = file.name.replace(/\.[^.]*$/, '') || 'pasted-image';
+  return new File([compressed], `${stem}.webp`, { type: 'image/webp' });
+};
+
+const imageToBase64 = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const value = typeof reader.result === 'string' ? reader.result : '';
+      const separator = value.indexOf(',');
+      if (separator < 0) reject(new Error('decode'));
+      else resolve(value.slice(separator + 1));
+    };
+    reader.onerror = () => reject(new Error('decode'));
+    reader.readAsDataURL(file);
+  });
+
 const ContactIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
     <path d="M7 18.5 3.5 21v-5.2A8.5 8.5 0 1 1 7 18.5Z" />
@@ -62,6 +141,7 @@ export default function ContactSupport() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [company, setCompany] = useState('');
+  const [images, setImages] = useState<ContactImage[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -71,6 +151,12 @@ export default function ContactSupport() {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dragState = useRef<DragState | null>(null);
   const suppressClick = useRef(false);
+  const imagesRef = useRef<ContactImage[]>([]);
+
+  const updateImages = (next: ContactImage[]) => {
+    imagesRef.current = next;
+    setImages(next);
+  };
 
   const close = () => {
     if (submitting) return;
@@ -162,6 +248,51 @@ export default function ContactSupport() {
     setDragging(false);
   };
 
+  const addPastedImages = async (files: File[]) => {
+    setError(null);
+    const next = [...imagesRef.current];
+    for (const file of files) {
+      if (next.length >= MAX_IMAGES) {
+        setError(t('contact.imageCountError'));
+        break;
+      }
+      try {
+        const prepared = await prepareImage(file);
+        const totalBytes = next.reduce((sum, image) => sum + image.size, 0) + prepared.size;
+        if (totalBytes > MAX_TOTAL_IMAGE_BYTES) {
+          setError(t('contact.imageTotalError'));
+          break;
+        }
+        next.push({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          name: prepared.name || `pasted-image-${next.length + 1}.png`,
+          type: prepared.type as ContactImageType,
+          data: await imageToBase64(prepared),
+          size: prepared.size,
+        });
+      } catch (imageError) {
+        setError(
+          imageError instanceof Error && imageError.message === 'type'
+            ? t('contact.imageTypeError')
+            : imageError instanceof Error && imageError.message === 'size'
+              ? t('contact.imageSizeError')
+              : t('contact.imageReadError'),
+        );
+      }
+    }
+    updateImages(next);
+  };
+
+  const handleMessagePaste = (event: ReactClipboardEvent<HTMLTextAreaElement>) => {
+    const files = Array.from(event.clipboardData.items)
+      .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+      .map((item) => item.getAsFile())
+      .filter((file): file is File => Boolean(file));
+    if (!files.length) return;
+    event.preventDefault();
+    void addPastedImages(files);
+  };
+
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (submitting) return;
@@ -172,11 +303,13 @@ export default function ContactSupport() {
         email: email.trim(),
         message: message.trim(),
         company,
+        images: images.map(({ name, type, data }) => ({ name, type, data })),
       });
       setSent(true);
       setEmail('');
       setMessage('');
       setCompany('');
+      updateImages([]);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : t('contact.sendFailed'));
     } finally {
@@ -254,13 +387,34 @@ export default function ContactSupport() {
                   name="message"
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
+                  onPaste={handleMessagePaste}
                   placeholder={t('contact.messagePlaceholder')}
                   minLength={5}
                   maxLength={4000}
                   rows={6}
                   required
                 />
+                <span className={styles.pasteHint}>{t('contact.pasteImageHint')}</span>
                 <span className={styles.counter}>{message.length}/4000</span>
+
+                {images.length ? (
+                  <ul className={styles.attachments} aria-label={t('contact.pastedImages')}>
+                    {images.map((image) => (
+                      <li className={styles.attachment} key={image.id}>
+                        <img src={`data:${image.type};base64,${image.data}`} alt={image.name} />
+                        <span title={image.name}>{image.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => updateImages(images.filter((item) => item.id !== image.id))}
+                          aria-label={t('contact.removeImage')}
+                          disabled={submitting}
+                        >
+                          ×
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
 
                 <label className={styles.honeypot} htmlFor="contact-company">
                   {t('contact.company')}

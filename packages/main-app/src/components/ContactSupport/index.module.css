@@ -97,6 +97,7 @@
 	position: relative;
 	z-index: 1;
 	width: min(100%, 430px);
+	max-height: calc(100dvh - 40px);
 	overflow: hidden;
 	color: var(--color-fg);
 	background: var(--color-surface);
@@ -151,6 +152,7 @@
 .form {
 	display: flex;
 	flex-direction: column;
+	overflow-y: auto;
 	padding: 20px 22px 22px;
 }
 
@@ -212,6 +214,74 @@
 	color: var(--color-fg-tertiary);
 	font-family: var(--font-mono);
 	font-size: 9px;
+}
+
+.pasteHint {
+	margin-top: 7px;
+	color: var(--color-fg-tertiary);
+	font-size: 11px;
+	line-height: 1.45;
+}
+
+.attachments {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 8px;
+	margin-top: 12px;
+	padding: 0;
+	list-style: none;
+}
+
+.attachment {
+	position: relative;
+	min-width: 0;
+	margin: 0;
+	padding: 5px;
+	background: var(--color-canvas);
+	border: 1px solid var(--color-divider);
+	border-radius: 7px;
+}
+
+.attachment img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 1;
+	object-fit: cover;
+	border-radius: 4px;
+}
+
+.attachment > span {
+	overflow: hidden;
+	margin-top: 5px;
+	color: var(--color-fg-tertiary);
+	font-size: 9px;
+	line-height: 1.3;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.attachment button {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	display: grid;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	color: #fff;
+	background: rgb(0 0 0 / 72%);
+	border: 0;
+	border-radius: 50%;
+	font: inherit;
+	font-size: 16px;
+	line-height: 1;
+	place-items: center;
+	cursor: pointer;
+}
+
+.attachment button:disabled {
+	cursor: wait;
+	opacity: 0.55;
 }
 
 .honeypot {

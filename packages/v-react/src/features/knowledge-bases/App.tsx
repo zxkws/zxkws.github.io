@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { knowledgeApi, type KnowledgeBase, type KnowledgeDocument } from '../assistants/api';
+import {
+  knowledgeApi,
+  type KnowledgeBase,
+  type KnowledgeDocument,
+  type KnowledgeSearchResult,
+} from '../assistants/api';
 import '../assistants/styles.css';
 
 const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error));
@@ -12,6 +17,9 @@ export default function KnowledgeBasesApp() {
   const [baseId, setBaseId] = useState('');
   const [documentForm, setDocumentForm] = useState({ id: '', title: '', content: '' });
   const [showBaseForm, setShowBaseForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<KnowledgeSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -50,9 +58,36 @@ export default function KnowledgeBasesApp() {
     try {
       setEditing(item);
       setDocumentForm({ id: '', title: '', content: '' });
+      setSearchQuery('');
+      setSearchResults([]);
       setDocuments(await knowledgeApi.documents(item.id));
     } catch (error) {
       setStatus(errorText(error));
+    }
+  };
+
+  const reindexDocument = async () => {
+    if (!editing || !documentForm.id) return;
+    setStatus('');
+    try {
+      const saved = await knowledgeApi.reindexDocument(editing.id, documentForm.id);
+      setDocuments((current) => current.map((item) => (item.id === saved.id ? saved : item)));
+      setStatus(`索引状态：${saved.status}`);
+    } catch (error) {
+      setStatus(errorText(error));
+    }
+  };
+
+  const searchKnowledge = async () => {
+    if (!editing || !searchQuery.trim()) return;
+    setSearching(true);
+    setStatus('');
+    try {
+      setSearchResults(await knowledgeApi.search(editing.id, searchQuery.trim()));
+    } catch (error) {
+      setStatus(errorText(error));
+    } finally {
+      setSearching(false);
     }
   };
 
@@ -191,45 +226,84 @@ export default function KnowledgeBasesApp() {
               <h2>{editing.name} · 文档</h2>
               <button onClick={() => setEditing(null)}>×</button>
             </header>
-            <div className="assistant-modal-body knowledge-layout">
-              <aside className="knowledge-document-list">
-                <button className="primary" onClick={() => setDocumentForm({ id: '', title: '', content: '' })}>
-                  新建文档
-                </button>
-                {documents.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setDocumentForm({ id: item.id, title: item.title, content: item.content })}
-                  >
-                    {item.title}
-                  </button>
-                ))}
-              </aside>
-              <div className="assistant-form-grid knowledge-editor">
-                <label className="wide">
-                  <span>标题</span>
+            <div className="assistant-modal-body knowledge-modal-body">
+              <section className="knowledge-search">
+                <div>
                   <input
-                    value={documentForm.title}
-                    onChange={(e) => setDocumentForm({ ...documentForm, title: e.target.value })}
+                    value={searchQuery}
+                    onChange={(event) => setSearchQuery(event.target.value)}
+                    placeholder="输入问题测试知识库召回"
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') void searchKnowledge();
+                    }}
                   />
-                </label>
-                <label className="wide">
-                  <span>正文</span>
-                  <textarea
-                    rows={18}
-                    value={documentForm.content}
-                    onChange={(e) => setDocumentForm({ ...documentForm, content: e.target.value })}
-                  />
-                </label>
-                <div className="wide knowledge-editor-actions">
-                  {documentForm.id && (
-                    <button className="danger-link" onClick={() => void removeDocument()}>
-                      删除文档
-                    </button>
-                  )}
-                  <button className="primary" onClick={saveDocument}>
-                    保存文档
+                  <button className="primary" onClick={searchKnowledge} disabled={searching}>
+                    {searching ? '检索中…' : '测试检索'}
                   </button>
+                </div>
+                {searchResults.length ? (
+                  <div className="knowledge-search-results">
+                    {searchResults.map((result) => (
+                      <article key={result.chunkId}>
+                        <strong>
+                          [{result.citation}] {result.title}
+                        </strong>
+                        <span>
+                          score: {result.score} · chunkIndex: {result.chunkIndex} · chars: {result.charStart}-
+                          {result.charEnd}
+                        </span>
+                        <p>{result.content}</p>
+                      </article>
+                    ))}
+                  </div>
+                ) : null}
+              </section>
+              <div className="knowledge-layout">
+                <aside className="knowledge-document-list">
+                  <button className="primary" onClick={() => setDocumentForm({ id: '', title: '', content: '' })}>
+                    新建文档
+                  </button>
+                  {documents.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setDocumentForm({ id: item.id, title: item.title, content: item.content })}
+                    >
+                      <strong>{item.title}</strong>
+                      <span>
+                        status: {item.status} · chunkCount: {item.chunkCount} · embeddingStatus: {item.embeddingStatus}
+                      </span>
+                    </button>
+                  ))}
+                </aside>
+                <div className="assistant-form-grid knowledge-editor">
+                  <label className="wide">
+                    <span>标题</span>
+                    <input
+                      value={documentForm.title}
+                      onChange={(e) => setDocumentForm({ ...documentForm, title: e.target.value })}
+                    />
+                  </label>
+                  <label className="wide">
+                    <span>正文</span>
+                    <textarea
+                      rows={18}
+                      value={documentForm.content}
+                      onChange={(e) => setDocumentForm({ ...documentForm, content: e.target.value })}
+                    />
+                  </label>
+                  <div className="wide knowledge-editor-actions">
+                    {documentForm.id && (
+                      <>
+                        <button onClick={() => void reindexDocument()}>重建索引</button>
+                        <button className="danger-link" onClick={() => void removeDocument()}>
+                          删除文档
+                        </button>
+                      </>
+                    )}
+                    <button className="primary" onClick={saveDocument}>
+                      保存文档
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

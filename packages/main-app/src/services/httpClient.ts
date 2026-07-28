@@ -67,5 +67,11 @@ const createClient = ({ withLoading }: { withLoading: boolean }) =>
 const client = createClient({ withLoading: true });
 const backgroundClient = createClient({ withLoading: false });
 
+const apiRequestHeaders = (): Record<string, string> => {
+  if (typeof window === 'undefined' || !shouldSendAuthHeader) return {};
+  const token = localStorage.getItem('auth_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export default client;
-export { client, backgroundClient };
+export { BASE_URL as apiBaseUrl, apiRequestHeaders, backgroundClient, client };

@@ -4,7 +4,7 @@ import client from '../db-ops/http/client';
 import './styles.css';
 
 type AuthState = 'pending' | 'ok' | 'need-login' | 'forbidden' | 'error';
-type Capability = 'text' | 'vision' | 'speech-to-text' | 'text-to-speech' | 'image' | 'video';
+type Capability = 'text' | 'vision' | 'speech-to-text' | 'text-to-speech' | 'embedding' | 'image' | 'video';
 
 type AiModel = {
   id: string;
@@ -51,6 +51,7 @@ const capabilities: Array<[Capability, string]> = [
   ['vision', '视觉'],
   ['speech-to-text', '语音转文字'],
   ['text-to-speech', '文字转语音'],
+  ['embedding', '向量嵌入'],
   ['image', '图片生成'],
   ['video', '视频生成'],
 ];
@@ -68,6 +69,7 @@ const inferCapability = (model: string): Capability => {
   if (value.includes('image') || value.includes('imagine')) return 'image';
   if (value.includes('whisper') || value.includes('transcri')) return 'speech-to-text';
   if (value.includes('tts') || value.includes('speech')) return 'text-to-speech';
+  if (value.includes('embed') || value.includes('bge-')) return 'embedding';
   return 'text';
 };
 
