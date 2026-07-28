@@ -26,11 +26,10 @@ const menuPathAliases: Record<string, string> = {
   '/v-react/pdf-editor': 'https://pdf.acckm.com',
 };
 
-const retiredMenuPaths = new Set(['/', '/v-app/llm-ranking']);
+const retiredMenuPaths = new Set(['/', '/product-lab', '/v-app/llm-ranking']);
 
 const menuTranslationKeys: Record<string, string> = {
   '/app/navigation': 'menu.navigation',
-  '/product-lab': 'menu.productLab',
   '/chess-mirror': 'menu.chessMirror',
   '/v-app/text-difference': 'menu.textDiff',
   '/v-app/json-viewer': 'menu.jsonTool',

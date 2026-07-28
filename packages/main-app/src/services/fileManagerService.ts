@@ -7,6 +7,7 @@ export type UploadRecord = {
   size?: number | string;
   url: string;
   signedUrl?: string;
+  previewUrl?: string;
   workerFileId?: string;
   workerHost?: string;
   uploader?: string;

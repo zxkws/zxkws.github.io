@@ -15,7 +15,7 @@ Run commands from the repository root:
 - `pnpm --filter <package> build` validates one package.
 - `pnpm --filter main-app lint` runs Biome and Stylelint; `pnpm --filter v-react lint` runs ESLint with fixes.
 
-Production builds use `https://system.zxkws.nyc.mn/api`; local applications proxy `/api` to the backend. Do not casually change either contract.
+Production builds use `https://api.zxkws.nyc.mn/api`; `zxkws.nyc.mn` keeps same-origin `/api` requests so the edge proxy can forward them to Vercel. Local applications proxy `/api` to the backend. Do not casually change these contracts.
 
 ## Coding Style & Naming Conventions
 

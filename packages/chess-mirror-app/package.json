@@ -5,7 +5,7 @@
   "description": "Xiangqi AI assistant with camera recognition and AR",
   "scripts": {
     "dev": "vite",
-    "build": "API_BASE_URL=https://system.zxkws.nyc.mn/api vite build",
+    "build": "API_BASE_URL=https://api.zxkws.nyc.mn/api vite build",
     "preview": "vite preview"
   },
   "dependencies": {

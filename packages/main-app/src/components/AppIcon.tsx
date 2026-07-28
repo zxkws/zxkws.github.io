@@ -27,7 +27,7 @@ type AppIconProps = Omit<SVGProps<SVGSVGElement>, 'name'> & {
 export const resolveAppIcon = (path?: string, name?: string): AppIconName => {
   const value = `${path ?? ''} ${name ?? ''}`.toLowerCase();
   if (path === '/') return 'home';
-  if (value.includes('product-lab') || value.includes('产品构想')) return 'idea';
+  if (value.includes('产品构想')) return 'idea';
   if (value.includes('chess') || value.includes('象棋')) return 'chess';
   if (value.includes('text-difference') || value.includes('textdiff') || value.includes('文本比对')) return 'diff';
   if (value.includes('json')) return 'braces';

@@ -32,7 +32,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
     return filterMenus(menus);
   }, [menus, user]);
 
-  const isPortalRoute = pathname === '/' || pathname === '/product-lab';
+  const isPortalRoute = pathname === '/';
   const isPublicRoute =
     isPortalRoute ||
     pathname === '/chess-mirror' ||

@@ -55,7 +55,6 @@ const normalizePathname = (value: string) => (value.length > 1 && value.endsWith
 const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
 const MenuAdmin = lazy(() => import('./pages/MenuAdmin'));
 const RoleAdmin = lazy(() => import('./pages/RoleAdmin'));
-const ProductLab = lazy(() => import('./pages/ProductLab'));
 const Navigation = lazy(() => import('./pages/Navigation'));
 const UserAdmin = lazy(() => import('./pages/UserAdmin'));
 const Profile = lazy(() => import('./pages/Profile'));
@@ -97,7 +96,6 @@ const LocalRoutes = ({ pathname }: { pathname: string }) => {
   const content = (() => {
     if (pathname === '/') return <NavHome />;
     if (pathname === '/app/navigation') return <Navigation />;
-    if (pathname === '/product-lab') return <ProductLab />;
     if (pathname === '/profile') return <Profile />;
     if (pathname === '/app/menu-admin') return <MenuAdmin />;
     if (pathname === '/app/role-admin') return <RoleAdmin />;

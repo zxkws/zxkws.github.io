@@ -1,6 +1,7 @@
-import { Button, message, Popconfirm, Space, Table } from 'antd';
+import { Button, Modal, message, Popconfirm, Space, Spin, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLanguage } from '../../i18n';
 import {
   deleteUploadRecords,
   listUploadRecords,
@@ -10,6 +11,67 @@ import {
 import * as styles from './index.module.css';
 
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
+const MAX_TEXT_PREVIEW_BYTES = 2 * 1024 * 1024;
+const TEXT_EXTENSIONS = new Set([
+  'bat',
+  'c',
+  'conf',
+  'cpp',
+  'css',
+  'csv',
+  'env',
+  'go',
+  'graphql',
+  'h',
+  'html',
+  'ini',
+  'java',
+  'js',
+  'json',
+  'jsx',
+  'log',
+  'md',
+  'php',
+  'properties',
+  'py',
+  'rb',
+  'rs',
+  'scss',
+  'sh',
+  'sql',
+  'svg',
+  'toml',
+  'ts',
+  'tsx',
+  'txt',
+  'vue',
+  'xml',
+  'yaml',
+  'yml',
+]);
+
+type PreviewKind = 'image' | 'video' | 'audio' | 'pdf' | 'text' | 'unsupported';
+
+const extensionOf = (filename: string) => filename.split('.').pop()?.toLowerCase() || '';
+
+const getPreviewKind = (record: UploadRecord): PreviewKind => {
+  const mimeType = record.mimeType?.toLowerCase() || '';
+  const extension = extensionOf(record.filename);
+  if (mimeType.startsWith('image/') && mimeType !== 'image/svg+xml') return 'image';
+  if (mimeType.startsWith('video/')) return 'video';
+  if (mimeType.startsWith('audio/')) return 'audio';
+  if (mimeType === 'application/pdf' || extension === 'pdf') return 'pdf';
+  if (
+    mimeType.startsWith('text/') ||
+    ['application/json', 'application/ld+json', 'application/xml', 'application/yaml'].includes(mimeType) ||
+    TEXT_EXTENSIONS.has(extension)
+  ) {
+    return 'text';
+  }
+  return 'unsupported';
+};
+
+const previewAddress = (record: UploadRecord) => record.previewUrl || record.signedUrl || record.url;
 
 type QueueItem = {
   key: string;
@@ -19,12 +81,17 @@ type QueueItem = {
 };
 
 export default function FileManager() {
+  const { t } = useLanguage();
   const [records, setRecords] = useState<UploadRecord[]>([]);
   const [selectedIds, setSelectedIds] = useState<React.Key[]>([]);
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [previewRecord, setPreviewRecord] = useState<UploadRecord>();
+  const [previewText, setPreviewText] = useState('');
+  const [previewError, setPreviewError] = useState('');
+  const [previewLoading, setPreviewLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
@@ -32,22 +99,79 @@ export default function FileManager() {
     try {
       setRecords(await listUploadRecords());
     } catch (error) {
-      message.error(error instanceof Error ? error.message : '读取上传记录失败');
+      message.error(error instanceof Error ? error.message : t('fileManager.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (!previewRecord || getPreviewKind(previewRecord) !== 'text') {
+      setPreviewText('');
+      setPreviewError('');
+      setPreviewLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const loadTextPreview = async () => {
+      setPreviewText('');
+      setPreviewError('');
+      setPreviewLoading(true);
+      try {
+        const response = await fetch(previewAddress(previewRecord), {
+          credentials: 'include',
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          throw new Error(t('fileManager.previewReadFailedStatus', { status: response.status }));
+        }
+
+        const declaredSize = Number(response.headers.get('content-length') || 0);
+        if (declaredSize > MAX_TEXT_PREVIEW_BYTES) {
+          throw new Error(t('fileManager.previewTooLarge'));
+        }
+        if (!response.body) throw new Error(t('fileManager.previewNoBody'));
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let received = 0;
+        let content = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          received += value.byteLength;
+          if (received > MAX_TEXT_PREVIEW_BYTES) {
+            await reader.cancel();
+            throw new Error(t('fileManager.previewTooLarge'));
+          }
+          content += decoder.decode(value, { stream: true });
+        }
+        content += decoder.decode();
+        setPreviewText(content);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setPreviewError(error instanceof Error ? error.message : t('fileManager.previewFailed'));
+        }
+      } finally {
+        if (!controller.signal.aborted) setPreviewLoading(false);
+      }
+    };
+
+    loadTextPreview();
+    return () => controller.abort();
+  }, [previewRecord, t]);
 
   const uploadFiles = async (files: File[]) => {
     if (!files.length || uploading) return;
     const valid: QueueItem[] = [];
     files.forEach((file, index) => {
       if (file.size > MAX_FILE_BYTES) {
-        message.error(`${file.name} 超过 50 MB，未加入上传`);
+        message.error(t('fileManager.fileTooLarge', { name: file.name }));
         return;
       }
       valid.push({
@@ -80,7 +204,7 @@ export default function FileManager() {
               ? {
                   ...queued,
                   status: 'failed',
-                  result: error instanceof Error ? error.message : '上传失败',
+                  result: error instanceof Error ? error.message : t('fileManager.uploadFailed'),
                 }
               : queued,
           ),
@@ -89,7 +213,7 @@ export default function FileManager() {
     }
     setUploading(false);
     if (successCount) {
-      message.success(`${successCount} 个文件上传成功`);
+      message.success(t('fileManager.uploadSucceeded', { count: successCount }));
       await load();
     }
     if (inputRef.current) inputRef.current.value = '';
@@ -102,31 +226,31 @@ export default function FileManager() {
       await deleteUploadRecords(ids);
       setSelectedIds([]);
       await load();
-      message.success('远端文件和上传记录已删除');
+      message.success(t('fileManager.deleteSucceeded'));
     } catch (error) {
-      message.error(error instanceof Error ? error.message : '删除失败，本地记录已保留');
+      message.error(error instanceof Error ? error.message : t('fileManager.deleteFailed'));
     }
   };
 
   const copy = async (url: string) => {
     try {
       await navigator.clipboard.writeText(url);
-      message.success('文件地址已复制');
+      message.success(t('fileManager.copySucceeded'));
     } catch {
-      message.error('复制失败，请手动选择复制');
+      message.error(t('fileManager.copyFailed'));
     }
   };
 
   const columns: ColumnsType<UploadRecord> = useMemo(
     () => [
       {
-        title: '文件',
+        title: t('fileManager.file'),
         dataIndex: 'filename',
         key: 'filename',
         render: (filename: string, record) => (
           <div className={styles.fileCell}>
             {record.mimeType?.startsWith('image/') ? (
-              <img src={record.signedUrl || record.url} alt="" loading="lazy" />
+              <img src={previewAddress(record)} alt="" loading="lazy" />
             ) : (
               <span className={styles.fileIcon}>FILE</span>
             )}
@@ -139,48 +263,54 @@ export default function FileManager() {
       { title: 'uploader', dataIndex: 'uploader', key: 'uploader', width: 140 },
       { title: 'createdAt', dataIndex: 'createdAt', key: 'createdAt', width: 190 },
       {
-        title: '地址',
+        title: t('fileManager.address'),
         dataIndex: 'url',
         key: 'url',
         width: 180,
         render: (url: string, record) => (
           <Space>
+            <button className={styles.linkButton} type="button" onClick={() => setPreviewRecord(record)}>
+              {t('fileManager.preview')}
+            </button>
             <a href={record.signedUrl || url} target="_blank" rel="noopener noreferrer">
-              打开
+              {t('fileManager.open')}
             </a>
             <button className={styles.linkButton} type="button" onClick={() => copy(url)}>
-              复制
+              {t('fileManager.copy')}
             </button>
           </Space>
         ),
       },
     ],
-    [],
+    [t],
   );
+
+  const currentPreviewKind = previewRecord ? getPreviewKind(previewRecord) : 'unsupported';
+  const currentPreviewUrl = previewRecord ? previewAddress(previewRecord) : '';
 
   return (
     <div className="workspace-page">
       <header className="workspace-page__header">
         <div>
-          <p className="workspace-page__eyebrow">File storage</p>
-          <h1>文件管理</h1>
-          <p className="workspace-page__description">上传任意文件类型到个人文件存储，并管理真实上传记录。</p>
+          <p className="workspace-page__eyebrow">{t('fileManager.eyebrow')}</p>
+          <h1>{t('fileManager.title')}</h1>
+          <p className="workspace-page__description">{t('fileManager.description')}</p>
         </div>
         <div className="workspace-page__actions">
           <Button onClick={load} loading={loading}>
-            刷新
+            {t('common.refresh')}
           </Button>
           <Popconfirm
-            title={`删除选中的 ${selectedIds.length} 个文件？`}
-            description="远端文件和本地上传记录都会删除，此操作不可恢复。"
-            okText="删除"
-            cancelText="取消"
+            title={t('fileManager.deleteConfirm', { count: selectedIds.length })}
+            description={t('fileManager.deleteDescription')}
+            okText={t('common.delete')}
+            cancelText={t('common.cancel')}
             okButtonProps={{ danger: true }}
             onConfirm={removeSelected}
             disabled={!selectedIds.length}
           >
             <Button danger disabled={!selectedIds.length}>
-              删除所选
+              {t('fileManager.deleteSelected')}
             </Button>
           </Popconfirm>
         </div>
@@ -206,8 +336,8 @@ export default function FileManager() {
           }}
           disabled={uploading}
         >
-          <strong>{uploading ? '正在上传…' : '拖拽文件到这里，或点击选择文件'}</strong>
-          <span>支持任意文件类型，单个文件不超过 50 MB；文件按顺序上传，避免占用过多内存。</span>
+          <strong>{uploading ? t('fileManager.uploading') : t('fileManager.dropzone')}</strong>
+          <span>{t('fileManager.dropzoneHint')}</span>
         </button>
         <input
           ref={inputRef}
@@ -223,7 +353,7 @@ export default function FileManager() {
               <div key={item.key}>
                 <span>{item.file.name}</span>
                 <code>{item.file.size}</code>
-                <strong data-status={item.status}>{item.status}</strong>
+                <strong data-status={item.status}>{t(`fileManager.status.${item.status}`)}</strong>
                 <small>{item.result}</small>
               </div>
             ))}
@@ -243,9 +373,65 @@ export default function FileManager() {
           }}
           pagination={{ pageSize: 20, hideOnSinglePage: true }}
           scroll={{ x: 1100 }}
-          locale={{ emptyText: loading ? '正在读取上传记录…' : '暂无上传记录' }}
+          locale={{
+            emptyText: loading ? t('fileManager.loadingRecords') : t('fileManager.empty'),
+          }}
         />
       </section>
+
+      <Modal
+        open={Boolean(previewRecord)}
+        title={previewRecord?.filename}
+        width="min(960px, calc(100vw - 32px))"
+        centered
+        onCancel={() => setPreviewRecord(undefined)}
+        footer={
+          previewRecord
+            ? [
+                <Button key="open" href={previewRecord.signedUrl || previewRecord.url} target="_blank">
+                  {t('fileManager.openOriginal')}
+                </Button>,
+                <Button key="close" type="primary" onClick={() => setPreviewRecord(undefined)}>
+                  {t('common.close')}
+                </Button>,
+              ]
+            : null
+        }
+      >
+        <div className={styles.previewBody}>
+          {currentPreviewKind === 'image' && <img src={currentPreviewUrl} alt={previewRecord?.filename || ''} />}
+          {currentPreviewKind === 'video' && (
+            <video src={currentPreviewUrl} controls preload="metadata">
+              <track kind="captions" />
+            </video>
+          )}
+          {currentPreviewKind === 'audio' && (
+            <audio src={currentPreviewUrl} controls preload="metadata">
+              <track kind="captions" />
+            </audio>
+          )}
+          {currentPreviewKind === 'pdf' && (
+            <iframe src={currentPreviewUrl} title={previewRecord?.filename || 'PDF 预览'} />
+          )}
+          {currentPreviewKind === 'text' &&
+            (previewLoading ? (
+              <Spin tip={t('fileManager.loadingFile')}>
+                <div className={styles.previewLoading} />
+              </Spin>
+            ) : previewError ? (
+              <div className={styles.previewMessage}>{previewError}</div>
+            ) : (
+              <pre>{previewText}</pre>
+            ))}
+          {currentPreviewKind === 'unsupported' && (
+            <div className={styles.previewMessage}>
+              <strong>{t('fileManager.previewUnsupported')}</strong>
+              <span>{t('fileManager.previewUnsupportedHint')}</span>
+              <code>{previewRecord?.mimeType || 'application/octet-stream'}</code>
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }
