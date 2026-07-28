@@ -18,13 +18,15 @@ const menuPathAliases: Record<string, string> = {
   '/v-react/codex-chat': '/v-react/model-playground',
   '/app/agent-tasks': '/app/agent-platform',
   '/app/v-react': '/v-react/notes',
+  '/account': '/app/account-vault',
+  '/v-app/account': '/app/account-vault',
   '/v-app/navList': '/app/navigation',
   '/pdf-editor': 'https://pdf.acckm.com',
   '/app/pdf-editor': 'https://pdf.acckm.com',
   '/v-react/pdf-editor': 'https://pdf.acckm.com',
 };
 
-const retiredMenuPaths = new Set(['/', '/v-app/account', '/v-app/llm-ranking']);
+const retiredMenuPaths = new Set(['/', '/v-app/llm-ranking']);
 
 const menuTranslationKeys: Record<string, string> = {
   '/app/navigation': 'menu.navigation',
@@ -47,6 +49,8 @@ const menuTranslationKeys: Record<string, string> = {
   '/app/config-center': 'menu.configCenter',
   '/app/blog-studio': 'menu.blogStudio',
   '/app/security-center': 'menu.securityCenter',
+  '/app/account-vault': 'menu.accountVault',
+  '/app/file-manager': 'menu.fileManager',
   '/app/agent-platform': 'menu.agentPlatform',
   '/v-react/notes': 'menu.notes',
   '/v-react/keepalive': 'menu.keepalive',

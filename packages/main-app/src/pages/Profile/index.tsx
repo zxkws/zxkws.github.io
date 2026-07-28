@@ -7,7 +7,9 @@ export default function Profile() {
   const { user, refreshUser, saveUser } = useUser();
   const [me, setMe] = useState<UserProfile | null>(() => user);
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -38,13 +40,21 @@ export default function Profile() {
       if (!isValidEmail(email)) {
         throw new Error('请输入有效邮箱地址，例如 name@example.com');
       }
+      if (newPassword) {
+        if (!currentPassword) throw new Error('修改密码时请输入当前密码');
+        if (newPassword.length < 10) throw new Error('新密码至少 10 位');
+        if (newPassword !== confirmPassword) throw new Error('两次输入的新密码不一致');
+      }
       const updated = await saveUser({
         email: email || undefined,
-        password: password || undefined,
+        currentPassword: newPassword ? currentPassword : undefined,
+        newPassword: newPassword || undefined,
       });
       setMe(updated);
       setEmail(updated?.email ?? '');
-      setPassword('');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
       setMsg('更新成功');
     } catch (err) {
       setMsg(err instanceof Error ? err.message : '更新失败');
@@ -90,12 +100,33 @@ export default function Profile() {
             />
           </label>
           <label className="workspace-field">
+            <span>当前密码</span>
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.target.value)}
+              className="workspace-input"
+              placeholder="仅修改密码时填写"
+            />
+          </label>
+          <label className="workspace-field">
             <span>新密码（留空则不修改）</span>
             <input
               type="password"
               autoComplete="new-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              className="workspace-input"
+            />
+          </label>
+          <label className="workspace-field">
+            <span>确认新密码</span>
+            <input
+              type="password"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
               className="workspace-input"
             />
           </label>

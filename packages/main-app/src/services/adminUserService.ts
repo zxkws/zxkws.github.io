@@ -1,9 +1,32 @@
 import { client } from './httpClient';
-import type { UserProfile } from './userService';
-// 简化类型定义，避免跨仓库依赖
+
 export type UserStatus = 'active' | 'frozen' | 'banned';
 
-export type AdminUser = UserProfile & {
+export type AdminRole = {
+  id?: number;
+  code?: string;
+  name?: string;
+};
+
+export type AdminUser = {
+  userId: string;
+  username: string;
+  email?: string | null;
+  phone?: string | null;
+  status: UserStatus;
+  roles?: AdminRole[];
+  cts?: string;
+  uts?: string;
+};
+
+export type CreateAdminUserPayload = {
+  username: string;
+  email: string;
+  password: string;
+};
+
+export type UpdateAdminUserPayload = {
+  username?: string;
   email?: string;
   status?: UserStatus;
 };
@@ -13,10 +36,15 @@ export const fetchUsers = async (keyword?: string) => {
   return client<AdminUser[]>(`/v1/user/list${query}`, {}, { method: 'GET' });
 };
 
-export const updateUser = (id: string, data: Partial<AdminUser>) =>
-  client(`/v1/user/${id}/admin`, data, { method: 'PATCH' });
+export const createUser = (data: CreateAdminUserPayload) => client<AdminUser>('/v1/user', data, { method: 'POST' });
+
+export const updateUser = (id: string, data: UpdateAdminUserPayload) =>
+  client<AdminUser>(`/v1/user/${id}/admin`, data, { method: 'PATCH' });
+
+export const resetUserPassword = (id: string, password: string) =>
+  client<{ userId: string }>(`/v1/user/${id}/password`, { password }, { method: 'PATCH' });
 
 export const updateStatus = (id: string, status: UserStatus) =>
-  client(`/v1/user/${id}/status`, { status }, { method: 'PATCH' });
+  client<AdminUser>(`/v1/user/${id}/status`, { status }, { method: 'PATCH' });
 
-export const deleteUser = (id: string) => client(`/v1/user/${id}`, { id }, { method: 'DELETE' });
+export const deleteUser = (id: string) => client(`/v1/user/${id}`, {}, { method: 'DELETE' });

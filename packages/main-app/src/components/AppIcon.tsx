@@ -33,6 +33,7 @@ export const resolveAppIcon = (path?: string, name?: string): AppIconName => {
   if (value.includes('json')) return 'braces';
   if (value.includes('curl')) return 'terminal';
   if (value.includes('pdf')) return 'note';
+  if (value.includes('file-manager') || value.includes('文件管理')) return 'note';
   if (value.includes('blog') || value.includes('博客')) return 'book';
   if (value.includes('db-ops') || value.includes('database') || value.includes('数据库')) return 'database';
   if (
@@ -46,6 +47,7 @@ export const resolveAppIcon = (path?: string, name?: string): AppIconName => {
   }
   if (value.includes('knowledge') || value.includes('知识库')) return 'book';
   if (value.includes('permission') || value.includes('权限')) return 'shield';
+  if (value.includes('account-vault') || value.includes('保险库')) return 'shield';
   if (value.includes('user') || value.includes('用户')) return 'users';
   if (value.includes('note') || value.includes('笔记')) return 'note';
   if (value.includes('keepalive') || value.includes('保活')) return 'activity';

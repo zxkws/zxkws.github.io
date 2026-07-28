@@ -14,7 +14,9 @@ type UserContextValue = {
   /** 获取当前用户；force=true 时跳过缓存重新请求 */
   refreshUser: (opts?: { force?: boolean; silent?: boolean }) => Promise<UserProfile | null>;
   /** 调用后台保存并刷新本地缓存 */
-  saveUser: (payload: Partial<UserProfile> & { password?: string }) => Promise<UserProfile | null>;
+  saveUser: (
+    payload: Partial<UserProfile> & { currentPassword?: string; newPassword?: string },
+  ) => Promise<UserProfile | null>;
   /** 登出/清空时调用 */
   clearUser: () => void;
 };
@@ -58,16 +60,19 @@ export const UserProvider = ({ children }: PropsWithChildren) => {
     [clearUser],
   );
 
-  const saveUser = useCallback(async (payload: Partial<UserProfile> & { password?: string }) => {
-    setLoading(true);
-    try {
-      const updated = await saveCurrentUser(payload);
-      setUser(updated);
-      return updated;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const saveUser = useCallback(
+    async (payload: Partial<UserProfile> & { currentPassword?: string; newPassword?: string }) => {
+      setLoading(true);
+      try {
+        const updated = await saveCurrentUser(payload);
+        setUser(updated);
+        return updated;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   // 初始化时尝试拉取一次用户信息
   useEffect(() => {

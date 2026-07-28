@@ -24,8 +24,8 @@ const submit = async () => {
     props.onError('请输入有效邮箱');
     return;
   }
-  if (!password || password.length < 6) {
-    props.onError('密码至少 6 位');
+  if (!password || password.length < 10) {
+    props.onError('密码至少 10 位');
     return;
   }
 
@@ -52,4 +52,3 @@ const submit = async () => {
     </button>
   </div>
 </template>
-

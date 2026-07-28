@@ -1,0 +1,147 @@
+.dropzone {
+	display: grid;
+	width: 100%;
+	min-height: 170px;
+	place-content: center;
+	gap: 10px;
+	padding: 28px;
+	border: 1px dashed var(--color-border-strong);
+	border-radius: var(--radius-sm);
+	outline: 0;
+	background: var(--color-surface-2);
+	color: var(--color-fg);
+	text-align: center;
+	cursor: pointer;
+	transition:
+		border-color var(--duration-fast) var(--ease-standard),
+		background-color var(--duration-fast) var(--ease-standard);
+}
+
+.dropzone:hover,
+.dropzoneActive {
+	border-color: var(--color-primary-deep);
+	background: var(--color-primary-muted);
+}
+
+.dropzone:disabled {
+	cursor: wait;
+	opacity: 0.7;
+}
+
+.dropzone strong {
+	font-size: 16px;
+}
+
+.dropzone span {
+	color: var(--color-fg-tertiary);
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.fileInput {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+.queue {
+	display: grid;
+	gap: 1px;
+	overflow: hidden;
+	margin-top: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	background: var(--color-divider);
+}
+
+.queue > div {
+	display: grid;
+	grid-template-columns: minmax(160px, 1fr) 100px 86px minmax(120px, 1fr);
+	gap: 12px;
+	align-items: center;
+	padding: 10px 12px;
+	background: var(--color-surface);
+	font-size: 12px;
+}
+
+.queue span,
+.queue small {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.queue code {
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+}
+
+.queue strong {
+	color: var(--color-fg-secondary);
+	font-family: var(--font-mono);
+	font-size: 11px;
+}
+
+.queue strong[data-status="success"] {
+	color: var(--color-success);
+}
+
+.queue strong[data-status="failed"] {
+	color: var(--color-danger);
+}
+
+.queue small {
+	color: var(--color-fg-tertiary);
+}
+
+.fileCell {
+	display: flex;
+	min-width: 180px;
+	align-items: center;
+	gap: 10px;
+}
+
+.fileCell img,
+.fileIcon {
+	display: inline-flex;
+	width: 36px;
+	height: 36px;
+	flex: 0 0 36px;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--color-border);
+	border-radius: 4px;
+	background: var(--color-surface-2);
+	object-fit: cover;
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 9px;
+}
+
+.fileCell span:last-child {
+	overflow-wrap: anywhere;
+}
+
+.linkButton {
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--color-primary-deep);
+	font: inherit;
+	cursor: pointer;
+}
+
+@media (max-width: 700px) {
+	.queue > div {
+		grid-template-columns: minmax(0, 1fr) 80px;
+	}
+
+	.queue small {
+		grid-column: 1 / -1;
+	}
+}

@@ -64,6 +64,8 @@ const ConfigCenter = lazy(() => import('./pages/ConfigCenter'));
 const BlogStudio = lazy(() => import('./pages/BlogStudio'));
 const SecurityCenter = lazy(() => import('./pages/SecurityCenter'));
 const AgentPlatform = lazy(() => import('./pages/AgentPlatform'));
+const AccountVault = lazy(() => import('./pages/AccountVault'));
+const FileManager = lazy(() => import('./pages/FileManager'));
 
 const MicroAppLoading = () => <PageLoading loading contained />;
 
@@ -106,6 +108,8 @@ const LocalRoutes = ({ pathname }: { pathname: string }) => {
     if (pathname === '/app/blog-studio') return <BlogStudio />;
     if (pathname === '/app/security-center') return <SecurityCenter />;
     if (pathname === '/app/agent-platform') return <AgentPlatform />;
+    if (pathname === '/app/account-vault') return <AccountVault />;
+    if (pathname === '/app/file-manager') return <FileManager />;
 
     const iframe = IFRAME_MICRO_APPS.find((app) => pathname === app.path);
     if (iframe) {

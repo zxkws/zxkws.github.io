@@ -147,7 +147,7 @@ export const clearCachedUser = () => {
  * This merges server response with cached profile to avoid losing fields.
  */
 export const saveCurrentUser = async (
-  payload: Partial<UserProfile> & { password?: string },
+  payload: Partial<UserProfile> & { currentPassword?: string; newPassword?: string },
 ): Promise<UserProfile | null> => {
   const res = await client('/v1/user', payload, { method: 'PATCH' });
   const data =

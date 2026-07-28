@@ -14,6 +14,19 @@ export const builtInAsideMenus: MenuItem[] = [
   { name: 'PDF 编辑器', path: 'https://pdf.acckm.com', external: true, i18nKey: 'menu.pdfEditor' },
   // 业务菜单仅为兜底；实际显示以后端返回为准
   { name: '一起看', path: '/app/watch-together', i18nKey: 'menu.watchTogether' },
+  {
+    name: '账号保险库',
+    path: '/app/account-vault',
+    requiresAuth: true,
+    i18nKey: 'menu.accountVault',
+  },
+  {
+    name: '文件管理',
+    path: '/app/file-manager',
+    requiresAuth: true,
+    adminOnly: true,
+    i18nKey: 'menu.fileManager',
+  },
   { name: '数据库管控', path: '/v-react/db-ops', requiresAuth: true, i18nKey: 'menu.databaseOps' },
   { name: '语音助手', path: '/v-react/assistants', requiresAuth: true, i18nKey: 'menu.assistants' },
   { name: '知识库', path: '/v-react/knowledge-bases', requiresAuth: true, i18nKey: 'menu.knowledgeBases' },

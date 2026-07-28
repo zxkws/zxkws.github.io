@@ -60,10 +60,13 @@ const submitPasswordLogin = async (payload: { email: string; password: string })
 
 onMounted(async () => {
   try {
-    const response = await client<{
-      data?: Partial<Record<OAuthProvider | 'sms', boolean>>;
-    }>('/auth/providers', {}, { method: 'GET' });
-    const status = response.data ?? response;
+    const response = await client<
+      | Partial<Record<OAuthProvider | 'sms', boolean>>
+      | { data?: Partial<Record<OAuthProvider | 'sms', boolean>> }
+    >('/auth/providers', {}, { method: 'GET' });
+    const status = (
+      response && typeof response === 'object' && 'data' in response ? response.data ?? {} : response
+    ) as Partial<Record<OAuthProvider | 'sms', boolean>>;
     smsEnabled.value = status.sms === true;
     oauthProviders.value = {
       ...oauthProviders.value,

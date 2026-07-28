@@ -1,0 +1,155 @@
+.gate {
+	display: grid;
+	width: min(100%, 560px);
+	gap: 18px;
+	margin-inline: auto;
+}
+
+.gate h2,
+.gate p {
+	margin: 0;
+}
+
+.gate p {
+	margin-top: 8px;
+	color: var(--color-fg-secondary);
+	line-height: 1.7;
+}
+
+.toolbar {
+	display: grid;
+	grid-template-columns: minmax(220px, 480px) auto;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 18px;
+}
+
+.toolbar span {
+	min-width: 64px;
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 12px;
+	text-align: right;
+	white-space: nowrap;
+}
+
+.grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+	gap: 14px;
+}
+
+.card {
+	min-width: 0;
+	padding: 18px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	background: var(--color-surface);
+}
+
+.cardHeader {
+	display: flex;
+	min-height: 52px;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	padding-bottom: 14px;
+	border-bottom: 1px solid var(--color-divider);
+}
+
+.cardHeader span {
+	color: var(--color-primary-deep);
+	font-family: var(--font-mono);
+	font-size: 11px;
+}
+
+.cardHeader h2 {
+	margin: 5px 0 0;
+	font-size: 17px;
+}
+
+.cardActions {
+	display: flex;
+	flex: 0 0 auto;
+	gap: 8px;
+}
+
+.cardActions button,
+.details button {
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--color-fg-secondary);
+	font: inherit;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.cardActions button:hover,
+.details button:hover {
+	color: var(--color-primary-active);
+}
+
+.details {
+	display: grid;
+	gap: 12px;
+	margin: 16px 0 0;
+}
+
+.details > div {
+	display: grid;
+	grid-template-columns: 98px minmax(0, 1fr);
+	gap: 10px;
+}
+
+.details dt {
+	color: var(--color-fg-tertiary);
+	font-size: 12px;
+}
+
+.details dd {
+	display: flex;
+	min-width: 0;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	color: var(--color-fg-secondary);
+	font-size: 13px;
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
+}
+
+.details code {
+	min-width: 0;
+	color: var(--color-fg);
+	font-family: var(--font-mono);
+	overflow-wrap: anywhere;
+}
+
+.details a {
+	color: var(--color-primary-deep);
+	overflow-wrap: anywhere;
+}
+
+.empty {
+	display: flex;
+	min-height: 220px;
+	align-items: center;
+	justify-content: center;
+	color: var(--color-fg-tertiary);
+}
+
+@media (max-width: 700px) {
+	.toolbar {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	.grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.details > div {
+		grid-template-columns: 84px minmax(0, 1fr);
+	}
+}
