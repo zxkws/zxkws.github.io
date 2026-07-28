@@ -4,6 +4,7 @@ import type { MenuItem } from '../../types/menu';
 // 未登录可见：产品工作台和公共工具
 // 登录后：后端返回为准；此处作为兜底
 export const builtInAsideMenus: MenuItem[] = [
+  { name: '导航列表', path: '/app/navigation', i18nKey: 'menu.navigation' },
   { name: '产品工作台', path: '/product-lab', i18nKey: 'menu.productLab' },
   { name: '象棋·镜', path: '/chess-mirror', i18nKey: 'menu.chessMirror' },
   { name: '文本对比', path: '/v-app/text-difference', i18nKey: 'menu.textDiff' },

@@ -1,4 +1,5 @@
 [
+	{ "name": "导航列表", "path": "/app/navigation" },
 	{ "name": "产品工作台", "path": "/product-lab" },
 	{ "name": "象棋·镜", "path": "/chess-mirror" },
 	{ "name": "文本对比", "path": "/v-app/text-difference" },

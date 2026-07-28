@@ -9,12 +9,16 @@ const menuPathAliases: Record<string, string> = {
   '/textdiff': '/v-app/text-difference',
   '/tools/textdiff': '/v-app/text-difference',
   '/curlconverter': '/tools/curlconverter',
+  '/config-hub': '/app/config-center',
+  '/app/config-hub': '/app/config-center',
   '/app/db-ops': '/v-react/db-ops',
   '/app/knowledge-hub': '/v-react/knowledge-bases',
   '/v-react/knowledge-hub': '/v-react/knowledge-bases',
   '/app/codex-chat': '/v-react/model-playground',
   '/v-react/codex-chat': '/v-react/model-playground',
   '/app/agent-tasks': '/app/agent-platform',
+  '/app/v-react': '/v-react/notes',
+  '/v-app/navList': '/app/navigation',
 };
 
 const retiredMenuPaths = new Set([
@@ -22,12 +26,12 @@ const retiredMenuPaths = new Set([
   '/pdf-editor',
   '/app/pdf-editor',
   '/v-react/pdf-editor',
-  '/v-app/navList',
   '/v-app/account',
   '/v-app/llm-ranking',
 ]);
 
 const menuTranslationKeys: Record<string, string> = {
+  '/app/navigation': 'menu.navigation',
   '/product-lab': 'menu.productLab',
   '/chess-mirror': 'menu.chessMirror',
   '/v-app/text-difference': 'menu.textDiff',
