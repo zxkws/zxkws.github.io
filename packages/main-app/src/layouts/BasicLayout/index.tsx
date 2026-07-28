@@ -130,7 +130,20 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
     fetchRemoteMenus(true)
       .then((remote) => {
         if (!mounted) return;
-        setMenus(remote?.length ? remote : builtInAsideMenus);
+        if (!remote?.length) {
+          setMenus(builtInAsideMenus);
+          return;
+        }
+        const next = [...remote];
+        if (user.roles?.includes('admin')) {
+          const existingPaths = new Set(next.map((item) => item.path).filter(Boolean));
+          builtInAsideMenus
+            .filter((item) => item.adminOnly && item.path && !existingPaths.has(item.path))
+            .forEach((item) => {
+              next.push(item);
+            });
+        }
+        setMenus(next);
       })
       .catch(() => {
         if (mounted) setMenus(builtInAsideMenus);
