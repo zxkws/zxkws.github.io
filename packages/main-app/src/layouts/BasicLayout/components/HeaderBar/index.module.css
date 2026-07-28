@@ -90,34 +90,9 @@
 	letter-spacing: 0.13em;
 }
 
-.portalNav {
-	display: flex;
-	align-items: center;
-	gap: 4px;
-}
-
-.portalNav a,
 .workspaceLabel {
 	color: var(--color-fg-tertiary);
-	font-size: 13px;
 	font-weight: 450;
-	text-decoration: none;
-}
-
-.portalNav a {
-	padding: 7px 10px;
-	border-radius: 6px;
-	transition:
-		color var(--duration-fast) var(--ease-standard),
-		background-color var(--duration-fast) var(--ease-standard);
-}
-
-.portalNav a:hover {
-	color: var(--color-fg);
-	background: var(--color-surface-2);
-}
-
-.workspaceLabel {
 	padding-left: 18px;
 	border-left: 1px solid var(--color-divider);
 	font-family: var(--font-mono);

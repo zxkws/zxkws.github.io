@@ -133,16 +133,7 @@ const HeaderBar = ({ isMobile, isPortal, onMenuToggle }: HeaderBarProps) => {
               </span>
             </SafeAppLink>
 
-            {isPortal ? (
-              <nav className={styles.portalNav} aria-label="门户导航">
-                <a href="/#research">数字人研究</a>
-                <SafeAppLink to="/product-lab">产品构想</SafeAppLink>
-                <a href="/#tools">公开工具</a>
-                <a href="/#workspace">工作台</a>
-              </nav>
-            ) : (
-              <span className={styles.workspaceLabel}>LightSpace Console</span>
-            )}
+            {!isPortal && <span className={styles.workspaceLabel}>LightSpace Console</span>}
           </div>
 
           <div className={styles.actions}>
