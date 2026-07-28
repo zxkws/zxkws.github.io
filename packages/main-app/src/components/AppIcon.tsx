@@ -32,6 +32,8 @@ export const resolveAppIcon = (path?: string, name?: string): AppIconName => {
   if (value.includes('text-difference') || value.includes('textdiff') || value.includes('文本比对')) return 'diff';
   if (value.includes('json')) return 'braces';
   if (value.includes('curl')) return 'terminal';
+  if (value.includes('pdf')) return 'note';
+  if (value.includes('blog') || value.includes('博客')) return 'book';
   if (value.includes('db-ops') || value.includes('database') || value.includes('数据库')) return 'database';
   if (
     value.includes('assistant') ||

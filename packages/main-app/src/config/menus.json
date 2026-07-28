@@ -5,6 +5,8 @@
 	{ "name": "文本对比", "path": "/v-app/text-difference" },
 	{ "name": "JSON 工具", "path": "/v-app/json-viewer" },
 	{ "name": "Curl Converter", "path": "/tools/curlconverter" },
+	{ "name": "博客", "path": "https://blog.acckm.com", "external": true },
+	{ "name": "PDF 编辑器", "path": "https://pdf.acckm.com", "external": true },
 	{ "name": "数据库管控", "path": "/v-react/db-ops" },
 	{ "name": "语音助手", "path": "/v-react/assistants" },
 	{ "name": "知识库", "path": "/v-react/knowledge-bases" },

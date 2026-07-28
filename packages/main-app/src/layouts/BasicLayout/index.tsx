@@ -143,7 +143,9 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
             (item) =>
               item.path &&
               !existingPaths.has(item.path) &&
-              (item.path === '/app/security-center' || (item.adminOnly && user.roles?.includes('admin'))),
+              (item.external ||
+                item.path === '/app/security-center' ||
+                (item.adminOnly && user.roles?.includes('admin'))),
           )
           .forEach((item) => {
             next.push(item);

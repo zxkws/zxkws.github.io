@@ -294,7 +294,10 @@ export default function AiAdminApp() {
                   onChange={(event) =>
                     setBindings((current) => ({
                       ...current,
-                      [capability]: { channelId: event.target.value ? Number(event.target.value) : '', model: '' },
+                      [capability]: {
+                        channelId: event.target.value ? Number(event.target.value) : '',
+                        model: binding.model,
+                      },
                     }))
                   }
                 >
@@ -305,8 +308,11 @@ export default function AiAdminApp() {
                     </option>
                   ))}
                 </select>
-                <select
+                <input
                   aria-label={`${label}模型`}
+                  autoComplete="off"
+                  list={`ai-model-options-${capability}`}
+                  placeholder="搜索或输入模型"
                   value={binding.model}
                   onChange={(event) =>
                     setBindings((current) => ({
@@ -314,17 +320,12 @@ export default function AiAdminApp() {
                       [capability]: { channelId: binding.channelId, model: event.target.value },
                     }))
                   }
-                >
-                  <option value="">请选择模型</option>
-                  {binding.model && !modelIds.includes(binding.model) && (
-                    <option value={binding.model}>{binding.model}</option>
-                  )}
+                />
+                <datalist id={`ai-model-options-${capability}`}>
                   {modelIds.map((model) => (
-                    <option key={model} value={model}>
-                      {model}
-                    </option>
+                    <option key={model} value={model} />
                   ))}
-                </select>
+                </datalist>
               </div>
             );
           })}

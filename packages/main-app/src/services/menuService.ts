@@ -19,16 +19,12 @@ const menuPathAliases: Record<string, string> = {
   '/app/agent-tasks': '/app/agent-platform',
   '/app/v-react': '/v-react/notes',
   '/v-app/navList': '/app/navigation',
+  '/pdf-editor': 'https://pdf.acckm.com',
+  '/app/pdf-editor': 'https://pdf.acckm.com',
+  '/v-react/pdf-editor': 'https://pdf.acckm.com',
 };
 
-const retiredMenuPaths = new Set([
-  '/',
-  '/pdf-editor',
-  '/app/pdf-editor',
-  '/v-react/pdf-editor',
-  '/v-app/account',
-  '/v-app/llm-ranking',
-]);
+const retiredMenuPaths = new Set(['/', '/v-app/account', '/v-app/llm-ranking']);
 
 const menuTranslationKeys: Record<string, string> = {
   '/app/navigation': 'menu.navigation',
@@ -36,6 +32,8 @@ const menuTranslationKeys: Record<string, string> = {
   '/chess-mirror': 'menu.chessMirror',
   '/v-app/text-difference': 'menu.textDiff',
   '/v-app/json-viewer': 'menu.jsonTool',
+  'https://blog.acckm.com': 'menu.blog',
+  'https://pdf.acckm.com': 'menu.pdfEditor',
   '/app/watch-together': 'menu.watchTogether',
   '/v-react/db-ops': 'menu.databaseOps',
   '/v-react/assistants': 'menu.assistants',
@@ -81,7 +79,7 @@ const normalizeMenus = (list: unknown): MenuItem[] => {
         name,
         path,
         icon: typeof m.icon === 'string' ? m.icon : undefined,
-        external: typeof m.external === 'boolean' ? m.external : undefined,
+        external: path?.startsWith('http://') || path?.startsWith('https://') ? true : m.external === true,
         order: typeof m.order === 'number' ? m.order : 0,
         visible: m.visible !== false,
         permission: typeof m.permission === 'string' ? m.permission : null,

@@ -248,6 +248,10 @@ function App() {
   useEffect(() => {
     const resolvedPath = resolveMenuPath(pathname);
     if (resolvedPath && resolvedPath !== pathname) {
+      if (/^https?:\/\//.test(resolvedPath)) {
+        window.location.replace(resolvedPath);
+        return;
+      }
       replaceUrl(resolvedPath);
     }
   }, [pathname]);

@@ -48,6 +48,30 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
       if (!item.path) return null;
 
       const active = isActive(item.path);
+      const content = (
+        <>
+          <span className={styles.iconBox}>
+            <AppIcon name={resolveAppIcon(item.path, item.name)} size={17} />
+          </span>
+          <span className={styles.label}>{label}</span>
+        </>
+      );
+      if (item.external || /^https?:\/\//.test(item.path)) {
+        return (
+          <a
+            key={item.path}
+            href={item.path}
+            title={label}
+            className={styles.navItem}
+            onClick={isMobile ? onClose : undefined}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {content}
+          </a>
+        );
+      }
+
       return (
         <SafeAppLink
           key={item.path}
@@ -57,10 +81,7 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
           onClick={isMobile ? onClose : undefined}
           aria-current={active ? 'page' : undefined}
         >
-          <span className={styles.iconBox}>
-            <AppIcon name={resolveAppIcon(item.path, item.name)} size={17} />
-          </span>
-          <span className={styles.label}>{label}</span>
+          {content}
         </SafeAppLink>
       );
     });

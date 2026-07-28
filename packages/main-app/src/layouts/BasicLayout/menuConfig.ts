@@ -10,6 +10,8 @@ export const builtInAsideMenus: MenuItem[] = [
   { name: '文本对比', path: '/v-app/text-difference', i18nKey: 'menu.textDiff' },
   { name: 'JSON 工具', path: '/v-app/json-viewer', i18nKey: 'menu.jsonTool' },
   { name: 'Curl Converter', path: '/tools/curlconverter' },
+  { name: '博客', path: 'https://blog.acckm.com', external: true, i18nKey: 'menu.blog' },
+  { name: 'PDF 编辑器', path: 'https://pdf.acckm.com', external: true, i18nKey: 'menu.pdfEditor' },
   // 业务菜单仅为兜底；实际显示以后端返回为准
   { name: '一起看', path: '/app/watch-together', i18nKey: 'menu.watchTogether' },
   { name: '数据库管控', path: '/v-react/db-ops', requiresAuth: true, i18nKey: 'menu.databaseOps' },
