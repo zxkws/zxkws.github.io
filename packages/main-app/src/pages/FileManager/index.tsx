@@ -8,70 +8,27 @@ import {
   type UploadRecord,
   uploadManagedFile,
 } from '../../services/fileManagerService';
+import {
+  decodeTextPreview,
+  FilePreviewError,
+  fetchPreviewBuffer,
+  getPreviewKind,
+  MAX_STRUCTURED_PREVIEW_BYTES,
+  MAX_TEXT_PREVIEW_BYTES,
+  type PreviewKind,
+  parseStructuredPreview,
+  type StructuredPreview,
+} from './filePreview';
 import * as styles from './index.module.css';
 
 const MAX_FILE_BYTES = 50 * 1024 * 1024;
-const MAX_TEXT_PREVIEW_BYTES = 2 * 1024 * 1024;
-const TEXT_EXTENSIONS = new Set([
-  'bat',
-  'c',
-  'conf',
-  'cpp',
-  'css',
-  'csv',
-  'env',
-  'go',
-  'graphql',
-  'h',
-  'html',
-  'ini',
-  'java',
-  'js',
-  'json',
-  'jsx',
-  'log',
-  'md',
-  'php',
-  'properties',
-  'py',
-  'rb',
-  'rs',
-  'scss',
-  'sh',
-  'sql',
-  'svg',
-  'toml',
-  'ts',
-  'tsx',
-  'txt',
-  'vue',
-  'xml',
-  'yaml',
-  'yml',
-]);
-
-type PreviewKind = 'image' | 'video' | 'audio' | 'pdf' | 'text' | 'unsupported';
-
-const extensionOf = (filename: string) => filename.split('.').pop()?.toLowerCase() || '';
-
-const getPreviewKind = (record: UploadRecord): PreviewKind => {
-  const mimeType = record.mimeType?.toLowerCase() || '';
-  const extension = extensionOf(record.filename);
-  if (mimeType.startsWith('image/') && mimeType !== 'image/svg+xml') return 'image';
-  if (mimeType.startsWith('video/')) return 'video';
-  if (mimeType.startsWith('audio/')) return 'audio';
-  if (mimeType === 'application/pdf' || extension === 'pdf') return 'pdf';
-  if (
-    mimeType.startsWith('text/') ||
-    ['application/json', 'application/ld+json', 'application/xml', 'application/yaml'].includes(mimeType) ||
-    TEXT_EXTENSIONS.has(extension)
-  ) {
-    return 'text';
-  }
-  return 'unsupported';
-};
 
 const previewAddress = (record: UploadRecord) => record.previewUrl || record.signedUrl || record.url;
+
+type StructuredPreviewKind = Extract<PreviewKind, 'word' | 'spreadsheet' | 'presentation' | 'archive'>;
+
+const isStructuredPreviewKind = (kind: PreviewKind): kind is StructuredPreviewKind =>
+  ['word', 'spreadsheet', 'presentation', 'archive'].includes(kind);
 
 type QueueItem = {
   key: string;
@@ -90,6 +47,8 @@ export default function FileManager() {
   const [dragging, setDragging] = useState(false);
   const [previewRecord, setPreviewRecord] = useState<UploadRecord>();
   const [previewText, setPreviewText] = useState('');
+  const [structuredPreview, setStructuredPreview] = useState<StructuredPreview>();
+  const [activeSheet, setActiveSheet] = useState(0);
   const [previewError, setPreviewError] = useState('');
   const [previewLoading, setPreviewLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -110,59 +69,58 @@ export default function FileManager() {
   }, [load]);
 
   useEffect(() => {
-    if (!previewRecord || getPreviewKind(previewRecord) !== 'text') {
-      setPreviewText('');
-      setPreviewError('');
-      setPreviewLoading(false);
-      return;
-    }
+    setPreviewText('');
+    setStructuredPreview(undefined);
+    setActiveSheet(0);
+    setPreviewError('');
+    setPreviewLoading(false);
+    if (!previewRecord) return;
+
+    const kind = getPreviewKind(previewRecord);
+    if (kind !== 'text' && !isStructuredPreviewKind(kind)) return;
 
     const controller = new AbortController();
-    const loadTextPreview = async () => {
-      setPreviewText('');
-      setPreviewError('');
+    const loadFilePreview = async () => {
       setPreviewLoading(true);
       try {
-        const response = await fetch(previewAddress(previewRecord), {
-          credentials: 'include',
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          throw new Error(t('fileManager.previewReadFailedStatus', { status: response.status }));
+        const buffer = await fetchPreviewBuffer(
+          previewAddress(previewRecord),
+          kind === 'text' ? MAX_TEXT_PREVIEW_BYTES : MAX_STRUCTURED_PREVIEW_BYTES,
+          controller.signal,
+        );
+        if (kind === 'text') {
+          setPreviewText(decodeTextPreview(buffer));
+        } else {
+          setStructuredPreview(await parseStructuredPreview(buffer, kind, previewRecord.filename));
         }
-
-        const declaredSize = Number(response.headers.get('content-length') || 0);
-        if (declaredSize > MAX_TEXT_PREVIEW_BYTES) {
-          throw new Error(t('fileManager.previewTooLarge'));
-        }
-        if (!response.body) throw new Error(t('fileManager.previewNoBody'));
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let received = 0;
-        let content = '';
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          received += value.byteLength;
-          if (received > MAX_TEXT_PREVIEW_BYTES) {
-            await reader.cancel();
-            throw new Error(t('fileManager.previewTooLarge'));
-          }
-          content += decoder.decode(value, { stream: true });
-        }
-        content += decoder.decode();
-        setPreviewText(content);
       } catch (error) {
         if (!controller.signal.aborted) {
-          setPreviewError(error instanceof Error ? error.message : t('fileManager.previewFailed'));
+          if (error instanceof FilePreviewError) {
+            if (error.code === 'http') {
+              setPreviewError(t('fileManager.previewReadFailedStatus', { status: error.status ?? '' }));
+            } else if (error.code === 'no-body') {
+              setPreviewError(t('fileManager.previewNoBody'));
+            } else if (error.code === 'too-large') {
+              setPreviewError(
+                t(kind === 'text' ? 'fileManager.previewTooLarge' : 'fileManager.previewStructuredTooLarge'),
+              );
+            } else if (error.code === 'too-many-entries') {
+              setPreviewError(t('fileManager.previewTooManyEntries'));
+            } else if (error.code === 'expanded-too-large') {
+              setPreviewError(t('fileManager.previewExpandedTooLarge'));
+            } else {
+              setPreviewError(t('fileManager.previewInvalidFile'));
+            }
+          } else {
+            setPreviewError(error instanceof Error ? error.message : t('fileManager.previewFailed'));
+          }
         }
       } finally {
         if (!controller.signal.aborted) setPreviewLoading(false);
       }
     };
 
-    loadTextPreview();
+    loadFilePreview();
     return () => controller.abort();
   }, [previewRecord, t]);
 
@@ -287,6 +245,8 @@ export default function FileManager() {
 
   const currentPreviewKind = previewRecord ? getPreviewKind(previewRecord) : 'unsupported';
   const currentPreviewUrl = previewRecord ? previewAddress(previewRecord) : '';
+  const activeSpreadsheetSheet =
+    structuredPreview?.kind === 'spreadsheet' ? structuredPreview.sheets[activeSheet] : undefined;
 
   return (
     <div className="workspace-page">
@@ -413,15 +373,102 @@ export default function FileManager() {
           {currentPreviewKind === 'pdf' && (
             <iframe src={currentPreviewUrl} title={previewRecord?.filename || 'PDF 预览'} />
           )}
-          {currentPreviewKind === 'text' &&
+          {(currentPreviewKind === 'text' || isStructuredPreviewKind(currentPreviewKind)) &&
             (previewLoading ? (
               <Spin tip={t('fileManager.loadingFile')}>
                 <div className={styles.previewLoading} />
               </Spin>
             ) : previewError ? (
               <div className={styles.previewMessage}>{previewError}</div>
-            ) : (
+            ) : currentPreviewKind === 'text' ? (
               <pre>{previewText}</pre>
+            ) : structuredPreview?.kind === 'word' ? (
+              <div className={styles.documentPreview}>
+                <pre>{structuredPreview.text}</pre>
+                {structuredPreview.warnings.length > 0 && (
+                  <details>
+                    <summary>{t('fileManager.previewWarnings', { count: structuredPreview.warnings.length })}</summary>
+                    {structuredPreview.warnings.map((warning, index) => (
+                      <code key={`${index}-${warning}`}>{warning}</code>
+                    ))}
+                  </details>
+                )}
+              </div>
+            ) : structuredPreview?.kind === 'spreadsheet' ? (
+              <div className={styles.spreadsheetPreview}>
+                <div className={styles.sheetTabs} role="tablist" aria-label={t('fileManager.previewSheets')}>
+                  {structuredPreview.sheets.map((sheet, index) => (
+                    <button
+                      key={`${index}-${sheet.name}`}
+                      type="button"
+                      role="tab"
+                      aria-selected={index === activeSheet}
+                      onClick={() => setActiveSheet(index)}
+                    >
+                      {sheet.name}
+                    </button>
+                  ))}
+                </div>
+                {structuredPreview.truncated && (
+                  <p className={styles.previewNotice}>{t('fileManager.previewTruncated')}</p>
+                )}
+                {activeSpreadsheetSheet ? (
+                  <div className={styles.sheetTableWrap}>
+                    <table>
+                      <tbody>
+                        {activeSpreadsheetSheet.rows.map((row, rowIndex) => (
+                          <tr key={rowIndex}>
+                            <th>{rowIndex + 1}</th>
+                            {row.map((cell, columnIndex) => (
+                              <td key={columnIndex}>{cell}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className={styles.previewMessage}>{t('fileManager.previewEmpty')}</div>
+                )}
+              </div>
+            ) : structuredPreview?.kind === 'presentation' ? (
+              <div className={styles.presentationPreview}>
+                {structuredPreview.slides.length ? (
+                  structuredPreview.slides.map((slide) => (
+                    <section key={slide.number}>
+                      <strong>{t('fileManager.previewSlide', { number: slide.number })}</strong>
+                      <pre>{slide.text}</pre>
+                    </section>
+                  ))
+                ) : (
+                  <div className={styles.previewMessage}>{t('fileManager.previewEmpty')}</div>
+                )}
+              </div>
+            ) : structuredPreview?.kind === 'archive' ? (
+              <div className={styles.archivePreview}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>{t('fileManager.previewArchiveName')}</th>
+                      <th>{t('fileManager.previewArchiveSize')}</th>
+                      <th>{t('fileManager.previewArchiveCompressedSize')}</th>
+                      <th>{t('fileManager.previewArchiveDate')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {structuredPreview.entries.map((entry, index) => (
+                      <tr key={`${index}-${entry.name}`}>
+                        <td>{entry.name}</td>
+                        <td>{entry.size}</td>
+                        <td>{entry.compressedSize}</td>
+                        <td>{entry.date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className={styles.previewMessage}>{t('fileManager.previewEmpty')}</div>
             ))}
           {currentPreviewKind === 'unsupported' && (
             <div className={styles.previewMessage}>
