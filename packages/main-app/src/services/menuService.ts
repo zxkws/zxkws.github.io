@@ -1,5 +1,9 @@
 import menusFile from '../config/menus.json';
 import type { MenuItem } from '../types/menu';
+import { client } from './httpClient';
+
+const unwrapData = (payload: unknown): unknown =>
+  payload && typeof payload === 'object' && 'data' in payload ? (payload as { data?: unknown }).data : payload;
 
 const normalizeMenus = (list: unknown): MenuItem[] => {
   if (!Array.isArray(list)) return [];
@@ -28,9 +32,14 @@ const normalizeMenus = (list: unknown): MenuItem[] => {
 };
 
 /**
- * 获取菜单：直接使用打包内置 JSON
+ * 未登录使用打包菜单；登录后优先使用角色在后台获配的菜单。
  */
-export async function fetchRemoteMenus(_authenticated: boolean): Promise<MenuItem[]> {
-  const list = (menusFile as unknown) ?? [];
+export async function fetchRemoteMenus(authenticated: boolean): Promise<MenuItem[]> {
+  if (authenticated) {
+    const payload = await client<unknown>('/v1/user/menus', {}, { method: 'GET' });
+    const remote = normalizeMenus(unwrapData(payload));
+    if (remote.length) return remote;
+  }
+  const list = menusFile as unknown;
   return normalizeMenus(list);
 }

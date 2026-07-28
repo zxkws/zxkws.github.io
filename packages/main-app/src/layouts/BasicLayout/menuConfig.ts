@@ -5,6 +5,7 @@ import type { MenuItem } from '../../types/menu';
 // 登录后：后端返回为准；此处作为兜底
 export const builtInAsideMenus: MenuItem[] = [
   { name: '首页', path: '/' },
+  { name: '产品构想', path: '/product-lab' },
   { name: '象棋·镜', path: '/chess-mirror' },
   { name: '文本对比', path: '/v-app/text-difference' },
   { name: 'JSON 工具', path: '/v-app/json-viewer' },
@@ -16,7 +17,9 @@ export const builtInAsideMenus: MenuItem[] = [
   { name: '知识库', path: '/v-react/knowledge-bases', requiresAuth: true },
   { name: 'AI 模型配置', path: '/v-react/ai-admin', requiresAuth: true, adminOnly: true },
   { name: '模型调试', path: '/v-react/model-playground', requiresAuth: true, adminOnly: true },
-  { name: '权限管理', path: '/app/permission-admin', requiresAuth: true },
+  { name: '菜单管理', path: '/app/menu-admin', requiresAuth: true, adminOnly: true },
+  { name: '角色管理', path: '/app/role-admin', requiresAuth: true, adminOnly: true },
+  { name: '权限管理', path: '/app/permission-admin', requiresAuth: true, adminOnly: true },
   { name: '用户管理', path: '/app/user-admin', requiresAuth: true, adminOnly: true },
   { name: 'Obsidian 笔记', path: '/v-react/notes', requiresAuth: true },
   { name: '定时轮询保活', path: '/v-react/keepalive', requiresAuth: true },

@@ -124,6 +124,7 @@
 }
 
 .secondaryButton {
+	gap: 10px;
 	min-height: 44px;
 	padding: 0 18px;
 	color: var(--color-fg);
@@ -223,9 +224,20 @@
 	color: #171717;
 	background: #3ecf8e;
 	border-radius: 5px;
-	font-family: var(--font-sans);
-	font-size: 13px;
-	font-weight: 700;
+}
+
+.miniMark svg {
+	width: 14px;
+	height: 14px;
+	fill: none;
+	stroke: currentColor;
+	stroke-linecap: round;
+	stroke-width: 1.7;
+}
+
+.miniMark svg circle:nth-child(2) {
+	fill: currentColor;
+	stroke: none;
 }
 
 .frameShortcut {
@@ -265,6 +277,16 @@
 	color: #efefef;
 	background: #272727;
 	box-shadow: inset 0 0 0 1px #343434;
+}
+
+.frameLayerCode {
+	color: #666;
+	font-family: var(--font-mono);
+	font-size: 8px;
+}
+
+.frameItemActive .frameLayerCode {
+	color: #3ecf8e;
 }
 
 .frameContent {
@@ -334,8 +356,9 @@
 .statGrid strong {
 	margin: 10px 0 2px;
 	color: #f1f1f1;
-	font-size: 26px;
+	font-size: 15px;
 	font-weight: 500;
+	line-height: 1.35;
 }
 
 .codePanel {
@@ -405,6 +428,265 @@
 	color: var(--color-fg-tertiary);
 	font-size: 14px;
 	line-height: 1.7;
+}
+
+.researchSection {
+	padding-bottom: 120px;
+}
+
+.researchFormula {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 18px;
+	padding: 21px 24px;
+	margin-bottom: 20px;
+	color: var(--color-fg);
+	background: var(--color-surface-2);
+	border: 1px solid var(--color-border);
+	font-size: 13px;
+	font-weight: 550;
+}
+
+.researchFormula span {
+	text-align: center;
+}
+
+.researchFormula i {
+	color: var(--color-primary-deep);
+	font-family: var(--font-mono);
+	font-size: 15px;
+	font-style: normal;
+}
+
+.researchGrid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	border-top: 1px solid var(--color-border);
+	border-left: 1px solid var(--color-border);
+}
+
+.researchCard {
+	display: flex;
+	min-height: 286px;
+	flex-direction: column;
+	padding: 25px;
+	background: var(--color-surface);
+	border-right: 1px solid var(--color-border);
+	border-bottom: 1px solid var(--color-border);
+}
+
+.researchCardTop {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 50px;
+}
+
+.researchCardTop span,
+.researchCardTop small,
+.researchCard code {
+	font-family: var(--font-mono);
+	font-size: 9px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.researchCardTop span {
+	display: grid;
+	width: 30px;
+	height: 30px;
+	place-items: center;
+	color: #171717;
+	background: var(--color-primary);
+	border-radius: 50%;
+}
+
+.researchCardTop small {
+	color: var(--color-fg-tertiary);
+}
+
+.researchCard h3 {
+	margin: 0 0 12px;
+	font-size: 21px;
+	font-weight: 500;
+	letter-spacing: -0.025em;
+}
+
+.researchCard p {
+	margin: 0;
+	color: var(--color-fg-tertiary);
+	font-size: 13px;
+	line-height: 1.75;
+}
+
+.researchCard code {
+	margin-top: auto;
+	padding-top: 24px;
+	color: var(--color-primary-active);
+}
+
+.researchNote {
+	display: grid;
+	grid-template-columns: minmax(220px, 0.85fr) minmax(320px, 1.25fr) auto;
+	gap: 32px;
+	align-items: center;
+	padding: 30px;
+	margin-top: 20px;
+	color: #f4f4f4;
+	background: #1c1c1c;
+	border: 1px solid #323232;
+	border-radius: 8px;
+}
+
+.researchNote .sectionIndex {
+	margin-bottom: 8px;
+}
+
+.researchNote strong {
+	display: block;
+	font-size: 16px;
+	font-weight: 500;
+	line-height: 1.45;
+}
+
+.researchNote p {
+	margin: 0;
+	color: #a8a8a8;
+	font-size: 12px;
+	line-height: 1.75;
+}
+
+.researchNote a {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: #3ecf8e;
+	font-size: 11px;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.researchNote a:hover {
+	color: #6ee7b7;
+}
+
+.productIdeasSection {
+	padding-top: 20px;
+}
+
+.productIdeasGrid {
+	display: grid;
+	grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.15fr);
+	overflow: hidden;
+	border: 1px solid var(--color-border);
+	border-radius: 10px;
+}
+
+.productIdeasCopy {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	padding: clamp(34px, 5vw, 64px);
+	background:
+		linear-gradient(var(--portal-grid-line) 1px, transparent 1px),
+		linear-gradient(90deg, var(--portal-grid-line) 1px, transparent 1px),
+		var(--color-surface-2);
+	background-size: 32px 32px;
+	border-right: 1px solid var(--color-border);
+}
+
+.productIdeasCopy > span {
+	color: var(--color-primary-active);
+	font-family: var(--font-mono);
+	font-size: 9px;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+}
+
+.productIdeasCopy h3 {
+	max-width: 490px;
+	margin: 18px 0 16px;
+	font-size: clamp(26px, 3vw, 38px);
+	font-weight: 500;
+	line-height: 1.16;
+	letter-spacing: -0.04em;
+}
+
+.productIdeasCopy p {
+	max-width: 480px;
+	margin: 0 0 28px;
+	color: var(--color-fg-tertiary);
+	font-size: 13px;
+	line-height: 1.75;
+}
+
+.productIdeasList {
+	display: flex;
+	flex-direction: column;
+	background: var(--color-surface);
+}
+
+.productIdeaRow {
+	display: grid;
+	grid-template-columns: 42px 24px minmax(0, 1fr) auto;
+	gap: 14px;
+	align-items: center;
+	min-height: 112px;
+	padding: 20px 24px;
+	border-bottom: 1px solid var(--color-divider);
+}
+
+.productIdeaRow:last-child {
+	border-bottom: 0;
+}
+
+.productIdeaIcon {
+	display: grid;
+	width: 40px;
+	height: 40px;
+	place-items: center;
+	color: #171717;
+	background: var(--color-primary);
+	border-radius: 8px;
+}
+
+.productIdeaNumber {
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 8px;
+}
+
+.productIdeaRow > span:nth-child(3) {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.productIdeaRow strong {
+	font-size: 14px;
+	font-weight: 550;
+}
+
+.productIdeaRow small {
+	color: var(--color-fg-tertiary);
+	font-size: 10px;
+	line-height: 1.5;
+}
+
+.productIdeaRow em {
+	padding: 5px 7px;
+	color: var(--color-primary-active);
+	background: var(--color-primary-muted);
+	border: 1px solid
+		color-mix(in srgb, var(--color-primary-deep) 32%, var(--color-border));
+	border-radius: 99px;
+	font-family: var(--font-mono);
+	font-size: 8px;
+	font-style: normal;
+	white-space: nowrap;
 }
 
 .toolGrid {
@@ -860,6 +1142,27 @@
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
+	.researchGrid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.researchNote {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.researchNote a {
+		grid-column: 1 / -1;
+	}
+
+	.productIdeasGrid {
+		grid-template-columns: 1fr;
+	}
+
+	.productIdeasCopy {
+		border-right: 0;
+		border-bottom: 1px solid var(--color-border);
+	}
+
 	.workspaceInner {
 		grid-template-columns: 1fr;
 	}
@@ -919,8 +1222,59 @@
 	}
 
 	.toolGrid,
-	.linkGrid {
+	.linkGrid,
+	.researchGrid {
 		grid-template-columns: 1fr;
+	}
+
+	.researchFormula {
+		flex-wrap: wrap;
+		justify-content: center;
+		padding: 18px;
+	}
+
+	.researchFormula span {
+		flex: 1 1 38%;
+	}
+
+	.researchFormula i:nth-of-type(2) {
+		display: none;
+	}
+
+	.researchCard {
+		min-height: 240px;
+	}
+
+	.researchCardTop {
+		margin-bottom: 36px;
+	}
+
+	.researchNote {
+		grid-template-columns: 1fr;
+		padding: 26px 22px;
+	}
+
+	.researchNote a {
+		grid-column: auto;
+	}
+
+	.productIdeasSection {
+		padding-top: 0;
+	}
+
+	.productIdeasCopy {
+		padding: 34px 24px;
+	}
+
+	.productIdeaRow {
+		grid-template-columns: 40px 20px minmax(0, 1fr);
+		gap: 10px;
+		padding: 18px;
+	}
+
+	.productIdeaRow em {
+		grid-column: 3;
+		width: fit-content;
 	}
 
 	.toolCard {

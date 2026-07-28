@@ -1,87 +1,85 @@
 import { message } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
-import { client } from '../../services/httpClient';
+import { type FormEvent, useEffect, useState } from 'react';
+import { type RbacPermission, rbacService } from '../../services/rbacService';
+import '../rbac-admin.css';
 
-type Role = {
-  id: number;
-  code: string;
-  name: string;
-  desc?: string;
+const emptyDraft = {
+  name: '',
+  code: '',
+  resource: '',
+  action: '',
+  desc: '',
+  enabled: true,
 };
-
-type UserRow = {
-  userId: string;
-  username: string;
-  email?: string;
-  roles?: Role[];
-};
-
-type RbacStatus = {
-  roleManageEnabled?: boolean | string;
-};
-
-const unwrapData = (payload: unknown): unknown =>
-  payload && typeof payload === 'object' && 'data' in payload ? (payload as { data?: unknown }).data : payload;
 
 export default function PermissionAdmin() {
-  const [users, setUsers] = useState<UserRow[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [permissions, setPermissions] = useState<RbacPermission[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [draft, setDraft] = useState(emptyDraft);
   const [loading, setLoading] = useState(false);
-  const [savingId, setSavingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [featureOn, setFeatureOn] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const fetchAll = async () => {
+  const load = async () => {
     setLoading(true);
-    setError(null);
     try {
-      const [statusRaw, userListRaw, roleListRaw] = await Promise.all([
-        client<unknown>('/v1/rbac/status', {}, { method: 'GET' }),
-        client<unknown>('/v1/rbac/users', {}, { method: 'GET' }),
-        client<unknown>('/v1/rbac/roles', {}, { method: 'GET' }),
-      ]);
-
-      const userData = unwrapData(userListRaw);
-      const roleData = unwrapData(roleListRaw);
-      const statusData = unwrapData(statusRaw);
-      const enabled =
-        statusData && typeof statusData === 'object' ? (statusData as RbacStatus).roleManageEnabled : undefined;
-
-      setFeatureOn(enabled === true || enabled === 'true');
-      setUsers(
-        (Array.isArray(userData) ? (userData as UserRow[]) : []).map((userRow) => ({
-          ...userRow,
-          roles: Array.isArray(userRow.roles) ? userRow.roles : [],
-        })),
-      );
-      setRoles(Array.isArray(roleData) ? (roleData as Role[]) : []);
-    } catch (err) {
-      const text = err instanceof Error ? err.message : '加载失败，请稍后再试';
-      setError(text);
-      message.error(text);
+      setPermissions(await rbacService.listPermissions());
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '权限加载失败');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAll();
+    document.title = '权限管理 · 光域';
+    load();
   }, []);
 
-  const roleOptions = useMemo(() => roles.map((role) => ({ value: role.id, label: role.name })), [roles]);
+  const startCreate = () => {
+    setEditingId(null);
+    setDraft(emptyDraft);
+  };
 
-  const handleRoleChange = async (userId: string, roleIds: number[]) => {
-    setSavingId(userId);
-    setError(null);
+  const startEdit = (permission: RbacPermission) => {
+    setEditingId(permission.id);
+    setDraft({
+      name: permission.name,
+      code: permission.code,
+      resource: permission.resource || '',
+      action: permission.action || '',
+      desc: permission.desc || '',
+      enabled: permission.enabled,
+    });
+  };
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
     try {
-      await client(`/v1/rbac/users/${userId}/roles`, { roleIds }, { method: 'POST' });
-      await fetchAll();
-    } catch (err) {
-      const text = err instanceof Error ? err.message : '更新角色失败';
-      setError(text);
-      message.error(text);
+      if (editingId === null) {
+        await rbacService.createPermission(draft);
+      } else {
+        await rbacService.updatePermission(editingId, draft);
+      }
+      message.success(editingId === null ? '权限已创建' : '权限已更新');
+      startCreate();
+      await load();
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '权限保存失败');
     } finally {
-      setSavingId(null);
+      setSaving(false);
+    }
+  };
+
+  const remove = async (permission: RbacPermission) => {
+    if (!window.confirm(`确定删除权限“${permission.name}”吗？`)) return;
+    try {
+      await rbacService.deletePermission(permission.id);
+      message.success('权限已删除');
+      if (editingId === permission.id) startCreate();
+      await load();
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '权限删除失败');
     }
   };
 
@@ -89,87 +87,129 @@ export default function PermissionAdmin() {
     <div className="workspace-page">
       <header className="workspace-page__header">
         <div>
-          <p className="workspace-page__eyebrow">Access control</p>
-          <h1>角色与权限</h1>
-          <p className="workspace-page__description">查看用户的角色分配；服务端开关决定当前环境是否允许修改。</p>
+          <p className="workspace-page__eyebrow">Access control / Permissions</p>
+          <h1>权限管理</h1>
+          <p className="workspace-page__description">维护独立权限标识；角色启用后，标识会随登录态下发。</p>
         </div>
-        <button type="button" onClick={fetchAll} className="workspace-button" disabled={loading}>
-          {loading ? '刷新中…' : '刷新数据'}
+        <button type="button" className="workspace-button workspace-button--primary" onClick={startCreate}>
+          新建权限
         </button>
       </header>
 
-      {error && (
-        <div className="workspace-feedback workspace-feedback--error" role="alert">
-          {error}
-        </div>
-      )}
-
-      <section className="workspace-panel">
-        {!loading && !featureOn && (
-          <div className="workspace-feedback workspace-feedback--warning">
-            角色管理功能未开启（ROLE_MANAGE_ENABLED=false），当前仅可查看，无法修改。
+      <div className="rbac-layout">
+        <section className="workspace-panel">
+          <div className="rbac-toolbar">
+            <strong>{loading ? '加载中…' : `${permissions.length} 个权限`}</strong>
+            <button type="button" className="workspace-button" onClick={load} disabled={loading}>
+              刷新
+            </button>
           </div>
-        )}
-        <div className="workspace-table-wrap">
-          <table className="workspace-table">
-            <thead>
-              <tr>
-                <th>用户</th>
-                <th>邮箱</th>
-                <th>角色</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((userRow) => (
-                <tr key={userRow.userId}>
-                  <td className="workspace-table__primary">{userRow.username}</td>
-                  <td>{userRow.email}</td>
-                  <td>
-                    <div className="workspace-role-list">
-                      {roleOptions.map((role) => {
-                        const active = (userRow.roles || []).some((assignedRole) => assignedRole.id === role.value);
-                        return (
-                          <label key={role.value} className="workspace-role-option" data-active={active}>
-                            <input
-                              type="checkbox"
-                              checked={active}
-                              disabled={savingId === userRow.userId || !featureOn}
-                              onChange={() => {
-                                const current = new Set((userRow.roles || []).map((assignedRole) => assignedRole.id));
-                                if (current.has(role.value)) {
-                                  current.delete(role.value);
-                                } else {
-                                  current.add(role.value);
-                                }
-                                handleRoleChange(userRow.userId, Array.from(current));
-                              }}
-                            />
-                            {role.label}
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!loading && !users.length && (
+          <div className="workspace-table-wrap">
+            <table className="workspace-table">
+              <thead>
                 <tr>
-                  <td colSpan={3} className="workspace-empty">
-                    暂无用户数据
-                  </td>
+                  <th>名称</th>
+                  <th>编码</th>
+                  <th>资源</th>
+                  <th>操作</th>
+                  <th>启用</th>
+                  <th>更新时间</th>
+                  <th>操作</th>
                 </tr>
-              )}
-              {loading && !users.length && (
-                <tr>
-                  <td colSpan={3} className="workspace-empty">
-                    正在加载角色数据…
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {permissions.map((permission) => (
+                  <tr key={permission.id}>
+                    <td className="workspace-table__primary">{permission.name}</td>
+                    <td className="rbac-code">{permission.code}</td>
+                    <td>{permission.resource}</td>
+                    <td>{permission.action}</td>
+                    <td>{String(permission.enabled)}</td>
+                    <td>{permission.uts}</td>
+                    <td>
+                      <div className="rbac-actions">
+                        <button type="button" className="workspace-button" onClick={() => startEdit(permission)}>
+                          编辑
+                        </button>
+                        <button
+                          type="button"
+                          className="workspace-button workspace-button--danger"
+                          onClick={() => remove(permission)}
+                        >
+                          删除
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {!loading && !permissions.length && (
+                  <tr>
+                    <td colSpan={7} className="workspace-empty">
+                      暂无权限
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="workspace-panel">
+          <h2 className="rbac-editor-title">{editingId === null ? '新建权限' : `编辑权限 #${editingId}`}</h2>
+          <p className="rbac-editor-note">编码应稳定，例如 agent.run；resource 与 action 按服务端原值保存。</p>
+          <form className="rbac-form" onSubmit={submit}>
+            <label>
+              名称
+              <input
+                value={draft.name}
+                onChange={(event) => setDraft({ ...draft, name: event.target.value })}
+                required
+              />
+            </label>
+            <label>
+              编码
+              <input
+                value={draft.code}
+                onChange={(event) => setDraft({ ...draft, code: event.target.value })}
+                required
+              />
+            </label>
+            <div className="rbac-inline-fields">
+              <label>
+                资源
+                <input
+                  value={draft.resource}
+                  onChange={(event) => setDraft({ ...draft, resource: event.target.value })}
+                />
+              </label>
+              <label>
+                操作
+                <input value={draft.action} onChange={(event) => setDraft({ ...draft, action: event.target.value })} />
+              </label>
+            </div>
+            <label>
+              描述
+              <textarea value={draft.desc} onChange={(event) => setDraft({ ...draft, desc: event.target.value })} />
+            </label>
+            <label className="rbac-check">
+              <input
+                type="checkbox"
+                checked={draft.enabled}
+                onChange={(event) => setDraft({ ...draft, enabled: event.target.checked })}
+              />
+              enabled
+            </label>
+            <div className="rbac-actions">
+              <button type="submit" className="workspace-button workspace-button--primary" disabled={saving}>
+                {saving ? '保存中…' : '保存'}
+              </button>
+              <button type="button" className="workspace-button" onClick={startCreate}>
+                清空
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import LightSpaceMark from '../../../../components/LightSpaceMark';
 import SafeAppLink from '../../../../components/SafeAppLink';
 import { useUser } from '../../../../context/UserContext';
 import { client as httpClient } from '../../../../services/httpClient';
@@ -40,9 +41,7 @@ const buildLoginHref = () => {
 
 const BrandMark = () => (
   <span className={styles.brandMark} aria-hidden="true">
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M13.4 2 5 13.2h6.2L10.6 22 19 10.8h-6.2L13.4 2Z" />
-    </svg>
+    <LightSpaceMark />
   </span>
 );
 
@@ -128,17 +127,21 @@ const HeaderBar = ({ isMobile, isPortal, onMenuToggle }: HeaderBarProps) => {
 
             <SafeAppLink className={styles.brand} to="/">
               <BrandMark />
-              <span>ZXKWS</span>
+              <span className={styles.brandWords}>
+                <strong>光域</strong>
+                <small>LIGHTSPACE</small>
+              </span>
             </SafeAppLink>
 
             {isPortal ? (
               <nav className={styles.portalNav} aria-label="门户导航">
-                <a href="#tools">公开工具</a>
-                <a href="#workspace">工作台</a>
-                <a href="#links">导航收藏</a>
+                <a href="/#research">数字人研究</a>
+                <SafeAppLink to="/product-lab">产品构想</SafeAppLink>
+                <a href="/#tools">公开工具</a>
+                <a href="/#workspace">工作台</a>
               </nav>
             ) : (
-              <span className={styles.workspaceLabel}>Workspace</span>
+              <span className={styles.workspaceLabel}>LightSpace Console</span>
             )}
           </div>
 

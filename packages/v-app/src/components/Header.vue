@@ -34,8 +34,14 @@ const themeOptions = [
         </svg>
       </button>
       <a class="tool-header__brand" href="/">
-        <span class="tool-header__brand-mark">Z</span>
-        <span>zxkws tools</span>
+        <span class="tool-header__brand-mark">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="12" r="6.5" />
+            <circle cx="11" cy="12" r="2.25" />
+            <path d="M2.5 12H4M18 12h3.5M11 3.5V2M11 22v-1.5" />
+          </svg>
+        </span>
+        <span>光域工具集</span>
       </a>
     </div>
 
@@ -122,9 +128,19 @@ const themeOptions = [
   border-radius: 5px;
   background: var(--color-primary);
   color: var(--color-on-primary);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
+}
+
+.tool-header__brand-mark svg {
+  width: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.7;
+}
+
+.tool-header__brand-mark svg circle:nth-child(2) {
+  fill: currentColor;
+  stroke: none;
 }
 
 .tool-theme-switch {

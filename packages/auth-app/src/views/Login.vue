@@ -92,12 +92,12 @@ const submitSmsLogin = async (payload: { phone: string; code: string }) => {
 <template>
   <AuthPageShell>
     <template #visual>
-      <h1 class="hero-text">Tools first.<br />Workspace behind.</h1>
-      <p class="hero-sub">公开工具无需登录；数据库、AI 与权限能力，在一个账号之后保持集中和安静。</p>
+      <h1 class="hero-text">Enter the lab.<br />Keep building.</h1>
+      <p class="hero-sub">进入光域控制台，继续管理 AI、数据、产品实验与个人工作流。</p>
     </template>
 
     <template #form>
-      <AuthPanel title="登录" subtitle="进入工作台" :error="error">
+      <AuthPanel title="登录" subtitle="进入光域工作台" :error="error">
         <LoginMethodTabs v-model="activeTab" />
 
         <PasswordLoginForm

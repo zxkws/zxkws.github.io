@@ -85,8 +85,6 @@ input {
   align-items: center;
   gap: 9px;
   color: #ffffff;
-  font-size: 14px;
-  font-weight: 650;
   letter-spacing: -0.02em;
   text-decoration: none;
 }
@@ -99,8 +97,39 @@ input {
   color: #171717;
   background: var(--accent);
   border-radius: 6px;
-  font-size: 16px;
-  font-weight: 700;
+}
+
+.auth-brand-mark svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.7;
+}
+
+.auth-brand-mark svg circle:nth-child(2) {
+  fill: currentColor;
+  stroke: none;
+}
+
+.auth-brand-words {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1;
+}
+
+.auth-brand-words strong {
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.auth-brand-words small {
+  color: #8f8f8f;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 0.13em;
 }
 
 .auth-brand-mobile {

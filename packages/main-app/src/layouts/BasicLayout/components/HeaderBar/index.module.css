@@ -40,8 +40,6 @@
 	gap: 9px;
 	flex-shrink: 0;
 	color: var(--color-fg);
-	font-size: 15px;
-	font-weight: 650;
 	letter-spacing: -0.02em;
 	text-decoration: none;
 }
@@ -60,7 +58,36 @@
 .brandMark svg {
 	width: 17px;
 	height: 17px;
+	fill: none;
+	stroke: currentColor;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	stroke-width: 1.7;
+}
+
+.brandMark svg circle:nth-child(2) {
 	fill: currentColor;
+	stroke: none;
+}
+
+.brandWords {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	line-height: 1;
+}
+
+.brandWords strong {
+	font-size: 14px;
+	font-weight: 650;
+}
+
+.brandWords small {
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 7px;
+	font-weight: 600;
+	letter-spacing: 0.13em;
 }
 
 .portalNav {
@@ -431,6 +458,10 @@
 
 	.actions {
 		gap: 4px;
+	}
+
+	.brandWords small {
+		display: none;
 	}
 
 	.loginButton {

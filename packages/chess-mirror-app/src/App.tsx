@@ -378,7 +378,7 @@ const App: React.FC = () => {
       <header className="app-header">
         <div>
           <h1>象棋·镜</h1>
-          <p>拍一下，看清下一步</p>
+          <p>光域视觉实验 · 拍一下，看清下一步</p>
         </div>
         <span className={cvReady ? 'ready-dot ready' : 'ready-dot'}>{cvReady ? '已就绪' : '加载中'}</span>
       </header>

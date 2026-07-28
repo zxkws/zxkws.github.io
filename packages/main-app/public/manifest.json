@@ -1,21 +1,21 @@
 {
-  "short_name": "ZXKWS",
-  "name": "ZXKWS Space",
-  "description": "Personal Workspace & Dashboard",
+  "short_name": "光域",
+  "name": "光域 LightSpace",
+  "description": "AI 数字人研究、产品构想与个人工作台",
   "icons": [
     {
-      "src": "tech-favicon.svg",
+      "src": "lightspace-mark.svg",
       "type": "image/svg+xml",
       "sizes": "any"
     },
     {
-      "src": "tech-favicon.svg",
+      "src": "lightspace-mark.svg",
       "type": "image/svg+xml",
       "sizes": "192x192",
       "purpose": "maskable"
     },
     {
-      "src": "tech-favicon.svg",
+      "src": "lightspace-mark.svg",
       "type": "image/svg+xml",
       "sizes": "512x512",
       "purpose": "any maskable"
@@ -23,7 +23,7 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#0ea5e9",
-  "background_color": "#f8fafc",
+  "theme_color": "#3ecf8e",
+  "background_color": "#ffffff",
   "orientation": "portrait-primary"
 }

@@ -1,5 +1,6 @@
 [
 	{ "name": "首页", "path": "/" },
+	{ "name": "产品构想", "path": "/product-lab" },
 	{ "name": "象棋·镜", "path": "/chess-mirror" },
 	{ "name": "文本对比", "path": "/v-app/text-difference" },
 	{ "name": "JSON 工具", "path": "/v-app/json-viewer" },
@@ -13,8 +14,10 @@
 		"path": "/v-react/model-playground",
 		"adminOnly": true
 	},
-	{ "name": "权限管理", "path": "/app/permission-admin" },
-	{ "name": "用户管理", "path": "/app/user-admin" },
+	{ "name": "菜单管理", "path": "/app/menu-admin", "adminOnly": true },
+	{ "name": "角色管理", "path": "/app/role-admin", "adminOnly": true },
+	{ "name": "权限管理", "path": "/app/permission-admin", "adminOnly": true },
+	{ "name": "用户管理", "path": "/app/user-admin", "adminOnly": true },
 	{ "name": "Obsidian 笔记", "path": "/v-react/notes" },
 	{ "name": "定时轮询保活", "path": "/v-react/keepalive" },
 	{ "name": "支付", "path": "/v-app/payment" },

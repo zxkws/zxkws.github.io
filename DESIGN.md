@@ -1,13 +1,18 @@
-# ZXKWS Design System
+# 光域 LightSpace Design System
 
 This interface uses the Supabase-inspired design language from
 `awesome-design-md/design-md/supabase/DESIGN.md`, adapted for a personal
-developer portal that also acts as an authenticated operations workspace.
+AI and digital-human research portal that also acts as an authenticated
+operations workspace.
 
 ## Product modes
 
-- The home route is a public portal. It explains the product, exposes useful
-  public tools, and makes the private workspace discoverable.
+- The home route introduces LightSpace / 光域 as a personal digital-human lab,
+  exposes product ideas and useful public tools, and makes the private
+  workspace discoverable.
+- `/product-lab` turns the `product-ideas` repository into a public delivery
+  board. It must distinguish available MVPs, foundations, and validation work
+  without overstating completion.
 - Feature routes use the workspace shell: compact header, persistent desktop
   sidebar, mobile drawer, bounded content stage, and the command palette.
 - Authentication changes available actions, not the visual identity.
@@ -56,6 +61,9 @@ developer portal that also acts as an authenticated operations workspace.
 ## Content and data
 
 - Explain public value before private administration features.
+- Use 光域 as the primary Chinese wordmark and LIGHTSPACE as its technical
+  companion. Keep `zxkws` only where it is an infrastructure domain or package
+  namespace.
 - Use direct, specific labels such as “文本比对” or “数据库管控”.
 - Display backend response values exactly as returned. Do not add date, number,
   label, or fallback formatting unless a requirement explicitly asks for it.

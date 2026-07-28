@@ -44,6 +44,9 @@ const RouteNotFound = () => (
 const normalizePathname = (value: string) => (value.length > 1 && value.endsWith('/') ? value.slice(0, -1) : value);
 
 const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
+const MenuAdmin = lazy(() => import('./pages/MenuAdmin'));
+const RoleAdmin = lazy(() => import('./pages/RoleAdmin'));
+const ProductLab = lazy(() => import('./pages/ProductLab'));
 const UserAdmin = lazy(() => import('./pages/UserAdmin'));
 const Profile = lazy(() => import('./pages/Profile'));
 const WatchTogetherPage = lazy(() => import('./pages/WatchTogether'));
@@ -77,7 +80,10 @@ const resolveIframeSrc = (app: IframeMicroApp) => {
 const LocalRoutes = ({ pathname }: { pathname: string }) => {
   const content = (() => {
     if (pathname === '/') return <NavHome />;
+    if (pathname === '/product-lab') return <ProductLab />;
     if (pathname === '/profile') return <Profile />;
+    if (pathname === '/app/menu-admin') return <MenuAdmin />;
+    if (pathname === '/app/role-admin') return <RoleAdmin />;
     if (pathname === '/app/permission-admin') return <PermissionAdmin />;
     if (pathname === '/app/user-admin') return <UserAdmin />;
     if (pathname === '/app/watch-together') return <WatchTogetherPage />;

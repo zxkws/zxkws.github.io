@@ -1,6 +1,7 @@
 import { Form, Input, InputNumber, Modal, message } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AppIcon, { type AppIconName } from '../../components/AppIcon';
+import LightSpaceMark from '../../components/LightSpaceMark';
 import SafeAppLink from '../../components/SafeAppLink';
 import { useUser } from '../../context/UserContext';
 import {
@@ -70,6 +71,60 @@ const workspaceFeatures = [
     description: '后台账号、角色和访问权限。',
     path: '/app/user-admin',
     icon: 'shield' as const,
+  },
+];
+
+const researchLayers = [
+  {
+    index: '01',
+    eyebrow: 'Avatar',
+    name: '人物本体',
+    description: '从真人视频、2D 形象到 3D 模型，先确定角色以什么形态存在。',
+    stack: '视频 / 2D / 3D',
+  },
+  {
+    index: '02',
+    eyebrow: 'Drive',
+    name: '声音与驱动',
+    description: '连接 TTS、语音识别、表情、动作和口型，让角色自然地说话与回应。',
+    stack: 'TTS / ASR / Motion',
+  },
+  {
+    index: '03',
+    eyebrow: 'Render',
+    name: '画面生成',
+    description: '通过 AI 视频或实时引擎组织灯光、材质、视角与连续画面。',
+    stack: 'AI Video / Unity / Unreal',
+  },
+  {
+    index: '04',
+    eyebrow: 'Display',
+    name: '空间呈现',
+    description: '把结果输出到网页、视频流、大屏或透明展柜，完成最终体验。',
+    stack: 'WebRTC / Screen / Spatial',
+  },
+];
+
+const lightSpaceRepository = 'https://github.com/hqli2005/LightSpace';
+
+const productIdeas = [
+  {
+    status: 'MVP 已可用',
+    name: '同步放映厅',
+    description: '异地多人同步播放、进度纠偏与实时聊天。',
+    icon: 'video' as const,
+  },
+  {
+    status: '基础已接入',
+    name: '多登录认证中枢',
+    description: '密码、短信与第三方身份的统一登录入口。',
+    icon: 'shield' as const,
+  },
+  {
+    status: '概念验证中',
+    name: '云端 AI 开发平台',
+    description: '可执行、可验证、可审计的工程代理工作流。',
+    icon: 'sparkles' as const,
   },
 ];
 
@@ -186,87 +241,87 @@ const NavHome = () => {
           <div className={styles.heroCopy}>
             <div className={styles.eyebrow}>
               <span className={styles.statusDot} />
-              Developer portal · Personal workspace
+              LightSpace / 光域 · Digital human lab
             </div>
             <h1>
-              把常用工具和
+              让数字人，
               <br />
-              后台工作，
-              <span>放进一个入口。</span>
+              走进真实世界。
+              <span>从生成，到交互与呈现。</span>
             </h1>
             <p>
-              ZXKWS 是一个持续生长的开发者门户。访客可以直接使用公开工具，登录后则进入数据库、AI、权限与个人效率工作台。
+              光域是一项围绕 AI
+              数字人、智能交互与空间呈现持续演进的个人项目。从声音、人脸、动作、表情与口型，到渲染、视频流和显示设备，把每一层拆开研究，再组合成可落地的体验。
             </p>
             <div className={styles.heroActions}>
-              <SafeAppLink className={styles.primaryButton} to="/v-app/text-difference">
-                使用公开工具
+              <a className={styles.primaryButton} href="#research">
+                查看研究路线
                 <Arrow />
-              </SafeAppLink>
-              {user ? (
-                <SafeAppLink className={styles.secondaryButton} to="/v-react/db-ops">
-                  进入工作台
-                </SafeAppLink>
-              ) : (
-                <a className={styles.secondaryButton} href={buildLoginHref()}>
-                  登录后台
-                </a>
-              )}
+              </a>
+              <a className={styles.secondaryButton} href={lightSpaceRepository} target="_blank" rel="noreferrer">
+                GitHub 项目
+                <ExternalArrow />
+              </a>
             </div>
             <div className={styles.heroMeta}>
-              <span>公开访问</span>
-              <span>微前端架构</span>
-              <span>桌面与移动端</span>
+              <span>AI 数字人</span>
+              <span>实时交互</span>
+              <span>空间展示</span>
             </div>
           </div>
 
-          <div className={styles.productFrame} role="img" aria-label="ZXKWS 工作台界面预览">
+          <div className={styles.productFrame} role="img" aria-label="光域数字人系统界面预览">
             <div className={styles.frameBar}>
               <span className={styles.frameBrand}>
-                <span className={styles.miniMark}>ϟ</span>
-                zxkws / workspace
+                <span className={styles.miniMark}>
+                  <LightSpaceMark />
+                </span>
+                lightspace / avatar-lab
               </span>
               <span className={styles.frameShortcut}>⌘ K</span>
             </div>
             <div className={styles.frameBody}>
               <aside className={styles.frameSidebar}>
-                {workspaceFeatures.map((feature, index) => (
-                  <span className={index === 0 ? styles.frameItemActive : styles.frameItem} key={feature.name}>
-                    <AppIcon name={feature.icon} size={14} />
-                    {feature.name}
+                {researchLayers.map((layer, index) => (
+                  <span className={index === 1 ? styles.frameItemActive : styles.frameItem} key={layer.name}>
+                    <span className={styles.frameLayerCode}>{layer.index}</span>
+                    {layer.name}
                   </span>
                 ))}
               </aside>
               <div className={styles.frameContent}>
                 <div className={styles.frameHeading}>
                   <div>
-                    <span>DATABASE CONTROL</span>
-                    <strong>资产总览</strong>
+                    <span>DIGITAL HUMAN SYSTEM</span>
+                    <strong>从内容到空间呈现</strong>
                   </div>
-                  <span className={styles.liveBadge}>LIVE</span>
+                  <span className={styles.liveBadge}>LAB</span>
                 </div>
                 <div className={styles.statGrid}>
                   <div>
-                    <span>Connections</span>
-                    <strong>12</strong>
-                    <small>Configured</small>
+                    <span>INPUT</span>
+                    <strong>文本 · 音频</strong>
+                    <small>脚本与真实驱动信号</small>
                   </div>
                   <div>
-                    <span>Tasks</span>
-                    <strong>28</strong>
-                    <small>Recorded</small>
+                    <span>OUTPUT</span>
+                    <strong>画面 · 空间</strong>
+                    <small>视频、流与显示设备</small>
                   </div>
                 </div>
                 <div className={styles.codePanel}>
                   <div className={styles.codeBar}>
-                    <span>query.sql</span>
-                    <span>read only</span>
+                    <span>system.pipeline</span>
+                    <span>research map</span>
                   </div>
                   <code>
-                    <span>select</span> name, status
+                    <span>actor</span> = avatar + identity
                     <br />
-                    <span>from</span> workspace.assets
+                    <span>drive</span> = voice + motion + lip_sync
                     <br />
-                    <span>order by</span> sort;
+                    <span>render</span> = light + material + camera
+                    <br />
+                    <span>display</span> = web + stream + space
                   </code>
                 </div>
               </div>
@@ -275,13 +330,100 @@ const NavHome = () => {
         </div>
       </section>
 
+      <section className={`${styles.section} ${styles.researchSection}`} id="research">
+        <div className={styles.sectionHeading}>
+          <div>
+            <span className={styles.sectionIndex}>01 / DIGITAL HUMAN RESEARCH</span>
+            <h2>一个数字人系统，不只是一个会说话的人。</h2>
+          </div>
+          <p>
+            光域关注完整链路：人物以什么形态存在，如何被语音和动作驱动，怎样生成画面，最后又通过什么媒介走到用户面前。
+          </p>
+        </div>
+
+        <div className={styles.researchFormula}>
+          <span>演员</span>
+          <i>×</i>
+          <span>动作和台词</span>
+          <i>×</i>
+          <span>摄影棚与灯光</span>
+          <i>×</i>
+          <span>屏幕与空间</span>
+        </div>
+
+        <div className={styles.researchGrid}>
+          {researchLayers.map((layer) => (
+            <article className={styles.researchCard} key={layer.index}>
+              <div className={styles.researchCardTop}>
+                <span>{layer.index}</span>
+                <small>{layer.eyebrow}</small>
+              </div>
+              <h3>{layer.name}</h3>
+              <p>{layer.description}</p>
+              <code>{layer.stack}</code>
+            </article>
+          ))}
+        </div>
+
+        <div className={styles.researchNote}>
+          <div>
+            <span className={styles.sectionIndex}>CURRENT FOCUS</span>
+            <strong>自然表达，比“看起来像人”更重要。</strong>
+          </div>
+          <p>
+            当前重点是中文语音质量、表情与语义协调、可控肢体动作、口型对齐，以及从预渲染视频走向实时互动的工程组合。
+          </p>
+          <a href={lightSpaceRepository} target="_blank" rel="noreferrer">
+            查看 LightSpace 源码
+            <ExternalArrow />
+          </a>
+        </div>
+      </section>
+
+      <section className={`${styles.section} ${styles.productIdeasSection}`} id="products">
+        <div className={styles.sectionHeading}>
+          <div>
+            <span className={styles.sectionIndex}>02 / PRODUCT FOUNDRY</span>
+            <h2>把曾经想做的产品，变成真实入口。</h2>
+          </div>
+          <p>产品构想实验室公开记录三个方向的落地进度：同步放映、统一认证，以及基于 MCP 的云端 AI 开发平台。</p>
+        </div>
+
+        <div className={styles.productIdeasGrid}>
+          <div className={styles.productIdeasCopy}>
+            <span>FROM README TO PRODUCT</span>
+            <h3>不隐藏未完成，也不让想法永远停留在草稿。</h3>
+            <p>每个方向都拆成已经交付的最短闭环、明确的下一阶段，以及能够直接进入的真实界面。</p>
+            <SafeAppLink className={styles.secondaryButton} to="/product-lab">
+              打开产品构想实验室
+              <Arrow />
+            </SafeAppLink>
+          </div>
+          <div className={styles.productIdeasList}>
+            {productIdeas.map((idea, index) => (
+              <div className={styles.productIdeaRow} key={idea.name}>
+                <span className={styles.productIdeaIcon}>
+                  <AppIcon name={idea.icon} size={19} />
+                </span>
+                <span className={styles.productIdeaNumber}>0{index + 1}</span>
+                <span>
+                  <strong>{idea.name}</strong>
+                  <small>{idea.description}</small>
+                </span>
+                <em>{idea.status}</em>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className={styles.section} id="tools">
         <div className={styles.sectionHeading}>
           <div>
-            <span className={styles.sectionIndex}>01 / PUBLIC TOOLS</span>
-            <h2>打开即用，不必先登录</h2>
+            <span className={styles.sectionIndex}>03 / OPEN TOOLS</span>
+            <h2>研究之外，也保留真正好用的工具。</h2>
           </div>
-          <p>面向访客开放的实用工具，也是整个门户最直接的入口。</p>
+          <p>访客无需登录即可使用；这些工具也承担着视觉识别、数据处理与内容生产过程中的日常辅助工作。</p>
         </div>
 
         <div className={styles.toolGrid}>
@@ -309,10 +451,11 @@ const NavHome = () => {
       <section className={styles.workspaceSection} id="workspace">
         <div className={styles.workspaceInner}>
           <div className={styles.workspaceCopy}>
-            <span className={styles.sectionIndex}>02 / PRIVATE WORKSPACE</span>
-            <h2>公开门户背后，是每天真正使用的控制台。</h2>
+            <span className={styles.sectionIndex}>04 / PRIVATE LAB CONSOLE</span>
+            <h2>公开研究背后，是持续运转的个人控制台。</h2>
             <p>
-              登录后从同一个入口进入内部功能。侧栏保留完整功能导航，命令面板支持快速跳转，工作区继续承载现有微应用。
+              登录后从同一个入口管理 AI
+              助手、知识库、数据库、任务、权限与个人笔记。门户负责表达光域，控制台负责支撑它继续生长。
             </p>
             {user ? (
               <SafeAppLink className={styles.darkButton} to="/v-react/db-ops">
@@ -348,8 +491,8 @@ const NavHome = () => {
       <section className={`${styles.section} ${styles.linksSection}`} id="links">
         <div className={styles.sectionHeading}>
           <div>
-            <span className={styles.sectionIndex}>03 / SAVED LINKS</span>
-            <h2>导航收藏</h2>
+            <span className={styles.sectionIndex}>05 / REFERENCE FIELD</span>
+            <h2>参考资料与导航</h2>
           </div>
           <p>共 {items.length} 项</p>
         </div>
@@ -408,18 +551,18 @@ const NavHome = () => {
 
       <section className={styles.finalCta}>
         <div>
-          <span className={styles.sectionIndex}>ONE SITE, TWO MODES</span>
-          <h2>访客看到价值，你看到效率。</h2>
+          <span className={styles.sectionIndex}>OPEN RESEARCH, PRIVATE OPERATIONS</span>
+          <h2>让研究过程可见，也让日常工作保持高效。</h2>
         </div>
-        <SafeAppLink className={styles.primaryButton} to="/v-app/json-viewer">
-          从公开工具开始
-          <Arrow />
-        </SafeAppLink>
+        <a className={styles.primaryButton} href={lightSpaceRepository} target="_blank" rel="noreferrer">
+          在 GitHub 查看光域
+          <ExternalArrow />
+        </a>
       </section>
 
       <footer className={styles.footer}>
-        <span>ZXKWS Developer Portal</span>
-        <span>Tools · AI · Database · Workspace</span>
+        <span>光域 LIGHTSPACE</span>
+        <span>Digital Human · AI Systems · Creative Technology</span>
       </footer>
 
       <Modal

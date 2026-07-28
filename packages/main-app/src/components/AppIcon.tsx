@@ -11,6 +11,7 @@ export type AppIconName =
   | 'diff'
   | 'grid'
   | 'home'
+  | 'idea'
   | 'note'
   | 'shield'
   | 'sparkles'
@@ -26,6 +27,7 @@ type AppIconProps = Omit<SVGProps<SVGSVGElement>, 'name'> & {
 export const resolveAppIcon = (path?: string, name?: string): AppIconName => {
   const value = `${path ?? ''} ${name ?? ''}`.toLowerCase();
   if (path === '/') return 'home';
+  if (value.includes('product-lab') || value.includes('产品构想')) return 'idea';
   if (value.includes('chess') || value.includes('象棋')) return 'chess';
   if (value.includes('text-difference') || value.includes('textdiff') || value.includes('文本比对')) return 'diff';
   if (value.includes('json')) return 'braces';
@@ -60,6 +62,14 @@ const AppIcon = ({ name, size = 18, ...props }: AppIconProps) => {
             <path d="m3 10 9-7 9 7" />
             <path d="M5 9.5V21h14V9.5" />
             <path d="M9 21v-7h6v7" />
+          </>
+        );
+      case 'idea':
+        return (
+          <>
+            <path d="M9 18h6M10 22h4" />
+            <path d="M8.4 15.5A7 7 0 1 1 15.6 15.5C14.6 16.2 14 17 14 18h-4c0-1-.6-1.8-1.6-2.5Z" />
+            <path d="M12 6v5M9.5 9.5h5" />
           </>
         );
       case 'chess':

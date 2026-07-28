@@ -50,8 +50,8 @@ const submitRegister = async (payload: { username: string; email: string; passwo
 <template>
   <AuthPageShell>
     <template #visual>
-      <h1 class="hero-text">One account.<br />The whole workspace.</h1>
-      <p class="hero-sub">创建账号后，从同一个入口进入数据库、AI、权限和个人效率工具。</p>
+      <h1 class="hero-text">One identity.<br />A growing light field.</h1>
+      <p class="hero-sub">创建账号后，从同一个入口进入光域的 AI、数据、产品实验与个人效率工具。</p>
     </template>
 
     <template #form>
