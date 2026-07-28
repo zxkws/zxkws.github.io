@@ -14,6 +14,7 @@ if (typeof window !== 'undefined') {
   globals.ReactDOM = ReactDom;
 }
 
+import ContactSupport from './components/ContactSupport';
 import ErrorBoundary from './components/ErrorBoundary';
 import PageLoading from './components/PageLoading';
 import '@zxkws/shared-theme/theme.css';
@@ -343,6 +344,7 @@ function App() {
           <div className="app-router-shell relative flex flex-1 min-h-0 flex-col">{routerContent}</div>
         </PageLoading>
       </BasicLayout>
+      <ContactSupport />
     </UserProvider>
   );
 }
