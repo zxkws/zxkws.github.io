@@ -4,15 +4,9 @@
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge,chrome=1" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-    <title>光域 LightSpace｜AI 数字人研究与产品实验室</title>
-    <meta
-      name="description"
-      content="光域 LightSpace 是围绕 AI 数字人、智能交互与空间呈现持续演进的个人项目，并公开产品构想、实用工具与私有工作台。"
-    />
-    <meta
-      name="keywords"
-      content="光域, LightSpace, AI 数字人, 数字人系统, 智能交互, 空间展示, 产品构想, 开发者工具"
-    />
+    <title>光域 LightSpace</title>
+    <meta name="description" content="一个属于创造、记录与探索的数字空间。" />
+    <meta name="keywords" content="光域, LightSpace, 个人数字空间" />
     <meta name="theme-color" content="#ffffff" />
     <meta name="color-scheme" content="light dark" />
     <meta name="robots" content="index,follow,max-image-preview:large" />
@@ -28,13 +22,13 @@
     <link rel="canonical" href="/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="光域 LightSpace" />
-    <meta property="og:title" content="光域 LightSpace｜AI 数字人研究与产品实验室" />
-    <meta property="og:description" content="从声音、动作、渲染到空间呈现，公开数字人研究、产品构想与可用工具。" />
+    <meta property="og:title" content="光域 LightSpace" />
+    <meta property="og:description" content="一个属于创造、记录与探索的数字空间。" />
     <meta property="og:url" content="/" />
     <meta property="og:image" content="/lightspace-mark.svg" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="光域 LightSpace｜AI 数字人研究与产品实验室" />
-    <meta name="twitter:description" content="从声音、动作、渲染到空间呈现，公开数字人研究、产品构想与可用工具。" />
+    <meta name="twitter:title" content="光域 LightSpace" />
+    <meta name="twitter:description" content="一个属于创造、记录与探索的数字空间。" />
     <meta name="twitter:image" content="/lightspace-mark.svg" />
     <meta name="twitter:url" content="/" />
     <script type="application/ld+json">
@@ -44,12 +38,7 @@
         "name": "光域 LightSpace",
         "url": "/",
         "inLanguage": "zh-CN",
-        "description": "围绕 AI 数字人、智能交互与空间呈现持续演进的个人项目，并公开产品构想、实用工具与私有工作台。",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": "https://www.google.com/search?q={search_term_string}",
-          "query-input": "required name=search_term_string"
-        }
+        "description": "一个属于创造、记录与探索的数字空间。"
       }
     </script>
     <script>
@@ -74,7 +63,6 @@
     <script>
       (() => {
         const origin = window.location.origin;
-        const host = window.location.hostname;
         const selectOrCreate = (selector, tag, attributes) => {
           const existing = document.head.querySelector(selector);
           if (existing) return existing;
@@ -117,9 +105,6 @@
             const data = JSON.parse(schemaEl.textContent);
             if (!data || typeof data !== 'object') return;
             data.url = canonicalUrl;
-            if (data.potentialAction && typeof data.potentialAction === 'object') {
-              data.potentialAction.target = `https://www.google.com/search?q={search_term_string}+site:${host}`;
-            }
             schemaEl.textContent = JSON.stringify(data);
           } catch {
             // ignore
