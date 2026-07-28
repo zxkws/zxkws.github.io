@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import LightSpaceMark from '../../../../components/LightSpaceMark';
 import SafeAppLink from '../../../../components/SafeAppLink';
 import { useUser } from '../../../../context/UserContext';
+import { useLanguage } from '../../../../i18n';
 import { client as httpClient } from '../../../../services/httpClient';
 import { clearAuthArtifacts } from '../../../../utils/authCleanup';
 import { clearPwaCachesAndReload } from '../../../../utils/pwa';
@@ -51,6 +52,7 @@ const HeaderBar = ({ isMobile, isPortal, onMenuToggle }: HeaderBarProps) => {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [backendInfo, setBackendInfo] = useState<BackendInfo | null>(null);
   const { user, clearUser } = useUser();
+  const { language, t, toggleLanguage } = useLanguage();
 
   useEffect(() => {
     setTheme(readEffectiveTheme());
@@ -104,7 +106,7 @@ const HeaderBar = ({ isMobile, isPortal, onMenuToggle }: HeaderBarProps) => {
       }
     } catch (error) {
       console.error('Failed to fetch backend info', error);
-      setBackendInfo({ deploymentTime: '获取失败' });
+      setBackendInfo({ deploymentTime: t('header.fetchFailed') });
     }
   };
 
@@ -118,7 +120,12 @@ const HeaderBar = ({ isMobile, isPortal, onMenuToggle }: HeaderBarProps) => {
         <div className={styles.headerInner}>
           <div className={styles.leftArea}>
             {isMobile && !isPortal && (
-              <button className={styles.iconButton} onClick={onMenuToggle} type="button" aria-label="打开工作台菜单">
+              <button
+                className={styles.iconButton}
+                onClick={onMenuToggle}
+                type="button"
+                aria-label={t('header.openMenu')}
+              >
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M4 7h16M4 12h16M4 17h16" />
                 </svg>
@@ -142,15 +149,25 @@ const HeaderBar = ({ isMobile, isPortal, onMenuToggle }: HeaderBarProps) => {
                 <circle cx="11" cy="11" r="6" />
                 <path d="m16 16 4 4" />
               </svg>
-              <span>搜索</span>
+              <span>{t('header.search')}</span>
               <kbd>⌘ K</kbd>
+            </button>
+
+            <button
+              className={`${styles.iconButton} ${styles.languageButton}`}
+              onClick={toggleLanguage}
+              type="button"
+              aria-label={language === 'zh-CN' ? t('header.switchToEnglish') : t('header.switchToChinese')}
+              title={language === 'zh-CN' ? t('header.switchToEnglish') : t('header.switchToChinese')}
+            >
+              {language === 'zh-CN' ? 'EN' : '中'}
             </button>
 
             <button
               className={styles.iconButton}
               onClick={toggleTheme}
               type="button"
-              aria-label={theme === 'dark' ? '切换到浅色主题' : '切换到深色主题'}
+              aria-label={theme === 'dark' ? t('header.switchToLight') : t('header.switchToDark')}
             >
               {theme === 'dark' ? (
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -192,13 +209,13 @@ const HeaderBar = ({ isMobile, isPortal, onMenuToggle }: HeaderBarProps) => {
                 {isMenuOpen && (
                   <div className={styles.dropdown} onMouseLeave={() => setIsMenuOpen(false)} role="menu">
                     <SafeAppLink to="/profile" className={styles.menuItem} role="menuitem">
-                      个人资料
+                      {t('header.profile')}
                     </SafeAppLink>
                     <button onClick={handleOpenAbout} className={styles.menuItem} type="button" role="menuitem">
-                      关于系统
+                      {t('header.about')}
                     </button>
                     <button onClick={handleClearCaches} className={styles.menuItem} type="button" role="menuitem">
-                      清理缓存
+                      {t('header.clearCache')}
                     </button>
                     <button
                       onClick={handleLogout}
@@ -206,14 +223,14 @@ const HeaderBar = ({ isMobile, isPortal, onMenuToggle }: HeaderBarProps) => {
                       type="button"
                       role="menuitem"
                     >
-                      退出登录
+                      {t('header.logout')}
                     </button>
                   </div>
                 )}
               </div>
             ) : (
               <a className={styles.loginButton} href={buildLoginHref()}>
-                登录后台
+                {t('header.loginAdmin')}
               </a>
             )}
           </div>
@@ -227,7 +244,7 @@ const HeaderBar = ({ isMobile, isPortal, onMenuToggle }: HeaderBarProps) => {
           onKeyDown={(event) => event.key === 'Escape' && setIsAboutOpen(false)}
           role="dialog"
           aria-modal="true"
-          aria-label="关于系统"
+          aria-label={t('header.about')}
         >
           <div
             className={styles.modal}
@@ -238,13 +255,13 @@ const HeaderBar = ({ isMobile, isPortal, onMenuToggle }: HeaderBarProps) => {
             <div className={styles.modalHeading}>
               <div>
                 <span className={styles.eyebrow}>SYSTEM INFO</span>
-                <h2>关于系统</h2>
+                <h2>{t('header.about')}</h2>
               </div>
               <button
                 className={styles.iconButton}
                 onClick={() => setIsAboutOpen(false)}
                 type="button"
-                aria-label="关闭"
+                aria-label={t('common.close')}
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="m6 6 12 12M18 6 6 18" />
@@ -253,15 +270,15 @@ const HeaderBar = ({ isMobile, isPortal, onMenuToggle }: HeaderBarProps) => {
             </div>
             <dl className={styles.infoList}>
               <div>
-                <dt>前端构建时间</dt>
+                <dt>{t('header.frontendBuildTime')}</dt>
                 <dd>{(process.env as Record<string, string | undefined>).BUILD_TIME}</dd>
               </div>
               <div>
-                <dt>后端部署时间</dt>
-                <dd>{backendInfo ? backendInfo.deploymentTime : '加载中...'}</dd>
+                <dt>{t('header.backendDeployTime')}</dt>
+                <dd>{backendInfo ? backendInfo.deploymentTime : t('common.loading')}</dd>
               </div>
               <div>
-                <dt>系统版本</dt>
+                <dt>{t('header.systemVersion')}</dt>
                 <dd>{backendInfo?.version}</dd>
               </div>
             </dl>

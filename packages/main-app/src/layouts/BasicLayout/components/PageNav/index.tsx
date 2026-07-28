@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import AppIcon, { resolveAppIcon } from '../../../../components/AppIcon';
 import SafeAppLink from '../../../../components/SafeAppLink';
+import { useLanguage } from '../../../../i18n';
 import type { MenuItem } from '../../../../types/menu';
 import * as styles from './index.module.css';
 
@@ -13,6 +14,7 @@ type PageNavProps = {
 
 const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
   const [activePath, setActivePath] = useState('');
+  const { t } = useLanguage();
 
   useEffect(() => {
     const readPathname = () => window.location.pathname;
@@ -34,10 +36,11 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
 
   const renderItems = (items: MenuItem[]) =>
     items.map((item) => {
+      const label = item.i18nKey ? t(item.i18nKey) : item.name;
       if (item.children?.length) {
         return (
           <div className={styles.nestedGroup} key={item.name}>
-            <span className={styles.groupLabel}>{item.name}</span>
+            <span className={styles.groupLabel}>{label}</span>
             {renderItems(item.children)}
           </div>
         );
@@ -49,7 +52,7 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
         <SafeAppLink
           key={item.path}
           to={item.path}
-          title={item.name}
+          title={label}
           className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
           onClick={isMobile ? onClose : undefined}
           aria-current={active ? 'page' : undefined}
@@ -57,7 +60,7 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
           <span className={styles.iconBox}>
             <AppIcon name={resolveAppIcon(item.path, item.name)} size={17} />
           </span>
-          <span className={styles.label}>{item.name}</span>
+          <span className={styles.label}>{label}</span>
         </SafeAppLink>
       );
     });
@@ -67,10 +70,10 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
       <div className={styles.navHeading}>
         <div>
           <span className={styles.eyebrow}>CONTROL CENTER</span>
-          <strong>工作台</strong>
+          <strong>{t('nav.workspace')}</strong>
         </div>
         {isMobile && (
-          <button className={styles.closeButton} type="button" onClick={onClose} aria-label="关闭工作台菜单">
+          <button className={styles.closeButton} type="button" onClick={onClose} aria-label={t('nav.closeMenu')}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="m6 6 12 12M18 6 6 18" />
             </svg>
@@ -83,7 +86,7 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
         type="button"
         onClick={() => window.dispatchEvent(new CustomEvent('main-app:open-command-palette'))}
       >
-        <span>快速跳转</span>
+        <span>{t('nav.quickJump')}</span>
         <kbd>⌘ K</kbd>
       </button>
     </>
@@ -96,9 +99,12 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
           className={`${styles.mobileOverlay} ${isOpen ? styles.mobileOverlayOpen : ''}`}
           onClick={onClose}
           type="button"
-          aria-label="关闭工作台菜单"
+          aria-label={t('nav.closeMenu')}
         />
-        <nav className={`${styles.mobileDrawer} ${isOpen ? styles.mobileDrawerOpen : ''}`} aria-label="工作台功能">
+        <nav
+          className={`${styles.mobileDrawer} ${isOpen ? styles.mobileDrawerOpen : ''}`}
+          aria-label={t('nav.features')}
+        >
           {navigation}
         </nav>
       </>
@@ -106,7 +112,7 @@ const PageNav = ({ isMobile, isOpen, onClose, menus }: PageNavProps) => {
   }
 
   return (
-    <nav className={styles.sidebar} aria-label="工作台功能">
+    <nav className={styles.sidebar} aria-label={t('nav.features')}>
       {navigation}
     </nav>
   );

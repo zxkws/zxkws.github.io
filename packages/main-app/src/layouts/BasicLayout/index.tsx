@@ -2,6 +2,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import CommandPalette, { type CommandItem } from '../../components/CommandPalette';
 import PageLoading from '../../components/PageLoading';
 import { useUser } from '../../context/UserContext';
+import { useLanguage } from '../../i18n';
 import { fetchRemoteMenus } from '../../services/menuService';
 import type { MenuItem } from '../../types/menu';
 import { clearPwaCachesAndReload } from '../../utils/pwa';
@@ -17,6 +18,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [pathname, setPathname] = useState(readPathname);
   const { user, loading } = useUser();
+  const { t } = useLanguage();
   const [menus, setMenus] = useState<MenuItem[]>(builtInAsideMenus);
 
   const visibleMenus = useMemo(() => {
@@ -47,7 +49,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
     const flatten = (items: MenuItem[], prefix: string[] = []) => {
       const out: CommandItem[] = [];
       items.forEach((item) => {
-        const title = item.name || '';
+        const title = item.i18nKey ? t(item.i18nKey) : item.name || '';
         const path = item.path;
         const keywords = [...prefix, title].filter(Boolean);
         if (path) {
@@ -70,13 +72,13 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
     const actions: CommandItem[] = [
       {
         id: 'action:reload',
-        title: '刷新页面',
+        title: t('common.reload'),
         subtitle: 'window.location.reload()',
         action: () => window.location.reload(),
       },
       {
         id: 'action:clear-cache-reload',
-        title: '清理缓存并刷新',
+        title: t('common.clearCacheReload'),
         subtitle: 'Service Worker / Cache Storage',
         action: () => clearPwaCachesAndReload(),
       },
@@ -88,7 +90,7 @@ export default function BasicLayout({ children }: { children: ReactNode }) {
       seen.add(item.id);
       return true;
     });
-  }, [visibleMenus]);
+  }, [t, visibleMenus]);
 
   useEffect(() => {
     if (!loading && !user && !isPublicRoute) {

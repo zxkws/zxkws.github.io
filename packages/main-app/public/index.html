@@ -44,6 +44,23 @@
     <script>
       (() => {
         try {
+          const savedLanguage = window.localStorage.getItem('lightspace-language');
+          const language =
+            savedLanguage === 'zh-CN' || savedLanguage === 'en-US'
+              ? savedLanguage
+              : window.navigator.language.toLowerCase().startsWith('zh')
+                ? 'zh-CN'
+                : 'en-US';
+          document.documentElement.lang = language;
+          document.documentElement.dataset.language = language;
+        } catch {
+          // Keep the document default when browser storage is unavailable.
+        }
+      })();
+    </script>
+    <script>
+      (() => {
+        try {
           const savedTheme = window.localStorage.getItem('main-app-theme');
           const theme =
             savedTheme === 'dark' || savedTheme === 'light'

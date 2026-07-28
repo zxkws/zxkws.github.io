@@ -9,4 +9,5 @@ export interface MenuItem {
   adminOnly?: boolean;
   requiresAuth?: boolean;
   permission?: string | null;
+  i18nKey?: string;
 }

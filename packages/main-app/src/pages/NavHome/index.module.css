@@ -105,12 +105,12 @@
 	margin-top: 34px;
 }
 
-.primaryButton,
-.secondaryButton {
+.primaryButton {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	gap: 10px;
+	width: 136px;
 	min-width: 124px;
 	height: 44px;
 	padding: 0 18px;
@@ -118,51 +118,29 @@
 	font-size: 13px;
 	font-weight: 550;
 	text-decoration: none;
+	color: #171717;
+	background: var(--color-primary);
+	border: 1px solid
+		color-mix(in srgb, var(--color-primary-deep) 72%, transparent);
+	box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
 	transition:
 		background-color var(--duration-fast) var(--ease-standard),
 		border-color var(--duration-fast) var(--ease-standard),
 		transform var(--duration-fast) var(--ease-standard);
 }
 
-.primaryButton {
-	color: #171717;
-	background: var(--color-primary);
-	border: 1px solid
-		color-mix(in srgb, var(--color-primary-deep) 72%, transparent);
-	box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
-}
-
-.secondaryButton {
-	color: var(--color-fg);
-	background: var(--color-surface);
-	border: 1px solid var(--color-border-strong);
-	box-shadow: var(--shadow-xs);
-}
-
-.primaryButton:hover,
-.secondaryButton:hover {
-	transform: translateY(-1px);
-}
-
 .primaryButton:hover {
 	color: #171717;
 	background: var(--color-primary-deep);
+	transform: translateY(-1px);
 }
 
-.secondaryButton:hover {
-	color: var(--color-fg);
-	background: var(--color-surface-2);
-	border-color: var(--color-fg-tertiary);
-}
-
-.primaryButton:focus-visible,
-.secondaryButton:focus-visible {
+.primaryButton:focus-visible {
 	outline: 2px solid var(--color-primary-deep);
 	outline-offset: 3px;
 }
 
-.primaryButton svg,
-.secondaryButton svg {
+.primaryButton svg {
 	width: 16px;
 	height: 16px;
 	fill: none;
@@ -207,6 +185,7 @@
 	}
 
 	.description {
+		min-height: 3.4em;
 		margin-top: 22px;
 	}
 
@@ -215,16 +194,14 @@
 		margin-top: 30px;
 	}
 
-	.primaryButton,
-	.secondaryButton {
+	.primaryButton {
 		flex: 1 1 0;
 		min-width: 0;
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.primaryButton,
-	.secondaryButton {
+	.primaryButton {
 		transition: none;
 	}
 }

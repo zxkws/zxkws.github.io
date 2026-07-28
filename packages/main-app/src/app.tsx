@@ -1,4 +1,7 @@
 import { AppRoute, AppRouter } from '@ice/stark';
+import { ConfigProvider } from 'antd';
+import enUS from 'antd/locale/en_US';
+import zhCN from 'antd/locale/zh_CN';
 import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import ReactDom from 'react-dom/client';
 
@@ -23,25 +26,30 @@ import './index.css';
 import './pages/workspace-pages.css';
 import { UserProvider } from './context/UserContext';
 import { ensureIcestarkAppsRegistered, loadConfig, resolveMicroApps } from './core/icestark';
+import { LanguageProvider, readLanguage, translate, useLanguage } from './i18n';
 import BasicLayout from './layouts/BasicLayout';
 import NavHome from './pages/NavHome';
+import { resolveMenuPath } from './services/menuService';
 import { subscribeLoading } from './services/networkLoading';
 import { ensureHistoryIdx, replaceUrl } from './utils/safeHistory';
 
-const RouteNotFound = () => (
-  <div className="workspace-page workspace-feedback-screen">
-    <section className="workspace-panel workspace-feedback-card">
-      <p className="workspace-page__eyebrow">404 / Not found</p>
-      <h1>没有找到这个页面</h1>
-      <p className="workspace-page__description">当前地址没有匹配到可用功能，请返回门户重新选择入口。</p>
-      <div className="workspace-inline-actions workspace-feedback-actions">
-        <a className="workspace-button workspace-button--primary" href="/">
-          返回门户
-        </a>
-      </div>
-    </section>
-  </div>
-);
+const RouteNotFound = () => {
+  const { t } = useLanguage();
+  return (
+    <div className="workspace-page workspace-feedback-screen">
+      <section className="workspace-panel workspace-feedback-card">
+        <p className="workspace-page__eyebrow">404 / Not found</p>
+        <h1>{t('error.notFoundTitle')}</h1>
+        <p className="workspace-page__description">{t('error.notFoundDescription')}</p>
+        <div className="workspace-inline-actions workspace-feedback-actions">
+          <a className="workspace-button workspace-button--primary" href="/">
+            {t('error.backPortal')}
+          </a>
+        </div>
+      </section>
+    </div>
+  );
+};
 const normalizePathname = (value: string) => (value.length > 1 && value.endsWith('/') ? value.slice(0, -1) : value);
 
 const PermissionAdmin = lazy(() => import('./pages/PermissionAdmin'));
@@ -136,7 +144,7 @@ if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
         reload();
         return;
       }
-      if (window.confirm('检测到新版本，是否立即刷新体验？')) {
+      if (window.confirm(translate(readLanguage(), 'update.confirm'))) {
         reload();
       }
     };
@@ -179,6 +187,7 @@ if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
 // -----------------------------------
 
 function App() {
+  const { t } = useLanguage();
   const [isFetchLoading, setIsFetchLoading] = useState(false);
   const [configLoaded, setConfigLoaded] = useState(false);
   const [microApps, setMicroApps] = useState<ReturnType<typeof resolveMicroApps>>([]);
@@ -234,14 +243,10 @@ function App() {
     };
   }, []);
 
-  // 文本对比已迁移至 v-app，保留旧入口兼容已有书签。
   useEffect(() => {
-    if (pathname === '/textdiff' || pathname === '/tools/textdiff') {
-      replaceUrl('/v-app/text-difference');
-      return;
-    }
-    if (pathname === '/curlconverter') {
-      replaceUrl('/tools/curlconverter');
+    const resolvedPath = resolveMenuPath(pathname);
+    if (resolvedPath && resolvedPath !== pathname) {
+      replaceUrl(resolvedPath);
     }
   }, [pathname]);
 
@@ -267,7 +272,7 @@ function App() {
         setConfigLoaded(true);
       } catch (error) {
         console.error('[MainApp] Failed to initialize configuration', error);
-        setConfigError(error instanceof Error ? error.message : '加载配置失败');
+        setConfigError(error instanceof Error ? error.message : translate(readLanguage(), 'error.configTitle'));
         setConfigLoaded(false);
         setMicroApps([]);
       }
@@ -294,7 +299,7 @@ function App() {
       <div className="workspace-page workspace-feedback-screen">
         <section className="workspace-panel workspace-feedback-card">
           <p className="workspace-page__eyebrow">Configuration error</p>
-          <h1>无法加载应用配置</h1>
+          <h1>{t('error.configTitle')}</h1>
           <p className="workspace-page__description">{configError}</p>
           <div className="workspace-inline-actions workspace-feedback-actions">
             <button
@@ -302,7 +307,7 @@ function App() {
               className="workspace-button workspace-button--primary"
               onClick={() => window.location.reload()}
             >
-              刷新重试
+              {t('common.retry')}
             </button>
           </div>
         </section>
@@ -352,8 +357,19 @@ function App() {
 const root = document.getElementById('main-app-container');
 if (root) {
   ReactDom.createRoot(root).render(
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>,
+    <LanguageProvider>
+      <LocalizedApp />
+    </LanguageProvider>,
+  );
+}
+
+function LocalizedApp() {
+  const { language } = useLanguage();
+  return (
+    <ConfigProvider locale={language === 'zh-CN' ? zhCN : enUS}>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </ConfigProvider>
   );
 }

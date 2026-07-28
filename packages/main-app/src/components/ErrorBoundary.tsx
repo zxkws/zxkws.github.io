@@ -1,4 +1,5 @@
 import React, { type ReactNode } from 'react';
+import { readLanguage, translate } from '../i18n';
 import { clearPwaCachesAndReload } from '../utils/pwa';
 
 interface ErrorBoundaryProps {
@@ -37,24 +38,27 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
   handleClearCaches = () => {
     void clearPwaCachesAndReload({
-      confirmMessage: '可能是旧版本缓存导致异常，是否清理缓存并刷新？（会导致离线缓存失效）',
+      confirmMessage: translate(readLanguage(), 'error.cacheConfirm'),
     });
   };
 
   render() {
     if (this.state.hasError) {
+      const language = readLanguage();
       return (
         <div className="workspace-page workspace-feedback-screen">
           <section className="workspace-panel workspace-feedback-card">
             <p className="workspace-page__eyebrow">Runtime error</p>
-            <h1>页面暂时无法使用</h1>
-            <p className="workspace-page__description">{this.state.error?.message || 'Sorry, something went wrong.'}</p>
+            <h1>{translate(language, 'error.runtimeTitle')}</h1>
+            <p className="workspace-page__description">
+              {this.state.error?.message || translate(language, 'error.runtimeFallback')}
+            </p>
             <div className="workspace-inline-actions workspace-feedback-actions">
               <button type="button" onClick={this.handleReload} className="workspace-button workspace-button--primary">
-                刷新重试
+                {translate(language, 'common.retry')}
               </button>
               <button type="button" onClick={this.handleClearCaches} className="workspace-button">
-                清理缓存并刷新
+                {translate(language, 'common.clearCacheReload')}
               </button>
             </div>
           </section>

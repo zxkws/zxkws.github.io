@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from 'react';
+import { useLanguage } from '../../i18n';
 import * as styles from './index.module.css';
 
 type PageLoadingProps = PropsWithChildren<{
@@ -7,6 +8,7 @@ type PageLoadingProps = PropsWithChildren<{
 }>;
 
 const PageLoading = ({ children, loading = false, contained = false }: PageLoadingProps) => {
+  const { t } = useLanguage();
   const isEmpty = !children;
   const overlay = loading ? (
     <output
@@ -15,7 +17,7 @@ const PageLoading = ({ children, loading = false, contained = false }: PageLoadi
     >
       <div className={styles.card}>
         <span className={styles.spinner} aria-hidden="true" />
-        <span>正在加载…</span>
+        <span>{t('common.loading')}</span>
       </div>
     </output>
   ) : null;

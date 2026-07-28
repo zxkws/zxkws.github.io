@@ -1,4 +1,5 @@
 import { type KeyboardEvent as ReactKeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLanguage } from '../../i18n';
 import { pushUrl } from '../../utils/safeHistory';
 
 export type CommandItem = {
@@ -48,6 +49,7 @@ const runCommand = async (command: CommandItem) => {
 };
 
 const CommandPalette = ({ commands }: CommandPaletteProps) => {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
@@ -141,11 +143,16 @@ const CommandPalette = ({ commands }: CommandPaletteProps) => {
 
   return (
     <div className="fixed inset-0 z-[5000] flex items-start justify-center px-4 pt-[10vh]">
-      <button type="button" aria-label="关闭命令面板" className="absolute inset-0 bg-black/50" onClick={closePalette} />
+      <button
+        type="button"
+        aria-label={t('command.close')}
+        className="absolute inset-0 bg-black/50"
+        onClick={closePalette}
+      />
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="命令面板"
+        aria-label={t('command.label')}
         className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--stage-bg)] shadow-[var(--stage-shadow)] backdrop-blur-xl"
       >
         <div className="flex items-center gap-3 border-b border-[var(--glass-border)] px-4 py-3">
@@ -155,7 +162,7 @@ const CommandPalette = ({ commands }: CommandPaletteProps) => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="搜索功能或输入路径…"
+            placeholder={t('command.placeholder')}
             className="w-full bg-transparent text-sm text-[var(--color-text)] outline-none placeholder:text-[var(--color-muted)]"
           />
           <button
@@ -169,7 +176,7 @@ const CommandPalette = ({ commands }: CommandPaletteProps) => {
 
         <div className="max-h-[60vh] overflow-auto py-1">
           {filtered.length === 0 ? (
-            <div className="px-4 py-8 text-center text-sm text-[var(--color-muted)]">没有匹配结果</div>
+            <div className="px-4 py-8 text-center text-sm text-[var(--color-muted)]">{t('command.empty')}</div>
           ) : (
             filtered.map((cmd, idx) => {
               const active = idx === activeIndex;

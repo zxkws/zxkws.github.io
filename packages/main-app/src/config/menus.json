@@ -1,5 +1,4 @@
 [
-	{ "name": "首页", "path": "/" },
 	{ "name": "产品工作台", "path": "/product-lab" },
 	{ "name": "象棋·镜", "path": "/chess-mirror" },
 	{ "name": "文本对比", "path": "/v-app/text-difference" },
@@ -29,5 +28,5 @@
 	{ "name": "Obsidian 笔记", "path": "/v-react/notes" },
 	{ "name": "定时轮询保活", "path": "/v-react/keepalive" },
 	{ "name": "支付", "path": "/v-app/payment" },
-	{ "name": "代办", "path": "/v-app/todo" }
+	{ "name": "待办", "path": "/v-app/todo" }
 ]

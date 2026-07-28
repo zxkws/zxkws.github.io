@@ -51,6 +51,7 @@
 	gap: 2px;
 	padding: 10px;
 	overflow-y: auto;
+	scrollbar-gutter: stable;
 	scrollbar-color: var(--color-border) transparent;
 	scrollbar-width: thin;
 }
