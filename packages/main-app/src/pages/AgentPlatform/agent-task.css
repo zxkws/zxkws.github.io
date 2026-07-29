@@ -4,13 +4,240 @@
 	gap: 12px;
 }
 
+.agent-task-profile,
+.agent-github-panel,
+.agent-material-editor {
+	display: grid;
+	min-width: 0;
+	gap: 16px;
+}
+
+.agent-task-profile__options {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.agent-task-profile__options button {
+	display: grid;
+	min-height: 92px;
+	gap: 6px;
+	padding: 14px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	background: var(--color-surface);
+	color: var(--color-fg);
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.agent-task-profile__options button:hover,
+.agent-task-profile__options button[data-active="true"] {
+	border-color: var(--color-primary-deep);
+	background: var(--color-primary-muted);
+}
+
+.agent-task-profile__options span {
+	color: var(--color-fg-tertiary);
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.agent-aime-budget {
+	border: 1px solid var(--color-divider);
+	border-radius: var(--radius-sm);
+}
+
+.agent-aime-budget > summary {
+	padding: 12px;
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.agent-aime-budget__grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 10px;
+	padding: 0 12px 12px;
+}
+
+.agent-material-editor {
+	padding: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+}
+
+.agent-material-editor__file {
+	display: none;
+}
+
+.agent-material-list {
+	display: grid;
+	gap: 12px;
+}
+
+.agent-material-list article {
+	display: grid;
+	gap: 10px;
+	padding: 12px;
+	border: 1px solid var(--color-divider);
+	border-radius: var(--radius-sm);
+}
+
+.agent-material-list__meta {
+	display: grid;
+	grid-template-columns: minmax(140px, 0.6fr) minmax(180px, 1fr) auto;
+	gap: 10px;
+	align-items: end;
+}
+
+.agent-material-list__remove {
+	min-width: 68px;
+}
+
+.agent-github-panel pre {
+	max-height: 240px;
+	overflow: auto;
+}
+
+.agent-github-device {
+	display: grid;
+	gap: 12px;
+	padding: 14px;
+	border: 1px solid var(--color-primary-deep);
+	border-radius: var(--radius-sm);
+	background: var(--color-primary-muted);
+}
+
+.agent-github-device strong,
+.agent-github-device p {
+	margin: 0;
+}
+
+.agent-github-device p {
+	margin-top: 4px;
+	overflow-wrap: anywhere;
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 12px;
+}
+
+.agent-github-device code {
+	width: fit-content;
+	padding: 8px 12px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	background: var(--color-surface);
+	color: var(--color-fg);
+	font-size: 18px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+}
+
+.agent-github-device a.workspace-button {
+	text-decoration: none;
+}
+
+.agent-github-pull-requests {
+	border: 1px solid var(--color-divider);
+	border-radius: var(--radius-sm);
+}
+
+.agent-github-pull-requests > summary {
+	padding: 12px;
+	cursor: pointer;
+	font-weight: 600;
+}
+
+.agent-github-pull-requests__content,
+.agent-github-pull-requests__list {
+	display: grid;
+	gap: 10px;
+}
+
+.agent-github-pull-requests__content {
+	padding: 0 12px 12px;
+}
+
+.agent-github-pull-requests__list a {
+	display: grid;
+	gap: 4px;
+	padding: 10px;
+	border: 1px solid var(--color-divider);
+	border-radius: var(--radius-sm);
+	color: var(--color-fg);
+	text-decoration: none;
+}
+
+.agent-github-pull-requests__list span {
+	overflow-wrap: anywhere;
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 11px;
+}
+
 .agent-task-panel {
 	display: grid;
+	min-width: 0;
 	gap: 18px;
+}
+
+.agent-task-panel > *,
+.studio-shell > *,
+.studio-agent-result > div,
+.studio-agent-result dd {
+	min-width: 0;
+}
+
+.agent-task-actions {
+	min-height: 38px;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+.agent-task-actions .workspace-button,
+.agent-result-action {
+	min-width: 148px;
+}
+
+.studio-run-actions .workspace-button {
+	min-width: 128px;
+}
+
+.agent-task-actions [data-hidden="true"],
+.studio-run-actions [data-hidden="true"],
+.agent-result-action[data-hidden="true"] {
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.agent-task-runtime-status {
+	display: grid;
+	min-width: 0;
+	min-height: 58px;
+	gap: 5px;
+	align-content: center;
+	padding: 10px 12px;
+	border: 1px solid var(--color-divider);
+	border-radius: var(--radius-sm);
+	background: var(--color-surface-2);
+}
+
+.agent-task-runtime-status strong,
+.agent-task-runtime-status span {
+	overflow-wrap: anywhere;
+}
+
+.agent-task-runtime-status span {
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 11px;
 }
 
 .agent-task-summary {
 	margin: 0;
+	overflow-wrap: anywhere;
 	font-size: 16px;
 	line-height: 1.7;
 }
@@ -30,6 +257,7 @@
 .agent-task-warning p,
 .agent-task-checkpoint h3 {
 	margin: 0;
+	overflow-wrap: anywhere;
 }
 
 .agent-task-steps {
@@ -59,6 +287,7 @@
 
 .agent-task-steps p {
 	margin: 8px 0 0;
+	overflow-wrap: anywhere;
 	line-height: 1.6;
 }
 
@@ -91,8 +320,200 @@
 	margin: 0;
 }
 
+.agent-progress,
+.agent-delivery {
+	display: grid;
+	min-width: 0;
+	gap: 14px;
+	margin-top: 16px;
+	padding: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	background: var(--color-surface-2);
+}
+
+.agent-progress .workspace-panel__header,
+.agent-delivery .workspace-panel__header {
+	margin-bottom: 0;
+}
+
+.agent-progress h3,
+.agent-delivery h3,
+.agent-runtime-actors h4 {
+	margin: 0;
+	color: var(--color-fg);
+	font-size: 14px;
+}
+
+.agent-progress__percent {
+	min-width: 48px;
+	color: var(--color-primary-deep);
+	font-family: var(--font-mono);
+	text-align: right;
+}
+
+.agent-progress__bar {
+	width: 100%;
+	height: 6px;
+	overflow: hidden;
+	border-radius: 999px;
+	background: var(--color-border);
+}
+
+.agent-progress__bar span {
+	display: block;
+	height: 100%;
+	border-radius: inherit;
+	background: var(--color-primary-deep);
+	transition: width 180ms ease;
+}
+
+.agent-runtime-nodes {
+	display: grid;
+	max-height: min(560px, 60vh);
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	overflow: auto;
+	overscroll-behavior: contain;
+	scrollbar-gutter: stable;
+	list-style: none;
+}
+
+.agent-runtime-nodes li {
+	display: grid;
+	grid-template-columns: 10px minmax(0, 1fr);
+	gap: 10px;
+	padding: 12px;
+	border: 1px solid var(--color-divider);
+	border-radius: var(--radius-sm);
+	background: var(--color-surface);
+}
+
+.agent-runtime-nodes__state {
+	width: 9px;
+	height: 9px;
+	margin-top: 5px;
+	border: 2px solid var(--color-border-strong);
+	border-radius: 50%;
+}
+
+.agent-runtime-nodes li[data-status="running"] .agent-runtime-nodes__state {
+	border-color: var(--color-primary-deep);
+	background: var(--color-primary);
+}
+
+.agent-runtime-nodes li[data-status="completed"] .agent-runtime-nodes__state {
+	border-color: var(--color-primary-deep);
+	background: var(--color-primary-deep);
+}
+
+.agent-runtime-nodes li[data-status="failed"] .agent-runtime-nodes__state,
+.agent-runtime-nodes li[data-status="blocked"] .agent-runtime-nodes__state {
+	border-color: var(--color-danger);
+	background: var(--color-danger);
+}
+
+.agent-runtime-nodes li > div,
+.agent-runtime-actors article,
+.agent-artifact-list article {
+	display: grid;
+	min-width: 0;
+	gap: 5px;
+}
+
+.agent-runtime-nodes span,
+.agent-runtime-actors span,
+.agent-artifact-list span {
+	overflow-wrap: anywhere;
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 11px;
+}
+
+.agent-runtime-nodes p,
+.agent-runtime-actors p {
+	margin: 2px 0 0;
+	overflow-wrap: anywhere;
+	line-height: 1.55;
+}
+
+.agent-runtime-actors,
+.agent-artifact-list {
+	display: grid;
+	max-height: min(480px, 55vh);
+	gap: 8px;
+	overflow: auto;
+	overscroll-behavior: contain;
+	scrollbar-gutter: stable;
+}
+
+.agent-runtime-actors article,
+.agent-artifact-list article {
+	padding: 12px;
+	border: 1px solid var(--color-divider);
+	border-radius: var(--radius-sm);
+	background: var(--color-surface);
+}
+
+.agent-artifact-list a {
+	overflow-wrap: anywhere;
+	color: var(--color-primary-active);
+}
+
+.agent-artifact-list pre {
+	max-width: 100%;
+	max-height: 240px;
+	margin: 4px 0 0;
+	overflow: auto;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	font-size: 11px;
+}
+
+.agent-delivery__actions {
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+.studio-agent-result .studio-event-list {
+	min-width: 0;
+	overscroll-behavior: contain;
+	scrollbar-gutter: stable;
+}
+
+.studio-agent-result .studio-event-list article,
+.studio-agent-result .studio-event-list pre {
+	min-width: 0;
+	max-width: 100%;
+}
+
+.studio-agent-result .studio-event-list pre {
+	overflow: auto;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
 @media (max-width: 720px) {
-	.agent-task-columns {
+	.agent-task-columns,
+	.agent-task-profile__options,
+	.agent-material-list__meta,
+	.agent-aime-budget__grid {
 		grid-template-columns: 1fr;
+	}
+
+	.agent-delivery__actions {
+		justify-content: flex-start;
+	}
+
+	.agent-task-actions {
+		width: 100%;
+		justify-content: stretch;
+	}
+
+	.agent-task-actions .workspace-button,
+	.agent-result-action,
+	.studio-run-actions .workspace-button {
+		min-width: 0;
 	}
 }
