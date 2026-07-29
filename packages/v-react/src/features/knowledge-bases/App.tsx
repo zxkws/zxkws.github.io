@@ -13,6 +13,8 @@ import './styles.css';
 
 type WorkspaceTab = 'documents' | 'retrieval' | 'settings';
 
+const REINDEX_BATCH_SIZE = 10;
+
 const defaultConfig: KnowledgeBaseConfig = {
   chunkMode: 'recursive',
   maxCharacters: 1400,
@@ -399,6 +401,7 @@ function DocumentsPanel({
   const [textForm, setTextForm] = useState({ title: '', content: '' });
   const [editingDocument, setEditingDocument] = useState<KnowledgeDocument | null>(null);
   const [chunkDocument, setChunkDocument] = useState<KnowledgeDocument | null>(null);
+  const [batching, setBatching] = useState(false);
 
   const filtered = useMemo(
     () =>
@@ -468,15 +471,46 @@ function DocumentsPanel({
   };
 
   const batch = async (action: BatchDocumentAction, documentIds = selected) => {
-    if (!documentIds.length) return;
+    if (!documentIds.length || batching) return;
     if (action === 'delete' && !window.confirm(`删除选中的 ${documentIds.length} 个文档？`)) return;
+    setBatching(true);
     onStatus('');
+    let operationError = '';
     try {
-      await knowledgeApi.batchDocuments(base.id, documentIds, action);
+      const uniqueDocumentIds = [...new Set(documentIds)];
+      if (action === 'reindex') {
+        const batchCount = Math.ceil(uniqueDocumentIds.length / REINDEX_BATCH_SIZE);
+        let completed = 0;
+        for (let offset = 0; offset < uniqueDocumentIds.length; offset += REINDEX_BATCH_SIZE) {
+          const currentBatch = uniqueDocumentIds.slice(offset, offset + REINDEX_BATCH_SIZE);
+          const batchNumber = Math.floor(offset / REINDEX_BATCH_SIZE) + 1;
+          onStatus(`正在重建第 ${batchNumber}/${batchCount} 批，已完成 ${completed}/${uniqueDocumentIds.length}`);
+          try {
+            await knowledgeApi.batchDocuments(base.id, currentBatch, action);
+          } catch (error) {
+            throw new Error(
+              `重建失败：第 ${batchNumber}/${batchCount} 批请求失败，已完成 ${completed}/${uniqueDocumentIds.length}。${errorText(error)}`,
+            );
+          }
+          completed += currentBatch.length;
+        }
+        onStatus(`重建完成：${completed}/${uniqueDocumentIds.length}`);
+      } else {
+        await knowledgeApi.batchDocuments(base.id, uniqueDocumentIds, action);
+      }
       setSelected([]);
-      await onRefresh();
     } catch (error) {
-      onStatus(errorText(error));
+      operationError = errorText(error);
+      onStatus(operationError);
+    } finally {
+      try {
+        await onRefresh();
+      } catch (error) {
+        const refreshError = `刷新文档列表失败：${errorText(error)}`;
+        onStatus(operationError ? `${operationError}\n${refreshError}` : refreshError);
+      } finally {
+        setBatching(false);
+      }
     }
   };
 
@@ -558,14 +592,14 @@ function DocumentsPanel({
             <option value="ready">ready</option>
             <option value="failed">failed</option>
           </select>
-          <button onClick={() => void onRefresh()} disabled={loading}>
+          <button onClick={() => void onRefresh()} disabled={loading || batching}>
             {loading ? '刷新中…' : '刷新'}
           </button>
         </div>
         <div className="knowledge-batch-actions">
           <span>已选 {selected.length}</span>
           <button
-            disabled={!documents.length}
+            disabled={!documents.length || batching}
             onClick={() =>
               void batch(
                 'reindex',
@@ -575,16 +609,20 @@ function DocumentsPanel({
           >
             重建全部
           </button>
-          <button disabled={!selected.length} onClick={() => void batch('enable')}>
+          <button disabled={!selected.length || batching} onClick={() => void batch('enable')}>
             启用
           </button>
-          <button disabled={!selected.length} onClick={() => void batch('disable')}>
+          <button disabled={!selected.length || batching} onClick={() => void batch('disable')}>
             停用
           </button>
-          <button disabled={!selected.length} onClick={() => void batch('reindex')}>
+          <button disabled={!selected.length || batching} onClick={() => void batch('reindex')}>
             重建
           </button>
-          <button className="knowledge-danger-link" disabled={!selected.length} onClick={() => void batch('delete')}>
+          <button
+            className="knowledge-danger-link"
+            disabled={!selected.length || batching}
+            onClick={() => void batch('delete')}
+          >
             删除
           </button>
         </div>
@@ -675,7 +713,9 @@ function DocumentsPanel({
                         编辑
                       </button>
                     )}
-                    <button onClick={() => void batch('reindex', [item.id])}>重建</button>
+                    <button disabled={batching} onClick={() => void batch('reindex', [item.id])}>
+                      重建
+                    </button>
                   </div>
                 </td>
               </tr>
