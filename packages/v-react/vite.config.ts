@@ -14,7 +14,9 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       htmlPlugin({
-        input: './src/main.tsx',
+        // 绝对路径让 dev 注入 /src/main.tsx（绝对 URL），
+        // 否则二级路由（如 /agent-workspace/inbox）刷新时入口脚本相对解析失败。
+        input: resolve(__dirname, 'src/main.tsx'),
         preserveEntrySignatures: 'exports-only',
       }),
     ],

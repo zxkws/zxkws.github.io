@@ -1,0 +1,2493 @@
+.aw-workspace {
+  --aw-sidebar-width: 236px;
+  --aw-inspector-width: 340px;
+  --aw-topbar-height: 56px;
+  --aw-mobile-nav-height: 64px;
+  --aw-control-height: 34px;
+  --aw-code-bg: var(--color-surface-2);
+  --aw-added-bg: color-mix(in srgb, var(--color-success) 12%, transparent);
+  --aw-removed-bg: color-mix(in srgb, var(--color-danger) 11%, transparent);
+  --aw-warning-bg: color-mix(in srgb, var(--color-warning) 11%, transparent);
+  --aw-info-bg: color-mix(in srgb, var(--color-info) 10%, transparent);
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-canvas);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
+.aw-workspace,
+.aw-workspace * {
+  box-sizing: border-box;
+}
+
+.aw-workspace :where(button, input, select, textarea) {
+  margin: 0;
+  font: inherit;
+}
+
+.aw-workspace :where(button, a, input, select, textarea, [role='button']) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.aw-workspace :where(button, [role='button']) {
+  touch-action: manipulation;
+}
+
+.aw-workspace :where(a) {
+  color: inherit;
+}
+
+.aw-workspace :where(p, h1, h2, h3, h4, pre) {
+  margin-block: 0;
+}
+
+.aw-workspace :where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.aw-workspace :where(.aw-content, .aw-message-list, .aw-task-board, .aw-run-list, .aw-run-detail, .aw-inspector) {
+  scrollbar-color: var(--color-border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+.aw-workspace
+  :where(
+    .aw-content,
+    .aw-message-list,
+    .aw-task-board,
+    .aw-run-list,
+    .aw-run-detail,
+    .aw-inspector
+  )::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.aw-workspace
+  :where(
+    .aw-content,
+    .aw-message-list,
+    .aw-task-board,
+    .aw-run-list,
+    .aw-run-detail,
+    .aw-inspector
+  )::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--color-border-strong);
+  background-clip: padding-box;
+}
+
+/* Application shell */
+
+.aw-workspace .aw-shell,
+.aw-workspace.aw-shell {
+  display: grid;
+  grid-template:
+    'sidebar main' minmax(0, 1fr)
+    / var(--aw-sidebar-width) minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.aw-workspace .aw-sidebar {
+  grid-area: sidebar;
+  z-index: 5;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid var(--color-divider);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-brand {
+  display: flex;
+  min-height: var(--aw-topbar-height);
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+  color: var(--color-fg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.aw-workspace .aw-brand :where(svg, img) {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+
+.aw-workspace .aw-brand-mark {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  place-items: center;
+  border: 1px solid var(--color-primary-deep);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+}
+
+.aw-workspace .aw-brand > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.aw-workspace .aw-brand :where(strong, small) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aw-workspace .aw-brand small {
+  color: var(--color-fg-tertiary);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: var(--weight-regular);
+}
+
+.aw-workspace .aw-primary-nav {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-2);
+}
+
+.aw-workspace .aw-nav-item {
+  display: flex;
+  width: 100%;
+  min-height: 38px;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-fg-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-sm);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.aw-workspace .aw-nav-item :where(svg) {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+}
+
+.aw-workspace .aw-nav-item:hover {
+  background: var(--color-surface-2);
+  color: var(--color-fg);
+}
+
+.aw-workspace :is(.aw-nav-item--active, .aw-nav-item[aria-current='page']) {
+  border-color: color-mix(in srgb, var(--color-primary-deep) 34%, var(--color-border));
+  background: var(--color-primary-muted);
+  color: var(--color-fg);
+}
+
+.aw-workspace .aw-sidebar-footer {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-top: 1px solid var(--color-divider);
+  color: var(--color-fg-tertiary);
+  font-size: var(--text-xs);
+}
+
+.aw-workspace .aw-main {
+  grid-area: main;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-canvas);
+}
+
+.aw-workspace .aw-topbar {
+  z-index: 4;
+  display: flex;
+  min-height: var(--aw-topbar-height);
+  flex: 0 0 var(--aw-topbar-height);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 0 var(--space-5);
+  border-bottom: 1px solid var(--color-divider);
+  background: color-mix(in srgb, var(--color-surface) 96%, transparent);
+}
+
+.aw-workspace .aw-topbar-context {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-2);
+  overflow: hidden;
+  color: var(--color-fg-secondary);
+}
+
+.aw-workspace .aw-topbar-context > * {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aw-workspace .aw-topbar-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.aw-workspace .aw-content {
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.aw-workspace .aw-page {
+  display: flex;
+  width: min(100%, 1480px);
+  min-height: 100%;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin: 0 auto;
+  padding: var(--space-5);
+}
+
+.aw-workspace .aw-page-header {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.aw-workspace .aw-page-heading {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-1);
+}
+
+.aw-workspace .aw-page-title {
+  color: var(--color-fg);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-xl);
+  letter-spacing: var(--tracking-tight);
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace .aw-page-subtitle {
+  max-width: 78ch;
+  color: var(--color-fg-tertiary);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace .aw-page-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.aw-workspace .aw-project-tabs {
+  display: flex;
+  min-width: 0;
+  gap: var(--space-1);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-divider);
+  scrollbar-width: none;
+}
+
+.aw-workspace .aw-project-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.aw-workspace .aw-project-tab {
+  position: relative;
+  display: inline-flex;
+  min-height: 38px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--color-fg-tertiary);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.aw-workspace .aw-project-tab::after {
+  position: absolute;
+  right: var(--space-3);
+  bottom: -1px;
+  left: var(--space-3);
+  height: 2px;
+  background: transparent;
+  content: '';
+}
+
+.aw-workspace .aw-project-tab:hover {
+  color: var(--color-fg);
+}
+
+.aw-workspace :is(.aw-project-tab--active, .aw-project-tab[aria-current='page']) {
+  color: var(--color-fg);
+}
+
+.aw-workspace :is(.aw-project-tab--active, .aw-project-tab[aria-current='page'])::after {
+  background: var(--color-primary);
+}
+
+.aw-workspace .aw-inspector {
+  z-index: 6;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  align-content: start;
+  gap: var(--space-3);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-4);
+  border-left: 1px solid var(--color-divider);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-inspector :where(h2, h3) {
+  color: var(--color-fg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-sm);
+}
+
+.aw-workspace .aw-inspector > .aw-message {
+  width: 100%;
+}
+
+.aw-workspace .aw-inspector-close,
+.aw-workspace .aw-inspector-backdrop {
+  display: none;
+}
+
+.aw-workspace .aw-mobile-nav {
+  display: none;
+}
+
+/* Common content primitives */
+
+.aw-workspace .aw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-4);
+}
+
+.aw-workspace .aw-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.aw-workspace .aw-page > .aw-card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.aw-workspace :is(.aw-card[data-interactive='true'], button.aw-card, a.aw-card) {
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.aw-workspace :is(.aw-card[data-interactive='true'], button.aw-card, a.aw-card):hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.aw-workspace .aw-card-header {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.aw-workspace .aw-card-title {
+  min-width: 0;
+  color: var(--color-fg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace .aw-card-header :where(h2, h3) {
+  min-width: 0;
+  color: var(--color-fg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-sm);
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace .aw-card-header .aw-card-header {
+  flex: 1;
+  justify-content: flex-start;
+  padding: 0;
+  border: 0;
+}
+
+.aw-workspace .aw-card-body {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.aw-workspace .aw-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-divider);
+  color: var(--color-fg-tertiary);
+}
+
+.aw-workspace .aw-list {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aw-workspace .aw-list-item {
+  min-width: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-fg-secondary);
+}
+
+.aw-workspace .aw-list-item--active {
+  border-color: color-mix(in srgb, var(--color-primary-deep) 42%, var(--color-border));
+  background: var(--color-primary-muted);
+  color: var(--color-fg);
+}
+
+.aw-workspace .aw-toolbar,
+.aw-workspace .aw-filters {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.aw-workspace .aw-tabs {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  min-height: var(--aw-control-height);
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  padding: 3px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  scrollbar-width: none;
+}
+
+.aw-workspace .aw-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.aw-workspace .aw-tab {
+  display: inline-flex;
+  min-height: 28px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-fg-tertiary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.aw-workspace .aw-tab:hover {
+  color: var(--color-fg);
+}
+
+.aw-workspace :is(.aw-tab--active, .aw-tab[aria-selected='true']) {
+  background: var(--color-surface);
+  color: var(--color-fg);
+  box-shadow: var(--shadow-xs);
+}
+
+.aw-workspace .aw-filters {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-field {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  color: var(--color-fg-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+}
+
+.aw-workspace .aw-field--inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--aw-control-height);
+  white-space: nowrap;
+}
+
+.aw-workspace .aw-field--grow {
+  min-width: min(100%, 280px);
+  flex: 1 1 420px;
+}
+
+.aw-workspace .aw-field--inline input:is([type='checkbox'], [type='radio']) {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary-deep);
+}
+
+.aw-workspace :is(.aw-input, .aw-select, .aw-textarea) {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.aw-workspace :is(.aw-input, .aw-select) {
+  min-height: var(--aw-control-height);
+  padding: 6px 10px;
+}
+
+.aw-workspace .aw-textarea {
+  min-height: 96px;
+  padding: var(--space-3);
+  line-height: var(--leading-sm);
+  resize: vertical;
+}
+
+.aw-workspace :is(.aw-input, .aw-select, .aw-textarea)::placeholder {
+  color: var(--color-fg-disabled);
+}
+
+.aw-workspace :is(.aw-input, .aw-select, .aw-textarea):hover {
+  border-color: var(--color-border-strong);
+}
+
+.aw-workspace :is(.aw-input, .aw-select, .aw-textarea):focus {
+  border-color: var(--color-primary-deep);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  outline: none;
+}
+
+.aw-workspace :is(.aw-input, .aw-select, .aw-textarea):disabled {
+  background: var(--color-surface-2);
+  color: var(--color-fg-disabled);
+  cursor: not-allowed;
+}
+
+.aw-workspace .aw-button {
+  display: inline-flex;
+  min-height: var(--aw-control-height);
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.aw-workspace .aw-button:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-2);
+}
+
+.aw-workspace .aw-button:active:not(:disabled) {
+  background: var(--color-surface-3);
+}
+
+.aw-workspace .aw-button:disabled {
+  color: var(--color-fg-disabled);
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.aw-workspace .aw-button--primary {
+  border-color: var(--color-primary-deep);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.aw-workspace .aw-button--primary:hover:not(:disabled) {
+  border-color: var(--color-primary-active);
+  background: var(--color-primary-hover);
+}
+
+.aw-workspace .aw-button--danger {
+  border-color: color-mix(in srgb, var(--color-danger) 62%, var(--color-border));
+  background: var(--color-danger);
+  color: var(--color-surface);
+}
+
+.aw-workspace .aw-button--danger:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 88%, var(--color-fg));
+}
+
+.aw-workspace .aw-button--ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-fg-secondary);
+}
+
+.aw-workspace .aw-button--ghost:hover:not(:disabled) {
+  border-color: transparent;
+  background: var(--color-surface-2);
+  color: var(--color-fg);
+}
+
+.aw-workspace .aw-icon-button {
+  display: inline-grid;
+  width: var(--aw-control-height);
+  height: var(--aw-control-height);
+  flex: 0 0 var(--aw-control-height);
+  place-items: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-fg-tertiary);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.aw-workspace .aw-icon-button:hover:not(:disabled) {
+  border-color: var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-fg);
+}
+
+.aw-workspace .aw-icon-button :where(svg) {
+  width: 17px;
+  height: 17px;
+}
+
+.aw-workspace :is(.aw-badge, .aw-status) {
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 22px;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  color: var(--color-fg-secondary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-medium);
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace .aw-status::before {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+
+.aw-workspace
+  :is(.aw-badge, .aw-status):is(
+    [data-status='active'],
+    [data-status='done'],
+    [data-status='succeeded'],
+    [data-status='online'],
+    [data-status='idle'],
+    [data-status='ready'],
+    [data-status='delivered']
+  ) {
+  border-color: color-mix(in srgb, var(--color-success) 42%, var(--color-border));
+  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  color: var(--color-success);
+}
+
+.aw-workspace
+  :is(.aw-badge, .aw-status):is(
+    [data-status='running'],
+    [data-status='in_progress'],
+    [data-status='busy'],
+    [data-status='queued']
+  ) {
+  border-color: color-mix(in srgb, var(--color-info) 42%, var(--color-border));
+  background: var(--aw-info-bg);
+  color: var(--color-info);
+}
+
+.aw-workspace
+  :is(.aw-badge, .aw-status):is(
+    [data-status='waiting_input'],
+    [data-status='in_review'],
+    [data-status='draining'],
+    [data-status='pending'],
+    [data-status='partial'],
+    [data-status='outcome_unknown'],
+    [data-status='held'],
+    [data-status='warning'],
+    [data-status='reset_required']
+  ) {
+  border-color: color-mix(in srgb, var(--color-warning) 44%, var(--color-border));
+  background: var(--aw-warning-bg);
+  color: var(--color-warning);
+}
+
+.aw-workspace
+  :is(.aw-badge, .aw-status):is(
+    [data-status='blocked'],
+    [data-status='failed'],
+    [data-status='error'],
+    [data-status='revoked'],
+    [data-status='unavailable']
+  ) {
+  border-color: color-mix(in srgb, var(--color-danger) 44%, var(--color-border));
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+}
+
+.aw-workspace
+  :is(.aw-badge, .aw-status):is(
+    [data-status='cancelled'],
+    [data-status='interrupted'],
+    [data-status='offline'],
+    [data-status='disabled'],
+    [data-status='archived'],
+    [data-status='todo'],
+    [data-status='draft']
+  ) {
+  border-color: var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-fg-tertiary);
+}
+
+.aw-workspace .aw-avatar {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface-3);
+  color: var(--color-fg-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.aw-workspace .aw-avatar :where(img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.aw-workspace .aw-meta {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-fg-tertiary);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace .aw-kv {
+  display: grid;
+  min-width: 0;
+  gap: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-kv-row {
+  display: grid;
+  grid-template-columns: minmax(112px, 0.38fr) minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: 9px var(--space-3);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.aw-workspace .aw-kv-row:last-child {
+  border-bottom: 0;
+}
+
+.aw-workspace .aw-kv-row > :first-child {
+  color: var(--color-fg-tertiary);
+  font-size: var(--text-xs);
+}
+
+.aw-workspace .aw-kv-row > :last-child {
+  min-width: 0;
+  color: var(--color-fg);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.aw-workspace .aw-raw {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--aw-code-bg);
+  color: var(--color-fg-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  tab-size: 2;
+  white-space: pre-wrap;
+}
+
+.aw-workspace .aw-link {
+  border-radius: 2px;
+  color: var(--color-info);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 44%, transparent);
+  text-underline-offset: 3px;
+}
+
+.aw-workspace .aw-link:hover {
+  text-decoration-color: currentColor;
+}
+
+.aw-workspace .aw-divider {
+  width: 100%;
+  height: 1px;
+  border: 0;
+  background: var(--color-divider);
+}
+
+.aw-workspace .aw-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-info) 38%, var(--color-border));
+  border-radius: var(--radius-md);
+  background: var(--aw-info-bg);
+  color: var(--color-fg-secondary);
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace .aw-banner--warning {
+  border-color: color-mix(in srgb, var(--color-warning) 42%, var(--color-border));
+  background: var(--aw-warning-bg);
+}
+
+.aw-workspace .aw-banner--danger {
+  border-color: color-mix(in srgb, var(--color-danger) 42%, var(--color-border));
+  background: var(--color-danger-muted);
+}
+
+.aw-workspace :is(.aw-loading, .aw-empty, .aw-error) {
+  display: grid;
+  min-height: 160px;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-fg-tertiary);
+  text-align: center;
+}
+
+.aw-loading:not(.aw-workspace *),
+.aw-error:not(.aw-workspace *) {
+  display: grid;
+  width: 100%;
+  min-height: 320px;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
+  color: var(--color-fg-tertiary);
+  font-family: var(--font-sans);
+  text-align: center;
+}
+
+.aw-workspace .aw-loading::before {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--spinner-track);
+  border-top-color: var(--spinner-head);
+  border-radius: 50%;
+  animation: aw-spin 0.72s linear infinite;
+  content: '';
+}
+
+.aw-loading:not(.aw-workspace *)::before {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--spinner-track);
+  border-top-color: var(--spinner-head);
+  border-radius: 50%;
+  animation: aw-spin 0.72s linear infinite;
+  content: '';
+}
+
+.aw-workspace .aw-error {
+  border-color: color-mix(in srgb, var(--color-danger) 38%, var(--color-border));
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+}
+
+.aw-error:not(.aw-workspace *) {
+  border-color: color-mix(in srgb, var(--color-danger) 38%, var(--color-border));
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+}
+
+.aw-error:not(.aw-workspace *) .aw-raw {
+  display: block;
+  max-width: min(100%, 720px);
+  overflow: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-fg-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  white-space: pre-wrap;
+}
+
+.aw-workspace .aw-table-wrap {
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: var(--text-xs);
+}
+
+.aw-workspace .aw-table :where(th, td) {
+  padding: 9px var(--space-3);
+  border-bottom: 1px solid var(--color-divider);
+  color: var(--color-fg-secondary);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace .aw-table th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  background: var(--color-surface-2);
+  color: var(--color-fg-tertiary);
+  font-weight: var(--weight-semibold);
+}
+
+.aw-workspace .aw-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.aw-workspace .aw-table tbody tr:hover td {
+  background: var(--color-surface-2);
+}
+
+.aw-workspace .aw-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+/* Chat and threads */
+
+.aw-workspace .aw-chat {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-message-list {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow-y: auto;
+  padding: var(--space-4);
+  overscroll-behavior: contain;
+  scroll-padding-block: var(--space-4);
+}
+
+.aw-workspace .aw-message {
+  display: grid;
+  width: min(100%, 820px);
+  min-width: 0;
+  align-self: flex-start;
+  gap: 7px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.aw-workspace .aw-message[data-actor-type='owner'] {
+  align-self: flex-end;
+  border-color: color-mix(in srgb, var(--color-primary-deep) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary-muted) 48%, var(--color-surface));
+}
+
+.aw-workspace .aw-message--agent {
+  border-left: 3px solid var(--color-primary);
+}
+
+.aw-workspace .aw-message[data-status='held'] {
+  border-color: color-mix(in srgb, var(--color-warning) 44%, var(--color-border));
+  background: var(--aw-warning-bg);
+}
+
+.aw-workspace .aw-message-header {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-3);
+}
+
+.aw-workspace .aw-message-header > :last-child {
+  min-width: 0;
+  flex: 1;
+}
+
+.aw-workspace .aw-message-author {
+  min-width: 0;
+  color: var(--color-fg);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace .aw-message-body {
+  min-width: 0;
+  color: var(--color-fg);
+  font-size: var(--text-sm);
+  line-height: 1.58;
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace .aw-message-body :where(p, ul, ol, blockquote, pre, table) + :where(p, ul, ol, blockquote, pre, table) {
+  margin-top: var(--space-3);
+}
+
+.aw-workspace .aw-message-body :where(ul, ol) {
+  padding-left: var(--space-5);
+}
+
+.aw-workspace .aw-message-body :where(code) {
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--aw-code-bg);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+.aw-workspace .aw-message-body :where(pre) {
+  max-width: 100%;
+  overflow: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--aw-code-bg);
+}
+
+.aw-workspace .aw-message-body pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.aw-workspace .aw-message-body :where(blockquote) {
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--color-border-strong);
+  color: var(--color-fg-secondary);
+}
+
+.aw-workspace .aw-message-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-fg-tertiary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.aw-workspace .aw-message-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  opacity: 0.55;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+.aw-workspace .aw-message-actions .aw-button {
+  min-height: 28px;
+  padding: 4px 8px;
+  font-size: var(--text-xs);
+}
+
+.aw-workspace .aw-message:hover .aw-message-actions,
+.aw-workspace .aw-message:focus-within .aw-message-actions {
+  opacity: 1;
+}
+
+.aw-workspace .aw-composer {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-top: 1px solid var(--color-divider);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-composer .aw-textarea {
+  min-height: 76px;
+  max-height: 240px;
+}
+
+.aw-workspace .aw-composer-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.aw-workspace .aw-composer-row > .aw-field:first-child {
+  flex: 1 1 220px;
+}
+
+.aw-workspace .aw-thread-panel {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  border-top: 1px solid var(--color-divider);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-thread-panel > .aw-message {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--color-border-strong);
+  box-shadow: none;
+}
+
+/* Tasks */
+
+.aw-workspace .aw-task-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--aw-inspector-width);
+  min-width: 0;
+  min-height: 0;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.aw-workspace .aw-task-board {
+  display: grid;
+  grid-auto-columns: minmax(272px, 1fr);
+  grid-auto-flow: column;
+  min-width: 0;
+  min-height: 0;
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+  scroll-snap-type: x proximity;
+}
+
+.aw-workspace .aw-task-column {
+  display: flex;
+  min-width: 0;
+  min-height: 220px;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  scroll-snap-align: start;
+}
+
+.aw-workspace .aw-task-column-header {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-divider);
+  color: var(--color-fg-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.aw-workspace .aw-task-list {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow-y: auto;
+  padding: var(--space-2);
+}
+
+.aw-workspace .aw-task-card {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  text-align: left;
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.aw-workspace .aw-task-card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.aw-workspace .aw-task-card:is([data-status='in_progress'], [data-status='running']) {
+  border-left-color: var(--color-info);
+}
+
+.aw-workspace .aw-task-card:is([data-status='blocked'], [data-status='failed']) {
+  border-left-color: var(--color-danger);
+}
+
+.aw-workspace .aw-task-card:is([data-status='in_review'], [data-status='waiting_input']) {
+  border-left-color: var(--color-warning);
+}
+
+.aw-workspace .aw-task-card:is([data-status='done'], [data-status='succeeded']) {
+  border-left-color: var(--color-success);
+}
+
+.aw-workspace .aw-task-card[data-priority='urgent'] {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-danger) 30%, transparent);
+}
+
+.aw-workspace .aw-task-detail {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+/* Runs, trace, changes and delivery */
+
+.aw-workspace .aw-run-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--aw-inspector-width);
+  min-width: 0;
+  min-height: 520px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-run-list {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--color-divider);
+  background: var(--color-surface-2);
+}
+
+.aw-workspace .aw-page > .aw-run-list {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.aw-workspace .aw-run-list .aw-list {
+  gap: 0;
+}
+
+.aw-workspace .aw-run-list .aw-list-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  border-width: 0 0 1px;
+  border-radius: 0;
+  background: transparent;
+}
+
+.aw-workspace .aw-run-list .aw-list-item--active {
+  border-left: 3px solid var(--color-primary);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-run-list .aw-list-item > :last-child {
+  display: grid;
+  flex: 0 0 auto;
+  justify-items: end;
+  gap: 4px;
+  color: var(--color-fg-tertiary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.aw-workspace .aw-page > .aw-list .aw-list-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.aw-workspace .aw-page > .aw-list .aw-list-item > :last-child {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.aw-workspace .aw-run-detail {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
+}
+
+.aw-workspace .aw-run-layout > .aw-run-detail {
+  align-content: start;
+}
+
+.aw-workspace .aw-run-event-list {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 0;
+  margin: 0;
+  padding: 0 0 0 var(--space-3);
+  list-style: none;
+}
+
+.aw-workspace .aw-run-event-list::before {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 18px;
+  width: 1px;
+  background: var(--color-border);
+  content: '';
+}
+
+.aw-workspace .aw-run-event {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 12px minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: 8px 0;
+  color: var(--color-fg-secondary);
+}
+
+.aw-workspace .aw-run-event > * {
+  grid-column: 2;
+}
+
+.aw-workspace .aw-run-event::before {
+  z-index: 1;
+  width: 9px;
+  height: 9px;
+  margin-top: 5px;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  background: var(--color-border-strong);
+  box-shadow: 0 0 0 1px var(--color-border);
+  content: '';
+}
+
+.aw-workspace .aw-run-event:is([data-level='warning'], [data-status='warning'], [data-status='waiting_input'])::before {
+  background: var(--color-warning);
+}
+
+.aw-workspace .aw-run-event:is([data-level='error'], [data-status='error'], [data-status='failed'])::before {
+  background: var(--color-danger);
+}
+
+.aw-workspace .aw-run-event:is([data-status='succeeded'], [data-status='done'])::before {
+  background: var(--color-success);
+}
+
+.aw-workspace .aw-log {
+  max-width: 100%;
+  min-height: 160px;
+  overflow: auto;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--aw-code-bg);
+  color: var(--color-fg-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.55;
+  tab-size: 2;
+  white-space: pre;
+}
+
+.aw-workspace .aw-context-snapshot {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-trace {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding: var(--space-2) 2px;
+}
+
+.aw-workspace .aw-trace-node {
+  display: inline-flex;
+  min-width: 116px;
+  min-height: 38px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-fg-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace .aw-trace-node[data-status='running'] {
+  border-color: var(--color-info);
+  background: var(--aw-info-bg);
+}
+
+.aw-workspace .aw-trace-node[data-status='succeeded'] {
+  border-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 9%, transparent);
+}
+
+.aw-workspace .aw-trace-node[data-status='failed'] {
+  border-color: var(--color-danger);
+  background: var(--color-danger-muted);
+}
+
+.aw-workspace .aw-trace-arrow {
+  flex: 0 0 auto;
+  color: var(--color-fg-tertiary);
+  font-family: var(--font-mono);
+}
+
+.aw-workspace .aw-change-set,
+.aw-workspace .aw-delivery {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-4);
+}
+
+.aw-workspace .aw-repository-change {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-repository-change > :where(h3, h4) {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-divider);
+  color: var(--color-fg-secondary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.aw-workspace .aw-repository-change > details {
+  border-top: 1px solid var(--color-divider);
+}
+
+.aw-workspace .aw-repository-change details > summary {
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-fg-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.aw-workspace .aw-repository-change details > :not(summary) {
+  margin: 0 var(--space-4) var(--space-4);
+}
+
+.aw-workspace .aw-file-list {
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aw-workspace .aw-file-list > * {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 8px var(--space-3);
+  border-bottom: 1px solid var(--color-divider);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace .aw-file-list > *:last-child {
+  border-bottom: 0;
+}
+
+.aw-workspace .aw-file-list > details {
+  display: block;
+  padding: 0;
+}
+
+.aw-workspace .aw-file-list > details > summary {
+  padding: 8px var(--space-3);
+}
+
+.aw-workspace .aw-file-list > details > .aw-log {
+  width: calc(100% - var(--space-6));
+  margin: 0 var(--space-3) var(--space-3);
+}
+
+.aw-workspace .aw-diff {
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--aw-code-bg);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.55;
+  tab-size: 2;
+}
+
+.aw-workspace .aw-diff-line {
+  display: grid;
+  grid-template-columns: minmax(36px, auto) minmax(0, 1fr);
+  min-width: max-content;
+}
+
+.aw-workspace .aw-diff-gutter {
+  padding: 0 var(--space-2);
+  border-right: 1px solid var(--color-divider);
+  color: var(--color-fg-tertiary);
+  text-align: right;
+  user-select: none;
+}
+
+.aw-workspace .aw-diff-code {
+  padding: 0 var(--space-3);
+  color: var(--color-fg-secondary);
+  white-space: pre;
+}
+
+.aw-workspace :is(.aw-diff-line, .aw-raw)[data-change='add'] {
+  background: var(--aw-added-bg);
+}
+
+.aw-workspace :is(.aw-diff-line, .aw-raw)[data-change='delete'] {
+  background: var(--aw-removed-bg);
+}
+
+.aw-workspace :is(.aw-diff-line, .aw-raw)[data-change='hunk'] {
+  background: var(--aw-info-bg);
+  color: var(--color-info);
+}
+
+.aw-workspace .aw-delivery-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.aw-workspace .aw-delivery-step > * {
+  grid-column: 2;
+}
+
+.aw-workspace .aw-delivery-step::before {
+  width: 9px;
+  height: 9px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--color-border-strong);
+  content: '';
+}
+
+.aw-workspace .aw-delivery-step[data-status='succeeded']::before {
+  background: var(--color-success);
+}
+
+.aw-workspace
+  .aw-delivery-step:is([data-status='partial'], [data-status='pending'], [data-status='outcome_unknown'])::before {
+  background: var(--color-warning);
+}
+
+.aw-workspace .aw-delivery-step[data-status='failed']::before {
+  background: var(--color-danger);
+}
+
+.aw-workspace :is(.aw-badge, .aw-status):is([data-status='add'], [data-status='true']) {
+  border-color: color-mix(in srgb, var(--color-success) 42%, var(--color-border));
+  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  color: var(--color-success);
+}
+
+.aw-workspace :is(.aw-badge, .aw-status)[data-status='modify'] {
+  border-color: color-mix(in srgb, var(--color-warning) 42%, var(--color-border));
+  background: var(--aw-warning-bg);
+  color: var(--color-warning);
+}
+
+.aw-workspace :is(.aw-badge, .aw-status)[data-status='delete'] {
+  border-color: color-mix(in srgb, var(--color-danger) 42%, var(--color-border));
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+}
+
+/* Entity cards and activity lists */
+
+.aw-workspace :is(.aw-agent-grid, .aw-computer-grid) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: var(--space-4);
+}
+
+.aw-workspace :is(.aw-agent-card, .aw-computer-card, .aw-repo-card) {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.aw-workspace :is(.aw-agent-card, .aw-computer-card, .aw-repo-card):hover {
+  border-color: var(--color-border-strong);
+}
+
+.aw-workspace
+  :is(
+    .aw-agent-card,
+    .aw-computer-card,
+    .aw-repo-card,
+    .aw-memory-item,
+    .aw-automation-item,
+    .aw-search-result,
+    .aw-inbox-item
+  )
+  > .aw-card-header {
+  padding: 0 0 var(--space-3);
+}
+
+.aw-workspace .aw-detail-grid > .aw-card {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.aw-workspace .aw-detail-grid > .aw-card > :where(h2, h3),
+.aw-workspace .aw-page > .aw-card > :where(h2, h3),
+.aw-workspace .aw-settings-section > h2,
+.aw-workspace .aw-search-result > h2 {
+  color: var(--color-fg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-sm);
+}
+
+.aw-workspace :is(.aw-card > .aw-list-item, .aw-card .aw-list > .aw-list-item) {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.aw-workspace .aw-card > .aw-message-list {
+  max-height: 520px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+}
+
+.aw-workspace
+  :is(.aw-search-results, .aw-memory-list, .aw-automation-list, .aw-repo-list, .aw-inbox-list, .aw-activity-list) {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aw-workspace :is(.aw-search-result, .aw-memory-item, .aw-automation-item, .aw-inbox-item, .aw-activity-item) {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-fg-secondary);
+  overflow-wrap: anywhere;
+}
+
+.aw-workspace :is(.aw-search-result, .aw-inbox-item, .aw-activity-item):is(button, a, [data-interactive='true']) {
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.aw-workspace :is(.aw-search-result, .aw-inbox-item, .aw-activity-item):is(button, a, [data-interactive='true']):hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-2);
+}
+
+.aw-workspace .aw-inbox-item[data-read='false'] {
+  border-left: 3px solid var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary-muted) 34%, var(--color-surface));
+}
+
+.aw-workspace .aw-inbox-item > .aw-card-header,
+.aw-workspace .aw-activity-item > .aw-card-header {
+  padding: 0 0 var(--space-2);
+}
+
+.aw-workspace .aw-inbox-item:is([data-status='failed'], [data-status='blocked'], [data-status='error']) {
+  border-left-color: var(--color-danger);
+}
+
+.aw-workspace .aw-activity-item {
+  position: relative;
+  padding-left: calc(var(--space-4) + 12px);
+  border-color: transparent;
+  border-bottom-color: var(--color-divider);
+  border-radius: 0;
+  background: transparent;
+}
+
+.aw-workspace .aw-activity-item::before {
+  position: absolute;
+  top: 18px;
+  left: var(--space-3);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-border-strong);
+  content: '';
+}
+
+.aw-workspace .aw-settings-section {
+  display: grid;
+  width: min(100%, 760px);
+  min-width: 0;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+/* Dialogs, drawer backdrops and transient states */
+
+.aw-workspace .aw-dialog-backdrop,
+.aw-workspace .aw-inspector-backdrop {
+  position: fixed;
+  z-index: 900;
+  inset: 0;
+  border: 0;
+  background: rgb(0 0 0 / 48%);
+  backdrop-filter: blur(2px);
+  animation: aw-fade-in var(--duration-fast) var(--ease-standard);
+}
+
+.aw-workspace .aw-dialog {
+  position: fixed;
+  z-index: 910;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(760px, calc(100dvh - 32px));
+  gap: var(--space-4);
+  overflow: auto;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  box-shadow: var(--shadow-xl);
+  transform: translate(-50%, -50%);
+  animation: aw-dialog-in var(--duration-base) var(--ease-emphasized);
+}
+
+.aw-workspace .aw-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-divider);
+}
+
+.aw-workspace :is(.aw-dialog-backdrop, .aw-dialog, .aw-inspector-backdrop)[data-state='closed'] {
+  display: none;
+}
+
+.aw-workspace .aw-toast-region {
+  position: absolute;
+  z-index: 950;
+  top: calc(var(--aw-topbar-height) + var(--space-3));
+  right: var(--space-4);
+  display: grid;
+  width: min(380px, calc(100% - 32px));
+  gap: var(--space-2);
+  pointer-events: none;
+}
+
+.aw-workspace .aw-toast {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-left: 3px solid var(--color-info);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-fg-secondary);
+  box-shadow: var(--shadow-lg);
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+  animation: aw-toast-in var(--duration-base) var(--ease-emphasized);
+}
+
+.aw-workspace .aw-toast[data-status='succeeded'] {
+  border-left-color: var(--color-success);
+}
+
+.aw-workspace .aw-toast:is([data-status='failed'], [data-status='error']) {
+  border-left-color: var(--color-danger);
+}
+
+.aw-workspace .aw-toast:is([data-status='warning'], [data-status='outcome_unknown']) {
+  border-left-color: var(--color-warning);
+}
+
+.aw-workspace .aw-skeleton {
+  min-height: 16px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-2) 25%,
+    var(--color-surface-3) 50%,
+    var(--color-surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: aw-skeleton 1.4s ease-in-out infinite;
+}
+
+/* Medium screens: navigation remains visible; inspector becomes a drawer. */
+
+@media (max-width: 1279px) {
+  .aw-workspace {
+    --aw-sidebar-width: 216px;
+  }
+
+  .aw-workspace .aw-shell,
+  .aw-workspace.aw-shell {
+    grid-template:
+      'sidebar main' minmax(0, 1fr)
+      / var(--aw-sidebar-width) minmax(0, 1fr);
+  }
+
+  .aw-workspace .aw-inspector {
+    position: absolute;
+    z-index: 905;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(390px, calc(100% - var(--aw-sidebar-width)));
+    border-left: 1px solid var(--color-border-strong);
+    box-shadow: var(--shadow-xl);
+    visibility: hidden;
+    transform: translateX(100%);
+    transition:
+      transform var(--duration-base) var(--ease-emphasized),
+      visibility 0s linear var(--duration-base);
+  }
+
+  .aw-workspace .aw-inspector-backdrop {
+    display: block;
+  }
+
+  .aw-workspace .aw-inspector-close {
+    display: inline-flex;
+    width: auto;
+    justify-self: end;
+    padding-inline: var(--space-2);
+  }
+
+  .aw-workspace :is(.aw-task-layout, .aw-run-layout) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aw-workspace .aw-inspector:is(.aw-inspector--open, [data-open='true'], [aria-hidden='false']) {
+    visibility: visible;
+    transform: translateX(0);
+    transition-delay: 0s;
+  }
+
+  .aw-workspace .aw-page {
+    padding: var(--space-4);
+  }
+
+  .aw-workspace .aw-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Mobile: single content column, bottom navigation, full-screen overlays. */
+
+@media (max-width: 767px) {
+  .aw-workspace {
+    --aw-topbar-height: 52px;
+    --aw-mobile-nav-height: 64px;
+  }
+
+  .aw-workspace .aw-shell,
+  .aw-workspace.aw-shell {
+    display: block;
+    position: relative;
+    padding-bottom: calc(var(--aw-mobile-nav-height) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .aw-workspace .aw-sidebar {
+    position: absolute;
+    z-index: 920;
+    inset: 0 auto 0 0;
+    display: flex;
+    width: min(300px, 86%);
+    border-right-color: var(--color-border-strong);
+    box-shadow: var(--shadow-xl);
+    visibility: hidden;
+    transform: translateX(-100%);
+    transition:
+      transform var(--duration-base) var(--ease-emphasized),
+      visibility 0s linear var(--duration-base);
+  }
+
+  .aw-workspace .aw-sidebar:is(.aw-sidebar--open, [data-open='true'], [aria-hidden='false']) {
+    visibility: visible;
+    transform: translateX(0);
+    transition-delay: 0s;
+  }
+
+  .aw-workspace .aw-main {
+    width: 100%;
+    height: 100%;
+  }
+
+  .aw-workspace .aw-topbar {
+    padding: 0 var(--space-3);
+  }
+
+  .aw-workspace .aw-topbar-actions {
+    gap: var(--space-1);
+  }
+
+  .aw-workspace .aw-topbar-actions .aw-button:not(.aw-button--primary) {
+    padding-inline: var(--space-2);
+  }
+
+  .aw-workspace .aw-content {
+    scroll-padding-bottom: calc(var(--aw-mobile-nav-height) + var(--space-4));
+  }
+
+  .aw-workspace .aw-page {
+    gap: var(--space-4);
+    padding: var(--space-3);
+  }
+
+  .aw-workspace .aw-page-header {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .aw-workspace .aw-page-title {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .aw-workspace .aw-page-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .aw-workspace .aw-project-tabs {
+    margin-inline: calc(var(--space-3) * -1);
+    padding-inline: var(--space-3);
+  }
+
+  .aw-workspace .aw-inspector {
+    position: absolute;
+    z-index: 925;
+    inset: 0;
+    width: 100%;
+    border-left: 0;
+    box-shadow: none;
+  }
+
+  .aw-workspace .aw-mobile-nav {
+    position: absolute;
+    z-index: 800;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    min-height: calc(var(--aw-mobile-nav-height) + env(safe-area-inset-bottom, 0px));
+    grid-auto-columns: minmax(58px, 1fr);
+    grid-auto-flow: column;
+    align-items: stretch;
+    overflow-x: auto;
+    padding: 5px var(--space-2) env(safe-area-inset-bottom, 0px);
+    border-top: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-surface) 96%, transparent);
+    box-shadow: 0 -8px 24px color-mix(in srgb, var(--color-fg) 8%, transparent);
+    scrollbar-width: none;
+  }
+
+  .aw-workspace .aw-mobile-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .aw-workspace .aw-mobile-nav-item {
+    display: flex;
+    min-width: 58px;
+    min-height: 50px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 4px 6px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-fg-tertiary);
+    font-size: 10px;
+    font-weight: var(--weight-medium);
+    line-height: 1.15;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .aw-workspace
+    .aw-mobile-nav-item:is(
+      [aria-current='page'],
+      [data-active='true'],
+      .aw-mobile-nav-item--active,
+      .aw-nav-item--active
+    ) {
+    background: var(--color-primary-muted);
+    color: var(--color-fg);
+  }
+
+  .aw-workspace .aw-grid,
+  .aw-workspace :is(.aw-agent-grid, .aw-computer-grid),
+  .aw-workspace .aw-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .aw-workspace .aw-card-header,
+  .aw-workspace .aw-card-footer {
+    align-items: flex-start;
+  }
+
+  .aw-workspace .aw-kv-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+  }
+
+  .aw-workspace .aw-toolbar,
+  .aw-workspace .aw-filters {
+    align-items: stretch;
+  }
+
+  .aw-workspace .aw-filters .aw-field {
+    width: 100%;
+  }
+
+  .aw-workspace .aw-chat {
+    min-height: 520px;
+    border-radius: var(--radius-sm);
+  }
+
+  .aw-workspace .aw-message-list {
+    padding: var(--space-3);
+  }
+
+  .aw-workspace .aw-message {
+    width: 96%;
+    padding: var(--space-3);
+  }
+
+  .aw-workspace .aw-composer-row {
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .aw-workspace .aw-composer-row > .aw-field:first-child {
+    flex-basis: 100%;
+  }
+
+  .aw-workspace .aw-task-board {
+    display: grid;
+    grid-auto-columns: unset;
+    grid-auto-flow: row;
+    grid-template-columns: minmax(0, 1fr);
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+
+  .aw-workspace .aw-task-column {
+    min-height: auto;
+  }
+
+  .aw-workspace .aw-task-list {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .aw-workspace .aw-run-layout {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .aw-workspace .aw-run-list {
+    max-height: 248px;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-divider);
+  }
+
+  .aw-workspace .aw-run-detail {
+    overflow: visible;
+    padding: var(--space-3);
+  }
+
+  .aw-workspace .aw-trace {
+    align-items: stretch;
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .aw-workspace .aw-trace-node {
+    width: 100%;
+  }
+
+  .aw-workspace .aw-trace-arrow {
+    align-self: center;
+    transform: rotate(90deg);
+  }
+
+  .aw-workspace .aw-table-wrap {
+    border-radius: var(--radius-sm);
+  }
+
+  .aw-workspace .aw-dialog {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: min(88dvh, 760px);
+    padding: var(--space-4);
+    border-width: 1px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    transform: none;
+    animation-name: aw-sheet-in;
+  }
+
+  .aw-workspace .aw-dialog-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .aw-workspace .aw-dialog-actions .aw-button {
+    width: 100%;
+  }
+
+  .aw-workspace .aw-toast-region {
+    top: calc(var(--aw-topbar-height) + var(--space-2));
+    right: var(--space-3);
+    width: calc(100% - var(--space-6));
+  }
+}
+
+@media (max-width: 420px) {
+  .aw-workspace .aw-topbar-context .aw-meta {
+    display: none;
+  }
+
+  .aw-workspace .aw-page-actions .aw-button {
+    flex: 1 1 auto;
+  }
+
+  .aw-workspace .aw-message {
+    width: 100%;
+  }
+
+  .aw-workspace .aw-composer {
+    padding: var(--space-2);
+  }
+
+  .aw-workspace .aw-dialog-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (hover: none) {
+  .aw-workspace .aw-message-actions {
+    opacity: 1;
+  }
+
+  .aw-workspace :is(.aw-card[data-interactive='true'], button.aw-card, a.aw-card):hover,
+  .aw-workspace .aw-task-card:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aw-workspace *,
+  .aw-workspace *::before,
+  .aw-workspace *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .aw-workspace :is(.aw-status, .aw-run-event, .aw-delivery-step)::before {
+    forced-color-adjust: none;
+  }
+}
+
+@keyframes aw-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes aw-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes aw-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 12px)) scale(0.985);
+  }
+}
+
+@keyframes aw-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@keyframes aw-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes aw-skeleton {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}

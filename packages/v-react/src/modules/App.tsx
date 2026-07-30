@@ -8,6 +8,7 @@ const AiAdminApp = lazy(() => import('../features/ai-admin/App'));
 const AssistantsApp = lazy(() => import('../features/assistants/App'));
 const KnowledgeBasesApp = lazy(() => import('../features/knowledge-bases/App'));
 const ModelPlaygroundApp = lazy(() => import('../features/model-playground/App'));
+const AgentWorkspaceApp = lazy(() => import('../features/agent-workspace/App'));
 const NotesApp = lazy(() => import('./notes/NotesApp').then((module) => ({ default: module.NotesApp })));
 
 export const App = ({ basename }: { basename?: string }) => {
@@ -25,6 +26,7 @@ export const App = ({ basename }: { basename?: string }) => {
           <Route path="model-playground" element={<ModelPlaygroundApp />} />
           <Route path="assistants" element={<AssistantsApp />} />
           <Route path="knowledge-bases" element={<KnowledgeBasesApp />} />
+          <Route path="agent-workspace/*" element={<AgentWorkspaceApp />} />
 
           {/* Obsidian 笔记菜单（/v-react/notes） */}
           <Route path="notes" element={<NotesApp basename={basename} />} />
