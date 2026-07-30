@@ -105,6 +105,7 @@ export interface AgentWorkspaceClient {
   restartAgent(id: EntityId, input: VersionedMutationInput): Promise<CommandReceipt<ResourceRef>>;
   resetAgentSession(id: EntityId, input: VersionedMutationInput): Promise<CommandReceipt<ResourceRef>>;
   fullResetAgent(id: EntityId, input: VersionedMutationInput): Promise<CommandReceipt<ResourceRef>>;
+  openAgentDm(id: EntityId, input: MutationInput): Promise<CommandReceipt<ResourceRef>>;
   markInboxRead(id: EntityId, input: VersionedMutationInput): Promise<CommandReceipt<ResourceRef>>;
   markAllInboxRead(input: MutationInput): Promise<CommandReceipt<ResourceRef | null>>;
   sendMessage(input: SendMessageInput): Promise<CommandReceipt<SendMessageResult>>;

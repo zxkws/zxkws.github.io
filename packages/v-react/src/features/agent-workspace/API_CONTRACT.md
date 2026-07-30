@@ -466,6 +466,7 @@ data: {"cursor":"evt_cursor_00042","id":"evt_00042","type":"run.updated","projec
 | POST   | `/v1/agent-workspace/agents/:id/restart`                                         | `VersionedMutationInput`                                              | `ResourceRef`           |
 | POST   | `/v1/agent-workspace/agents/:id/session/reset`                                   | `VersionedMutationInput`                                              | `ResourceRef`           |
 | POST   | `/v1/agent-workspace/agents/:id/reset`                                           | `VersionedMutationInput`                                              | `ResourceRef`           |
+| POST   | `/v1/agent-workspace/agents/:id/dm`                                              | `MutationInput`                                                       | `ResourceRef`           |
 | POST   | `/v1/agent-workspace/inbox/:id/read`                                             | `VersionedMutationInput`                                              | `ResourceRef`           |
 | POST   | `/v1/agent-workspace/inbox/read-all`                                             | `MutationInput`                                                       | `ResourceRef \| null`   |
 | POST   | `/v1/agent-workspace/projects/:projectId/conversations/:conversationId/messages` | `SendMessageInput`                                                    | `SendMessageResult`     |
@@ -499,6 +500,17 @@ data: {"cursor":"evt_cursor_00042","id":"evt_00042","type":"run.updated","projec
 Path 中的 project/conversation/message/run/inputRequest/changeSet ID 必须与 body 中重复出现的 ID
 一致；不一致应整体拒绝。例如创建 repository 的 path `:projectId` 必须等于
 `body.projectId`。
+
+补充语义（对齐 raft.build 的"消息即工作"循环）：
+
+- `POST /agents/:id/dm`：获取或创建与该 agent 的 `agent_dm` Conversation，
+  幂等（同一 agent 复用既有会话），receipt `resource` 指向 conversation。
+- 发送消息会触发**自动应答**：后端按「显式 `agentId` > 本条消息新建任务的
+  assignee > `agent_dm` 对象 > 会话挂载任务的 assignee > 内容中的
+  `@handle` 提及」解析应答 agent；agent 处于空闲（无活跃 run）时自动创建
+  run（`triggerMessageId` 为该消息），完成后 agent 回复落在任务线程或触发
+  消息所在会话。agent 忙碌时不重复起 run。前端不需要显式调用
+  `POST /runs` 也能获得回复；显式 startRun 仍然可用。
 
 ## 8. Mutation DTO
 
@@ -1008,7 +1020,7 @@ Content-Type: application/json
 - 所有 versioned mutation 原子比较 `expectedVersion`。
 - bootstrap 与 `eventCursor` 一致；event log durable；SSE 断开可从 cursor 无缝补齐。
 - 列表返回完整 `CursorPage`，参数支持与第 5 节完全一致。
-- 42 个 mutation 路径、method、body 和 receipt 类型与第 7 节一致。
+- 43 个 mutation 路径、method、body 和 receipt 类型与第 7 节一致。
 - 文件始终对象存储直传，NestJS 不代理二进制，不触碰 4.5 MB 函数 body 边界。
 - attachment complete 核验对象 size/hash，并使用 grant 的 `attachmentVersion`。
 - 下载 URL 私有、短时、owner-scoped。

@@ -493,7 +493,19 @@ function AgentDetailContent({ snapshot, agent }: { snapshot: WorkspaceBootstrap;
       <section className="aw-card">
         <h2>Agent DM</h2>
         {!dm || !project ? (
-          <EmptyState title="没有可用的 agent_dm Conversation" />
+          <div className="aw-toolbar">
+            <button
+              className="aw-button aw-button--primary"
+              type="button"
+              onClick={() =>
+                void action(() =>
+                  client.openAgentDm(agent.id, { clientMutationId: createMutationId() }),
+                )
+              }
+            >
+              发起对话
+            </button>
+          </div>
         ) : (
           <>
             <AgentDm agent={agent} dm={dm} project={project} />

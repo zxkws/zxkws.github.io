@@ -573,6 +573,8 @@ export const createHttpAgentWorkspaceClient = (): AgentWorkspaceClient => {
       command<ResourceRef>('POST', `/v1/agent-workspace/agents/${encodeId(id)}/session/reset`, input),
     fullResetAgent: (id, input) =>
       command<ResourceRef>('POST', `/v1/agent-workspace/agents/${encodeId(id)}/reset`, input),
+    openAgentDm: (id, input) =>
+      command<ResourceRef>('POST', `/v1/agent-workspace/agents/${encodeId(id)}/dm`, input),
     markInboxRead: (id, input) => command<ResourceRef>('POST', `/v1/agent-workspace/inbox/${encodeId(id)}/read`, input),
     markAllInboxRead: (input) => command<ResourceRef | null>('POST', '/v1/agent-workspace/inbox/read-all', input),
     sendMessage: (input: SendMessageInput) =>
