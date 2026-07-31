@@ -1,0 +1,8 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="光域 LightSpace">
+  <rect width="256" height="256" rx="56" fill="#3ecf8e"/>
+  <g fill="none" stroke="#171717" stroke-linecap="round" stroke-linejoin="round" stroke-width="17">
+    <circle cx="112" cy="128" r="66"/>
+    <path d="M25 128h21M178 128h53M112 41V20M112 236v-21"/>
+  </g>
+  <circle cx="112" cy="128" r="23" fill="#171717"/>
+</svg>

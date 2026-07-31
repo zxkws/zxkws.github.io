@@ -1,0 +1,129 @@
+.src-pages-AccountVault-index-module__toolbar--yXOIf {
+	display: grid;
+	grid-template-columns: minmax(220px, 480px) auto;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 18px;
+}
+
+.src-pages-AccountVault-index-module__toolbar--yXOIf span {
+	min-width: 64px;
+	color: var(--color-fg-tertiary);
+	font-family: var(--font-mono);
+	font-size: 12px;
+	text-align: right;
+	white-space: nowrap;
+}
+
+.src-pages-AccountVault-index-module__grid--bCM9v {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+	gap: 14px;
+}
+
+.src-pages-AccountVault-index-module__card--JdFw3 {
+	min-width: 0;
+	padding: 18px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-sm);
+	background: var(--color-surface);
+}
+
+.src-pages-AccountVault-index-module__cardHeader--_nT_4 {
+	display: flex;
+	min-height: 52px;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	padding-bottom: 14px;
+	border-bottom: 1px solid var(--color-divider);
+}
+
+.src-pages-AccountVault-index-module__cardHeader--_nT_4 h2 {
+	min-width: 0;
+	margin: 0;
+	font-size: 17px;
+	overflow-wrap: anywhere;
+}
+
+.src-pages-AccountVault-index-module__cardActions--sqkTg {
+	display: flex;
+	flex: 0 0 auto;
+	gap: 8px;
+}
+
+.src-pages-AccountVault-index-module__cardActions--sqkTg button,
+.src-pages-AccountVault-index-module__details--bQ715 button {
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--color-fg-secondary);
+	font: inherit;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.src-pages-AccountVault-index-module__cardActions--sqkTg button:hover,
+.src-pages-AccountVault-index-module__details--bQ715 button:hover {
+	color: var(--color-primary-active);
+}
+
+.src-pages-AccountVault-index-module__details--bQ715 {
+	display: grid;
+	gap: 12px;
+	margin: 16px 0 0;
+}
+
+.src-pages-AccountVault-index-module__details--bQ715 > div {
+	display: grid;
+	grid-template-columns: 98px minmax(0, 1fr);
+	gap: 10px;
+}
+
+.src-pages-AccountVault-index-module__details--bQ715 dt {
+	color: var(--color-fg-tertiary);
+	font-size: 12px;
+}
+
+.src-pages-AccountVault-index-module__details--bQ715 dd {
+	display: flex;
+	min-width: 0;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	color: var(--color-fg-secondary);
+	font-size: 13px;
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
+}
+
+.src-pages-AccountVault-index-module__details--bQ715 code {
+	min-width: 0;
+	color: var(--color-fg);
+	font-family: var(--font-mono);
+	overflow-wrap: anywhere;
+}
+
+.src-pages-AccountVault-index-module__empty--cE9S6 {
+	display: flex;
+	min-height: 220px;
+	align-items: center;
+	justify-content: center;
+	color: var(--color-fg-tertiary);
+}
+
+@media (max-width: 700px) {
+	.src-pages-AccountVault-index-module__toolbar--yXOIf {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+
+	.src-pages-AccountVault-index-module__grid--bCM9v {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.src-pages-AccountVault-index-module__details--bQ715 > div {
+		grid-template-columns: 84px minmax(0, 1fr);
+	}
+}
+

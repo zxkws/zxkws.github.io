@@ -1,0 +1,29 @@
+{
+  "short_name": "光域",
+  "name": "光域 LightSpace",
+  "description": "一个属于创造、记录与探索的数字空间。",
+  "icons": [
+    {
+      "src": "lightspace-mark.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "lightspace-mark.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "lightspace-mark.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#3ecf8e",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary"
+}
