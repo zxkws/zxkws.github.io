@@ -806,9 +806,29 @@ type ComputerPairing = {
 - `POST /computers/:id/revoke` 需 `expectedVersion`；drain 命令 body 为
   `{ clientMutationId, expectedVersion, draining }`。
 
-重要边界：当前三个真源文件没有定义 Runner 使用 code 领取 pairing、交换设备凭据、上报
-心跳、更新 capabilities 或领取 lease 的 endpoint/DTO。真实 Runner 上线前必须单独冻结
-daemon contract；不能让 NestJS 实现者凭本文猜测这些路由。
+重要边界：owner Web 契约（本文）与 Runner daemon 协议是两套独立接口。owner 侧只负责
+创建 pairing 并展示 `installCommand`；daemon 侧协议已在后端实现并冻结，前缀
+`/api/v1/agent-workspace/runner/*`，用**设备凭证**（`Authorization: Bearer runner_<token>`）
+鉴权，与 owner 登录态无关，Web 客户端不调用这些路由。daemon 协议要点（供实现/运维参考，
+非 Web 契约）：
+
+- `POST /runner/pairings/claim`：一次性 code 换设备凭证（只存 SHA-256），注册机器能力与
+  注册根目录，返回 `deviceToken`、`computerId`、轮询/心跳间隔。
+- `POST /runner/heartbeat`：更新在线状态、能力、队列深度；心跳超时后 computer 判 offline。
+- `POST /runner/runs/claim`：原子领取绑定本机的 run，加租约与 fence，下发指令、仓库与
+  上下文快照。
+- `POST /runner/runs/:runId/events`：回报执行事件（落 run 事件流，做秘密脱敏）。
+- `POST /runner/runs/:runId/input-request`：让 run 进入 `waiting_input` 并建 owner 输入请求。
+- `POST /runner/runs/:runId/complete`：提交 `outcome` + `summary` + 真实
+  `repositoryChanges`（含逐文件 unified diff）+ `artifacts`，owner 侧据此生成
+  `ready` 的 ChangeSet。
+- `POST /runner/deliveries/claim` + `/runner/deliveries/:id/complete`：交付由持有 worktree
+  的 runner 执行 commit/push 并回报每目标结果（含真实 commit SHA）。
+
+执行分流：agent 绑定 **paired computer** 的 run 走 runner 真实执行（`engineRunId` 为空）；
+绑定 **builtin computer** 或未绑定的走服务端 AIME 引擎。两者 run 生命周期、事件与
+ChangeSet/Delivery 的 owner 侧契约完全一致。
+
 
 ## 11. 对象存储直传与 4.5 MB 边界
 
